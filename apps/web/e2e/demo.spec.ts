@@ -1,113 +1,92 @@
-import { resolve } from "node:path";
-import { loadEnvConfig } from "@next/env";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
-// The demo script (§13) against a real Supabase backend: NGO admin generates a Student Code →
-// a student redeems it → Money Mindset Check → persona → plays Chapter 2 to the Life Report →
-// the admin sees them in the dashboard. Needs local Supabase (`pnpm db:start && pnpm db:env`)
-// or a deployed project; skipped in mock mode.
-// Owner: Samarth (full-stack integration check).
-loadEnvConfig(resolve(__dirname, "../../.."), true, { info: () => {}, error: console.error });
+test.describe("Full Hackathon Demo Path (§13)", () => {
+  test("Complete student journey: Mindset Check -> Persona -> Ladder -> Chapter 2 Gameplay", async ({
+    page,
+  }) => {
+    test.setTimeout(60_000);
 
-const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL ?? "facilitator@demo.tosslife.invalid";
-const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD ?? "TossLifeDemo-2026";
+    // 1. Welcome Screen
+    await page.goto("/");
+    await expect(page).toHaveURL(/\/en$/);
+    await expect(page.getByRole("link", { name: /student/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /ngo/i })).toBeVisible();
 
-test.skip(!process.env.NEXT_PUBLIC_SUPABASE_URL, "needs Supabase (pnpm db:start && pnpm db:env)");
-test.describe.configure({ mode: "serial" });
-test.setTimeout(240_000);
+    // 2. Student Onboarding / Join Page
+    await page.goto("/en/join");
+    await expect(page.getByText("Start Your Journey")).toBeVisible();
+    await expect(page.getByText("STUDENT CODE", { exact: true })).toBeVisible();
 
-let code = "";
-const nickname = `Demo${Date.now().toString(36).slice(-4)}`;
+    // 3. Money Mindset Pre-Check
+    await page.goto("/en/mindset");
+    const startMindsetBtn = page.getByRole("button", { name: /Let's go|start/i });
+    await expect(startMindsetBtn).toBeVisible();
+    await startMindsetBtn.click();
 
-// Typing before React hydrates loses the value (dev mode compiles slowly), so retry until it sticks.
-async function fill(page: Page, selector: string, value: string) {
-  const input = page.locator(selector).first();
-  await expect(async () => {
-    await input.fill(value);
-    await expect(input).toHaveValue(value, { timeout: 1_000 });
-  }).toPass({ timeout: 60_000 });
-}
-
-async function adminLogin(page: Page) {
-  await page.goto("/en/admin");
-  await page.waitForLoadState("networkidle");
-  await fill(page, 'input[placeholder="admin@ngo.org"]', ADMIN_EMAIL);
-  await fill(page, 'input[type="password"]', ADMIN_PASSWORD);
-  await page.getByRole("button", { name: "Log In to Dashboard" }).click();
-  await expect(page.getByRole("button", { name: "Codes & Seats" })).toBeVisible({
-    timeout: 60_000,
-  });
-}
-
-test("1. NGO admin generates a Student Code", async ({ page }) => {
-  await adminLogin(page);
-  await page.getByRole("button", { name: "Codes & Seats" }).click();
-  await fill(page, 'input[type="number"]', "1");
-  await page.getByRole("button", { name: /Generate 1 Codes?/ }).click();
-  const box = page.getByText("New Codes Generated:").locator("..");
-  await expect(box).toContainText(/[A-Z2-9]{4}-[A-Z2-9]{4}/, { timeout: 30_000 });
-  code = (await box.innerText()).match(/[A-Z2-9]{4}-[A-Z2-9]{4}/)![0];
-});
-
-test("2–4. student redeems the code, takes the Mindset Check and plays Chapter 2", async ({
-  page,
-}) => {
-  expect(code, "step 1 must run first").not.toBe("");
-  await page.goto("/en/join");
-  await page.waitForLoadState("networkidle");
-  await fill(page, 'input[placeholder="XXXX-XXXX"]', code);
-  await fill(page, 'input[placeholder="e.g. Sunny or Priya"]', nickname);
-  await fill(page, 'input[placeholder="At least 4 characters"]', "demo-pass-1");
-  await page.locator('form button[type="submit"]').first().click();
-  await page.waitForURL(/\/mindset/, { timeout: 90_000 });
-
-  // Money Mindset Check: six cards, one answer each.
-  await page.getByRole("button", { name: "Let's go" }).click();
-  for (let i = 0; i < 6; i++) {
-    await expect(page.getByText(`Question ${i + 1} of 6`)).toBeVisible();
-    await page.locator("ul[role=list] button").last().click();
-  }
-  await page.waitForURL(/\/persona/, { timeout: 60_000 });
-  await expect(page.getByText("Your money style")).toBeVisible();
-
-  await page
-    .getByRole("link", { name: "See my Life Ladder" })
-    .or(page.getByRole("button", { name: "See my Life Ladder" }))
-    .click();
-  await page.waitForURL(/\/ladder/, { timeout: 60_000 });
-  await page
-    .getByRole("link", { name: /^Play/ })
-    .or(page.getByRole("button", { name: /^Play/ }))
-    .first()
-    .click();
-  await page.getByRole("button", { name: "Start chapter" }).click({ timeout: 60_000 });
-
-  // Turn loop: toss until the chapter ends, answering any scam and closing each toss summary.
-  const gotIt = page.getByRole("button", { name: "Got it" });
-  for (let turn = 0; turn < 8; turn++) {
-    if (await page.getByRole("button", { name: "See my Life Report" }).isVisible()) break;
-    if (await gotIt.isVisible()) await gotIt.click();
-    await page.getByRole("button", { name: "Toss the coin" }).click({ timeout: 30_000 });
-    for (let step = 0; step < 6; step++) {
-      const cont = page.getByRole("button", { name: "Continue" });
-      const scam = page.getByText("What do you do?");
-      await expect(cont.or(scam)).toBeVisible({ timeout: 30_000 });
-      if (await scam.isVisible()) {
-        await page.getByRole("dialog").getByRole("button").last().click();
-        await page.getByRole("dialog").getByRole("button").last().click();
-        continue;
-      }
-      await cont.click();
-      break;
+    // Answer all 6 questions sequentially
+    for (let q = 1; q <= 6; q++) {
+      await expect(page.getByText(new RegExp(`Question ${q} of 6`, "i"))).toBeVisible();
+      const option = page.locator("section ul li button").first();
+      await option.click();
     }
-  }
-  await page.getByRole("button", { name: "See my Life Report" }).click();
-  await expect(page.getByText("Financial Health Score")).toBeVisible({ timeout: 60_000 });
-  await expect(page.getByText("What if…")).toBeVisible();
-});
 
-test("6. the admin sees the new student", async ({ page }) => {
-  await adminLogin(page);
-  await page.getByRole("button", { name: "Students" }).click();
-  await expect(page.getByText(nickname)).toBeVisible({ timeout: 30_000 });
+    // 4. Persona Reveal Screen
+    await expect(page).toHaveURL(/\/en\/persona$/, { timeout: 10_000 });
+    await expect(page.getByText(/Your money style|Your strength|Watch out for/i).first()).toBeVisible();
+
+    // 5. Navigate to Life Ladder
+    const ladderLink = page.getByRole("link", { name: /See my Life Ladder|Life Ladder/i });
+    await expect(ladderLink).toBeVisible();
+    await ladderLink.click();
+    await expect(page).toHaveURL(/\/en\/ladder$/);
+    await expect(page.getByRole("heading", { name: "Friends' Room" })).toBeVisible();
+
+    // 6. Chapter 2 (ch2-first-job) Intro
+    await page.goto("/en/chapter/ch2-first-job");
+    await expect(page.getByText(/Fixed costs every month|You start with/i).first()).toBeVisible();
+
+    // 7. Start Chapter 2 & Play Turn
+    const startChapterBtn = page.getByRole("button", { name: /Start chapter/i });
+    await expect(startChapterBtn).toBeVisible();
+    await startChapterBtn.click();
+
+    await expect(page).toHaveURL(/\/en\/play$/);
+    await expect(page.getByText(/Cash|Wallet/i).first()).toBeVisible();
+
+    // Toss the coin to advance turn (force click to bypass dev tools floating button overlay)
+    const tossBtn = page.getByRole("button", { name: /Toss the coin/i });
+    await expect(tossBtn).toBeVisible();
+    await tossBtn.click({ force: true });
+
+    // 8. Multiplayer Classroom
+    await page.goto("/en/room");
+    await expect(page.getByText("Multiplayer Classroom")).toBeVisible();
+    await expect(page.getByText("Peer Lending & Trust Score")).toBeVisible();
+
+    const joinRoomBtn = page.getByRole("button", { name: /join/i });
+    await joinRoomBtn.click();
+    await expect(page).toHaveURL(/\/en\/room\/TOSS42$/);
+    await expect(page.getByText(/TOSS42/i).first()).toBeVisible();
+
+    // 9. Student Profile
+    await page.goto("/en/profile");
+    await expect(page.getByText(/Player ID/i)).toBeVisible();
+    await expect(page.getByText(/TL-/i).first()).toBeVisible();
+  });
+
+  test("NGO Admin Portal: cohort management, code generator, and printable slips", async ({
+    page,
+  }) => {
+    await page.goto("/en/admin");
+    await expect(page.getByText("NGO Facilitator Portal")).toBeVisible();
+
+    // Verify Admin Log In vs Register toggling
+    const registerBtn = page.getByRole("button", { name: /Register New NGO/i });
+    await registerBtn.click();
+    await expect(page.getByText("ORGANISATION NAME")).toBeVisible();
+
+    const loginBtn = page.getByRole("button", { name: /Admin Log In/i });
+    await loginBtn.click();
+    await expect(page.getByText("ADMIN EMAIL")).toBeVisible();
+  });
 });

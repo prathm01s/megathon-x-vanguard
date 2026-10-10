@@ -12,6 +12,10 @@ import {
   resetStudentPassword,
   signUpNgo,
   loginUser,
+  sendJoinRequestByPlayerId,
+  getOrgJoinRequests,
+  createOrgGroup,
+  getOrgGroups,
 } from "@/lib/auth/actions";
 import { content } from "@/lib/content";
 import { createClient } from "@/lib/supabase/client";
@@ -25,6 +29,10 @@ import {
   AlertCircle,
   CheckCircle2,
   Lock,
+  Printer,
+  UserPlus,
+  Send,
+  X,
 } from "lucide-react";
 
 export default function AdminPage() {
@@ -46,6 +54,34 @@ export default function AdminPage() {
   const [codeLabel, setCodeLabel] = useState("");
   const [newlyGeneratedCodes, setNewlyGeneratedCodes] = useState<string[]>([]);
   const [codeLoading, setCodeLoading] = useState(false);
+
+  // Groups / Batches state (§4.1, §4.6)
+  const [groupsList, setGroupsList] = useState<Array<{ id: string; name: string }>>([
+    { id: "batch-a", name: "Batch A" },
+    { id: "batch-b", name: "Batch B" },
+  ]);
+  const [selectedGroupId, setSelectedGroupId] = useState<string>("all");
+  const [newGroupName, setNewGroupName] = useState("");
+  const [isCreatingGroup, setIsCreatingGroup] = useState(false);
+
+  // Link personal learner state (§4.4)
+  const [joinPlayerId, setJoinPlayerId] = useState("");
+  const [joinLoading, setJoinLoading] = useState(false);
+  const [joinMessage, setJoinMessage] = useState<{ text: string; error?: boolean } | null>(null);
+  const [joinRequestsList, setJoinRequestsList] = useState<
+    Array<{ id: string; status: string; createdAt: string; nickname: string; playerId: string }>
+  >([
+    {
+      id: "req-1",
+      status: "pending",
+      createdAt: "Today",
+      nickname: "Vikram",
+      playerId: "TL-5M29R",
+    },
+  ]);
+
+  // Print handouts sheet state (§4.3)
+  const [showPrintModal, setShowPrintModal] = useState(false);
 
   // Reset password modal state
   const [resetStudentId, setResetStudentId] = useState<string | null>(null);
@@ -228,12 +264,58 @@ export default function AdminPage() {
               color: PERSONA_COLORS[p.persona_id ?? ""] ?? "bg-slate-500",
             })),
         }));
+        // Query groups
+        const groupsRes = await getOrgGroups();
+        if (groupsRes.success && groupsRes.data && groupsRes.data.length > 0) {
+          setGroupsList(groupsRes.data);
+        }
+
+        // Query join requests
+        const reqRes = await getOrgJoinRequests();
+        if (reqRes.success && reqRes.data) {
+          setJoinRequestsList(reqRes.data);
+        }
       } catch (err) {
         console.warn("Could not fetch remote admin stats:", err);
       }
     }
     loadAdminData();
   }, [session.user, session.role]);
+
+  // Handle Group Creation
+  const handleCreateGroup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newGroupName.trim()) return;
+    const res = await createOrgGroup(newGroupName.trim());
+    if (res.success && res.data) {
+      setGroupsList((prev) => [...prev, res.data!]);
+      setSelectedGroupId(res.data.id);
+      setNewGroupName("");
+      setIsCreatingGroup(false);
+    }
+  };
+
+  // Handle Send Join Request
+  const handleSendJoinRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!joinPlayerId.trim()) return;
+    setJoinLoading(true);
+    setJoinMessage(null);
+    const res = await sendJoinRequestByPlayerId(joinPlayerId);
+    setJoinLoading(false);
+    if (!res.success) {
+      setJoinMessage({ text: res.error || "Failed to send request.", error: true });
+    } else {
+      setJoinMessage({
+        text: `Invitation sent to ${res.data?.nickname}! Pending their approval in-app.`,
+      });
+      setJoinPlayerId("");
+      const reqRes = await getOrgJoinRequests();
+      if (reqRes.success && reqRes.data) {
+        setJoinRequestsList(reqRes.data);
+      }
+    }
+  };
 
   // Handle NGO Signup
   const handleNgoRegister = async (e: React.FormEvent) => {
@@ -273,9 +355,12 @@ export default function AdminPage() {
   const handleGenerateCodes = async (e: React.FormEvent) => {
     e.preventDefault();
     setCodeLoading(true);
+    const groupName = groupsList.find((g) => g.id === selectedGroupId)?.name;
+    const effectiveLabel = codeLabel.trim() || groupName || null;
     const res = await generateStudentCodes({
       count: codeCount,
-      label: codeLabel,
+      label: effectiveLabel || undefined,
+      groupId: selectedGroupId !== "all" ? selectedGroupId : undefined,
     });
     setCodeLoading(false);
     if (res.success && res.data?.codes) {
@@ -284,7 +369,7 @@ export default function AdminPage() {
         id: crypto.randomUUID(),
         code: c,
         status: "pending",
-        label: codeLabel || null,
+        label: effectiveLabel,
         date: "Just now",
       }));
       setCodesList((prev) => [...newItems, ...prev]);
@@ -700,18 +785,73 @@ export default function AdminPage() {
                         />
                       </div>
                       <div>
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-semibold text-muted-foreground">
+                            BATCH / GROUP
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => setIsCreatingGroup(!isCreatingGroup)}
+                            className="text-[11px] text-primary font-semibold hover:underline flex items-center gap-0.5"
+                          >
+                            <Plus className="size-3" />
+                            {isCreatingGroup ? "Cancel" : "New"}
+                          </button>
+                        </div>
+                        {isCreatingGroup ? (
+                          <div className="mt-1 flex gap-1">
+                            <input
+                              type="text"
+                              placeholder="Batch name"
+                              value={newGroupName}
+                              onChange={(e) => setNewGroupName(e.target.value)}
+                              className="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs focus:border-primary focus:outline-none"
+                            />
+                            <Button
+                              type="button"
+                              size="default"
+                              className="h-[34px] px-2.5 text-xs shrink-0"
+                              onClick={handleCreateGroup}
+                            >
+                              Save
+                            </Button>
+                          </div>
+                        ) : (
+                          <select
+                            value={selectedGroupId}
+                            onChange={(e) => {
+                              setSelectedGroupId(e.target.value);
+                              if (e.target.value !== "all") {
+                                const g = groupsList.find((grp) => grp.id === e.target.value);
+                                if (g) setCodeLabel(g.name);
+                              }
+                            }}
+                            className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                          >
+                            <option value="all">None / Custom</option>
+                            {groupsList.map((g) => (
+                              <option key={g.id} value={g.id}>
+                                {g.name}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                      </div>
+                    </div>
+                    {selectedGroupId === "all" && !isCreatingGroup && (
+                      <div>
                         <label className="text-xs font-semibold text-muted-foreground">
-                          BATCH / LABEL
+                          CUSTOM LABEL (OPTIONAL)
                         </label>
                         <input
                           type="text"
-                          placeholder="e.g. Batch A"
+                          placeholder="e.g. Batch A or Morning Cohort"
                           value={codeLabel}
                           onChange={(e) => setCodeLabel(e.target.value)}
                           className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
                         />
                       </div>
-                    </div>
+                    )}
                     <Button type="submit" disabled={codeLoading} className="w-full">
                       <Plus className="size-4" />
                       {codeLoading ? "Generating..." : `Generate ${codeCount} Codes`}
@@ -720,7 +860,18 @@ export default function AdminPage() {
 
                   {newlyGeneratedCodes.length > 0 && (
                     <div className="mt-4 rounded-lg bg-primary/10 border border-primary/20 p-3">
-                      <p className="text-xs font-bold text-primary mb-2">New Codes Generated:</p>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs font-bold text-primary">New Codes Generated:</p>
+                        <Button
+                          size="default"
+                          variant="ghost"
+                          onClick={() => setShowPrintModal(true)}
+                          className="h-6 text-[11px] font-bold text-primary gap-1"
+                        >
+                          <Printer className="size-3" />
+                          Print Slips
+                        </Button>
+                      </div>
                       <div className="grid grid-cols-2 gap-1.5 font-mono text-xs font-bold">
                         {newlyGeneratedCodes.map((c) => (
                           <span
@@ -738,15 +889,26 @@ export default function AdminPage() {
                 {/* Codes list */}
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-sm">Issued Codes ({codesList.length})</h3>
-                  <Button
-                    size="default"
-                    variant="outline"
-                    onClick={exportCodesCsv}
-                    className="h-8 text-xs gap-1"
-                  >
-                    <Download className="size-3.5" />
-                    Export CSV
-                  </Button>
+                  <div className="flex items-center gap-1.5">
+                    <Button
+                      size="default"
+                      variant="outline"
+                      onClick={() => setShowPrintModal(true)}
+                      className="h-8 text-xs gap-1"
+                    >
+                      <Printer className="size-3.5" />
+                      Print Slips
+                    </Button>
+                    <Button
+                      size="default"
+                      variant="outline"
+                      onClick={exportCodesCsv}
+                      className="h-8 text-xs gap-1"
+                    >
+                      <Download className="size-3.5" />
+                      Export CSV
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="flex flex-col gap-2">
@@ -789,11 +951,112 @@ export default function AdminPage() {
             {/* TAB 3: STUDENTS LIST (§4.7) */}
             {tab === "students" && (
               <div className="flex flex-col gap-3">
+                {/* Link Personal Learner Card (§4.4) */}
+                <Card className="p-4 border-primary/30 bg-primary/5">
+                  <div className="flex items-center gap-2 mb-1">
+                    <UserPlus className="size-4 text-primary" />
+                    <h4 className="font-bold text-sm text-primary">Link Personal Learner</h4>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Students who registered on their own can share their Player ID (e.g. TL-8M29R).
+                    Sending an invitation links them to your NGO cohort once accepted in their Profile.
+                  </p>
+                  <form onSubmit={handleSendJoinRequest} className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Enter Player ID (e.g. TL-5M29R)"
+                      value={joinPlayerId}
+                      onChange={(e) => setJoinPlayerId(e.target.value.toUpperCase())}
+                      className="flex-1 rounded-lg border border-input bg-background px-3 py-1.5 text-xs font-mono uppercase focus:border-primary focus:outline-none"
+                    />
+                    <Button
+                      type="submit"
+                      size="default"
+                      disabled={joinLoading}
+                      className="h-8 text-xs font-bold gap-1 shrink-0"
+                    >
+                      <Send className="size-3" />
+                      {joinLoading ? "Sending..." : "Send Invite"}
+                    </Button>
+                  </form>
+
+                  {joinMessage && (
+                    <div
+                      className={`mt-2 flex items-center gap-1.5 text-xs font-medium p-2 rounded-md ${
+                        joinMessage.error
+                          ? "bg-destructive/10 text-destructive"
+                          : "bg-emerald-500/10 text-emerald-600"
+                      }`}
+                    >
+                      {joinMessage.error ? (
+                        <AlertCircle className="size-3.5 shrink-0" />
+                      ) : (
+                        <CheckCircle2 className="size-3.5 shrink-0" />
+                      )}
+                      <span>{joinMessage.text}</span>
+                    </div>
+                  )}
+
+                  {/* Sent Invitations Table/List */}
+                  {joinRequestsList.length > 0 && (
+                    <div className="mt-4 border-t border-border/60 pt-3">
+                      <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                        Sent Join Invitations ({joinRequestsList.length})
+                      </p>
+                      <div className="flex flex-col gap-1.5">
+                        {joinRequestsList.map((req) => (
+                          <div
+                            key={req.id}
+                            className="flex items-center justify-between rounded-lg bg-background border px-3 py-1.5 text-xs"
+                          >
+                            <div>
+                              <span className="font-bold">{req.nickname}</span>
+                              <span className="text-[10px] font-mono text-muted-foreground ml-2">
+                                {req.playerId}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase ${
+                                  req.status === "pending"
+                                    ? "bg-amber-100 text-amber-700"
+                                    : req.status === "accepted"
+                                      ? "bg-emerald-100 text-emerald-700"
+                                      : "bg-rose-100 text-rose-700"
+                                }`}
+                              >
+                                {req.status}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground">{req.createdAt}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </Card>
+
                 <div className="flex justify-between items-center">
-                  <h3 className="font-bold text-sm">Students Cohort</h3>
-                  <span className="text-xs text-muted-foreground">
-                    {studentsList.length} learners
-                  </span>
+                  <div>
+                    <h3 className="font-bold text-sm">Students Cohort</h3>
+                    <span className="text-xs text-muted-foreground">
+                      {studentsList.length} learners
+                    </span>
+                  </div>
+                  {groupsList.length > 0 && (
+                    <select
+                      value={selectedGroupId}
+                      onChange={(e) => setSelectedGroupId(e.target.value)}
+                      className="rounded-lg border border-input bg-background px-2.5 py-1 text-xs focus:border-primary focus:outline-none"
+                    >
+                      <option value="all">All Batches</option>
+                      {groupsList.map((g) => (
+                        <option key={g.id} value={g.id}>
+                          {g.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
 
                 <div className="flex flex-col gap-2">
@@ -907,6 +1170,128 @@ export default function AdminPage() {
                 </Card>
               </div>
             )}
+          </div>
+        )}
+
+        {/* PRINTABLE SLIPS MODAL (§4.3, §15.6 #6) */}
+        {showPrintModal && (
+          <div className="fixed inset-0 z-50 flex flex-col bg-background/95 backdrop-blur-sm overflow-y-auto p-4 sm:p-8">
+            <style>{`
+              @media print {
+                body * {
+                  visibility: hidden !important;
+                }
+                #printable-slips-container, #printable-slips-container * {
+                  visibility: visible !important;
+                }
+                #printable-slips-container {
+                  position: absolute !important;
+                  left: 0 !important;
+                  top: 0 !important;
+                  width: 100% !important;
+                  background: white !important;
+                  padding: 8mm !important;
+                  margin: 0 !important;
+                }
+                .no-print {
+                  display: none !important;
+                }
+              }
+            `}</style>
+
+            {/* Modal Controls Bar (Hidden during print) */}
+            <div className="no-print flex items-center justify-between border-b pb-4 mb-6">
+              <div>
+                <h2 className="text-lg font-bold">Printable Student Access Passes</h2>
+                <p className="text-xs text-muted-foreground">
+                  Cut along the dotted guidelines and hand out to students for onboarding at /join.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="default"
+                  onClick={() => window.print()}
+                  className="h-9 gap-1.5 font-bold"
+                >
+                  <Printer className="size-4" />
+                  Print Passes
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="default"
+                  onClick={() => setShowPrintModal(false)}
+                  className="h-9 px-3"
+                >
+                  <X className="size-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Printable Slips Grid */}
+            <div
+              id="printable-slips-container"
+              className="grid grid-cols-1 md:grid-cols-2 gap-4 print:grid-cols-2 print:gap-4 print:m-0"
+            >
+              {codesList
+                .filter((c) => c.status === "pending")
+                .map((c) => (
+                  <div
+                    key={c.id}
+                    className="rounded-xl border-2 border-dashed border-primary/40 bg-card p-5 text-card-foreground shadow-sm flex flex-col justify-between break-inside-avoid print:border-gray-400 print:text-black print:bg-white"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between border-b border-border/50 pb-2 mb-3">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-base font-black tracking-tight text-primary print:text-black">
+                            TOSS LIFE
+                          </span>
+                          <span className="text-[10px] uppercase font-bold text-muted-foreground px-1.5 py-0.5 rounded bg-muted print:border print:border-gray-300">
+                            Student Pass
+                          </span>
+                        </div>
+                        <span className="text-[11px] font-medium text-muted-foreground">
+                          {c.label || "Cohort Batch"}
+                        </span>
+                      </div>
+
+                      <div className="text-center py-2.5">
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                          Single-Use Access Code
+                        </p>
+                        <p className="text-2xl font-mono font-black tracking-widest text-primary print:text-black bg-primary/5 py-2 rounded-lg border border-primary/20 print:border-gray-300">
+                          {c.code}
+                        </p>
+                      </div>
+
+                      <div className="mt-3 space-y-1 text-xs text-muted-foreground border-t border-border/50 pt-2.5">
+                        <p className="font-semibold text-foreground print:text-black">
+                          How to join the simulator:
+                        </p>
+                        <p>
+                          1. Open your browser and go to{" "}
+                          <strong className="text-primary font-mono print:text-black">
+                            /join
+                          </strong>
+                        </p>
+                        <p>2. Enter your 8-digit access code above</p>
+                        <p>3. Choose your secret username and password</p>
+                        <p>4. Complete the mindset check and start Chapter 1!</p>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-2 border-t border-dashed border-border/60 text-[10px] text-muted-foreground flex justify-between items-center print:border-gray-300">
+                      <span>✂️ Cut along dashed line</span>
+                      <span>Single-use code • Keep private</span>
+                    </div>
+                  </div>
+                ))}
+
+              {codesList.filter((c) => c.status === "pending").length === 0 && (
+                <div className="col-span-2 text-center py-12 text-muted-foreground text-sm">
+                  No pending codes available to print. Generate a new batch of codes first!
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

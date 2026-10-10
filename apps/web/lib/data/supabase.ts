@@ -42,24 +42,94 @@ function getLocal<T>(key: string): T | null {
   }
 }
 
-// Offline queue for decisions
-function queueDecision(id: PlaythroughId, records: DecisionRecord[]) {
-  const existing = getLocal<DecisionRecord[]>(`queue:decisions:${id}`) || [];
-  existing.push(...records);
-  cacheLocal(`queue:decisions:${id}`, existing);
+// ── IndexedDB Storage for Large Offline Decision Queues (§15.4 D, §15.6 #9) ──
+const IDB_DB_NAME = "toss-life:persistence";
+const IDB_STORE_NAME = "offline_queue";
+
+function openIDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    if (typeof window === "undefined" || !("indexedDB" in window)) {
+      return reject(new Error("IndexedDB unavailable"));
+    }
+    const req = window.indexedDB.open(IDB_DB_NAME, 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(IDB_STORE_NAME)) {
+        db.createObjectStore(IDB_STORE_NAME);
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
 }
 
-async function flushDecisionQueue(id: PlaythroughId) {
+async function getQueuedDecisions(id: PlaythroughId): Promise<DecisionRecord[]> {
   try {
-    await flushDecisionQueueUnsafe(id);
-  } catch (e) {
-    // Offline or Supabase not configured: records stay queued in localStorage.
-    console.warn("Decisions queued locally, remote sync postponed:", e);
+    const db = await openIDB();
+    return await new Promise<DecisionRecord[]>((resolve) => {
+      const tx = db.transaction(IDB_STORE_NAME, "readonly");
+      const store = tx.objectStore(IDB_STORE_NAME);
+      const req = store.get(id);
+      req.onsuccess = () => resolve((req.result as DecisionRecord[]) || []);
+      req.onerror = () => resolve(getLocal<DecisionRecord[]>(`queue:decisions:${id}`) || []);
+    });
+  } catch {
+    return getLocal<DecisionRecord[]>(`queue:decisions:${id}`) || [];
   }
 }
 
-async function flushDecisionQueueUnsafe(id: PlaythroughId) {
-  const queue = getLocal<DecisionRecord[]>(`queue:decisions:${id}`);
+async function saveQueuedDecisions(id: PlaythroughId, records: DecisionRecord[]): Promise<void> {
+  try {
+    const db = await openIDB();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(IDB_STORE_NAME, "readwrite");
+      const store = tx.objectStore(IDB_STORE_NAME);
+      const req = store.put(records, id);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    });
+  } catch {
+    cacheLocal(`queue:decisions:${id}`, records);
+  }
+}
+
+async function clearQueuedDecisions(id: PlaythroughId): Promise<void> {
+  try {
+    const db = await openIDB();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(IDB_STORE_NAME, "readwrite");
+      const store = tx.objectStore(IDB_STORE_NAME);
+      const req = store.delete(id);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    });
+  } catch {
+    // ignore
+  }
+  if (typeof window !== "undefined") {
+    localStorage.removeItem(`${LOCAL_STORAGE_PREFIX}queue:decisions:${id}`);
+  }
+}
+
+// Offline queue for decisions
+async function queueDecision(id: PlaythroughId, records: DecisionRecord[]): Promise<void> {
+  const existing = await getQueuedDecisions(id);
+  existing.push(...records);
+  await saveQueuedDecisions(id, existing);
+}
+
+async function flushDecisionQueue(id: PlaythroughId): Promise<void> {
+  try {
+    await flushDecisionQueueUnsafe(id);
+  } catch (e) {
+    // Offline or Supabase not configured: records stay queued in IndexedDB / localStorage.
+    console.warn("Decisions queued offline, remote sync postponed:", e);
+  }
+}
+
+async function flushDecisionQueueUnsafe(id: PlaythroughId): Promise<void> {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return;
+  const queue = await getQueuedDecisions(id);
   if (!queue || queue.length === 0) return;
 
   const supabase = createClient();
@@ -78,9 +148,7 @@ async function flushDecisionQueueUnsafe(id: PlaythroughId) {
 
   const { error } = await supabase.from("decisions").insert(rows);
   if (!error) {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem(`${LOCAL_STORAGE_PREFIX}queue:decisions:${id}`);
-    }
+    await clearQueuedDecisions(id);
   }
 }
 
@@ -232,7 +300,7 @@ export const supabasePersistence: PersistenceApi = {
   },
 
   async appendDecisions(id: PlaythroughId, records: DecisionRecord[]): Promise<void> {
-    queueDecision(id, records);
+    await queueDecision(id, records);
     await flushDecisionQueue(id);
   },
 

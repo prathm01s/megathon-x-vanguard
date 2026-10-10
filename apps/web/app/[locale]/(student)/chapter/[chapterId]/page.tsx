@@ -14,6 +14,8 @@ export function generateStaticParams() {
   );
 }
 
+export const instant = false;
+
 export default function ChapterPage({
   params,
 }: {
