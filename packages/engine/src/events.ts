@@ -75,6 +75,7 @@ export function applyLifeEvent(
   if (ev.type === "good") {
     state.cash += amount;
     state.stats.windfallReceived += amount;
+    state.stats.windfallUnallocated = (state.stats.windfallUnallocated ?? 0) + amount;
     events.push({ type: "life_event", eventId: ev.id, amount, coveredBy: "cash" });
     return false;
   }

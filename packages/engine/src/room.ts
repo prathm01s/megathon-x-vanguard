@@ -31,9 +31,24 @@ import {
 } from "./loans";
 import { ratePerTurn } from "./money";
 import { createPlaythrough } from "./playthrough";
+import { toDecisionLog } from "./decisions";
 import { createRng } from "./rng";
 import { advanceTurn } from "./turn";
-import type { Action, ChapterResult, GameState, Loan, Paise, RoomMember, RoomState } from "./types";
+import type {
+  Action,
+  AuctionState,
+  ChapterResult,
+  DecisionRecord,
+  GameEvent,
+  GameState,
+  Loan,
+  MemberDecision,
+  Paise,
+  PublicMember,
+  RoomMember,
+  RoomState,
+  RoomView,
+} from "./types";
 
 export interface PlayerInfo {
   userId: string;
@@ -64,6 +79,26 @@ function newMemberState(
     chapterId: room.chapterId,
   });
   return { ...state, marketSeed: room.seed };
+}
+
+/** Queues a decision record for the server to persist (humans only; bots have no playthrough). */
+function emit(
+  room: RoomState,
+  memberId: string,
+  type: DecisionRecord["type"],
+  payload: Record<string, unknown>,
+  turn = room.turn + 1,
+): void {
+  const m = room.members.find((x) => x.id === memberId);
+  if (!m || m.isBot) return;
+  room.outbox = [
+    ...(room.outbox ?? []),
+    { memberId, record: { type, chapterId: room.chapterId, turn, payload } },
+  ];
+}
+
+function emitRecord(room: RoomState, memberId: string, record: DecisionRecord | null): void {
+  if (record) emit(room, memberId, record.type, record.payload, record.turn);
 }
 
 function setTrust(m: RoomMember, delta: number): void {
@@ -104,6 +139,7 @@ export function createRoomState(args: {
     auction: null,
     tosses: [],
     reactions: [],
+    outbox: [],
   };
   return joinRoom(room, args.host, args.content);
 }
@@ -134,6 +170,10 @@ export function leaveRoom(room: RoomState, memberId: string): RoomState {
   if (room.status !== "lobby") throw new EngineError("room_started", "can't leave a running room");
   const next = clone(room);
   next.members = next.members.filter((m) => m.id !== memberId);
+  // If the host leaves the lobby, the next human becomes host.
+  if (next.hostMemberId === memberId) {
+    next.hostMemberId = next.members.find((m) => !m.isBot)?.id ?? next.hostMemberId;
+  }
   return next;
 }
 
@@ -202,6 +242,11 @@ export function memberAction(
   const next = clone(room);
   const m = member(next, memberId);
   m.state = applyAction(m.state, action, content);
+  emitRecord(
+    next,
+    memberId,
+    toDecisionLog(action, { chapterId: next.chapterId, turn: m.state.turn + 1 }),
+  );
   // Answering a scam card after the last toss can be what completes the chapter.
   finishIfDone(next);
   return next;
@@ -274,6 +319,11 @@ export function requestLoan(
     );
     if (rate !== null && bot.state.cash >= args.amount) offer(bot.id, rate);
   }
+  emit(next, borrowerId, "loan_requested", {
+    loanId: requestId,
+    amount: args.amount,
+    dueTurn: args.dueTurn,
+  });
   return next;
 }
 
@@ -305,6 +355,11 @@ export function offerLoan(
     ratePerTurn: args.ratePerTurn,
     status: "offered",
   });
+  emit(next, lenderId, "loan_offered", {
+    requestId: request.id,
+    amount: request.principal,
+    ratePerTurn: args.ratePerTurn,
+  });
   return next;
 }
 
@@ -332,6 +387,14 @@ export function acceptLoan(room: RoomState, borrowerId: string, offerId: string)
       l.status = "declined";
   }
   next.loans = next.loans.filter((l) => l.id !== offer.requestId);
+  emit(next, borrowerId, "loan_taken", {
+    loanId: offer.id,
+    lender: lender ? "friend" : offer.lenderMemberId,
+    amount: offer.principal,
+    ratePerTurn: offer.ratePerTurn,
+    interestType: offer.interestType,
+    dueTurn: offer.dueTurn,
+  });
   return next;
 }
 
@@ -360,6 +423,12 @@ export function repayRoomLoan(
   if (update.trustDelta > 0) borrower.state.stats.loansRepaidOnTime += 1;
   setTrust(borrower, update.trustDelta);
   Object.assign(loan, update.loan);
+  emit(next, borrowerId, "loan_repaid", {
+    loanId: loan.id,
+    amount: paid,
+    fullyRepaid: loan.status === "repaid",
+    onTime: update.trustDelta > 0,
+  });
   return next;
 }
 
@@ -383,6 +452,7 @@ export function placeRoomBid(
   if (member(next, memberId).state.cash < amount)
     throw new EngineError("insufficient_cash", "not enough cash");
   next.auction = placeBidFn(next.auction!, def, { memberId, amount });
+  emit(next, memberId, "auction_bid", { auctionId: def.id, amount });
   return next;
 }
 
@@ -402,6 +472,12 @@ export function joinRoomPool(
   next.auction = joinPoolFn(next.auction!, args.poolId, memberId, args.contribution);
   const pool = next.auction.pools.find((p) => p.id === args.poolId)!;
   next.auction = placeBidFn(next.auction, def, { poolId: pool.id, amount: poolTotal(pool) });
+  emit(next, memberId, "pool_joined", {
+    auctionId: def.id,
+    poolId: pool.id,
+    contribution: args.contribution,
+    poolTotal: poolTotal(pool),
+  });
   return next;
 }
 
@@ -413,22 +489,31 @@ function settleAuction(room: RoomState, content: ContentBundle): void {
   if (!w) return;
   room.auction.payoutTurnsLeft = def.returnStream?.turns ?? 0;
   const over = overbidPct(w.amount, room.auction.trueValue ?? 0);
-  const credit = (m: RoomMember) => {
+  const credit = (m: RoomMember, paid: Paise) => {
     m.state.stats.auctionsWon += 1;
     m.state.stats.overbidPct = over;
+    emit(room, m.id, "auction_won", {
+      auctionId: def.id,
+      winningBid: w.amount,
+      paid,
+      trueValue: room.auction?.trueValue,
+      poolId: w.poolId ?? null,
+    });
   };
   if (w.memberId) {
     const m = member(room, w.memberId);
-    m.state.cash -= Math.min(w.amount, m.state.cash);
-    credit(m);
+    const paid = Math.min(w.amount, m.state.cash);
+    m.state.cash -= paid;
+    credit(m, paid);
     return;
   }
   const pool = room.auction.pools.find((p) => p.id === w.poolId)!;
   for (const { memberId, amount } of poolCosts(pool, w.amount)) {
     const m = member(room, memberId);
-    m.state.cash -= Math.min(amount, m.state.cash);
+    const paid = Math.min(amount, m.state.cash);
+    m.state.cash -= paid;
     m.state.stats.poolBidsJoined += 1;
-    credit(m);
+    credit(m, paid);
   }
 }
 
@@ -481,13 +566,35 @@ function botDecides(room: RoomState, bot: RoomMember, content: ContentBundle): v
 export function resolveTurn(room: RoomState, content: ContentBundle): RoomState {
   const next = clone(room);
   const cfg = content.multiplayer.loans;
+  // If the turn timer ran out on a player with an unanswered scam card, the default answer is
+  // "ignore" (§8.14: auto-skip with default decisions), so their life stays in step.
+  for (const m of next.members.filter((x) => !x.isBot)) {
+    for (const p of [...m.state.pendingScams]) {
+      const action: Action = {
+        type: "scam_response",
+        instanceId: p.instanceId,
+        response: "ignore",
+      };
+      m.state = applyAction(m.state, action, content);
+      emitRecord(
+        next,
+        m.id,
+        toDecisionLog(action, { chapterId: next.chapterId, turn: m.state.turn }),
+      );
+    }
+  }
   for (const bot of next.members.filter((m) => m.isBot)) botDecides(next, bot, content);
   settleAuction(next, content);
 
+  const badEventThisTurn = new Set<string>();
   for (const m of next.members) {
-    if (m.state.status !== "playing") continue; // finished, or a human who didn't answer a scam
-    const { state, tossResult } = advanceTurn(m.state, content);
+    if (m.state.status !== "playing") continue; // already finished the chapter
+    const { state, tossResult, events } = advanceTurn(m.state, content);
     m.state = state;
+    for (const e of events) {
+      emitRecord(next, m.id, toDecisionLog(e, { chapterId: next.chapterId, turn: state.turn }));
+      if (isBadLifeEvent(e, content)) badEventThisTurn.add(m.id);
+    }
     if (!next.tosses.some((t) => t.turn === tossResult.turn)) {
       next.tosses.push({
         turn: tossResult.turn,
@@ -509,6 +616,7 @@ export function resolveTurn(room: RoomState, content: ContentBundle): RoomState 
     }
   }
   next.turn += 1;
+  pushFriendScams(next, content, badEventThisTurn);
   payAuctionReturns(next, content);
 
   for (const loan of next.loans) {
@@ -520,6 +628,13 @@ export function resolveTurn(room: RoomState, content: ContentBundle): RoomState 
     setTrust(borrower, update.trustDelta);
     if (update.loan.status === "defaulted") borrower.state.stats.loansDefaulted += 1;
     Object.assign(loan, update.loan);
+    emit(
+      next,
+      borrower.id,
+      update.loan.status === "defaulted" ? "loan_defaulted" : "loan_late",
+      { loanId: loan.id, fine: update.fine, trustDelta: update.trustDelta },
+      next.turn,
+    );
   }
 
   for (const m of next.members) m.ready = m.isBot;
@@ -527,6 +642,106 @@ export function resolveTurn(room: RoomState, content: ContentBundle): RoomState 
   // A closed auction stays visible (it may still be paying out) until the next one is due.
   if (next.status === "playing" && next.auction?.status !== "open") maybeOpenAuction(next, content);
   return next;
+}
+
+function isBadLifeEvent(e: GameEvent, content: ContentBundle): boolean {
+  return (
+    e.type === "life_event" &&
+    content.lifeEvents.events.find((x) => x.id === e.eventId)?.type === "bad"
+  );
+}
+
+/**
+ * A `scammer-friend` bot pushes room scams (channel `friend_offer`, chapters include "room",
+ * e.g. the "double your money" Ponzi scheme) at human friends, more often right after a bad
+ * toss hit them (§7.7). The card records which friend sent it (`fromMemberId`).
+ */
+function pushFriendScams(room: RoomState, content: ContentBundle, hadBadEvent: Set<string>): void {
+  const scammers = room.members.filter((m) => m.isBot && m.botStrategy === "scammer-friend");
+  if (scammers.length === 0) return;
+  const scams = content.scams.scams.filter(
+    (s) => s.enabled && s.channel === "friend_offer" && s.chapters.includes("room"),
+  );
+  for (const target of room.members.filter((m) => !m.isBot)) {
+    if (target.state.status === "chapter_complete") continue;
+    const persona = content.personas.personas.find((p) => p.id === target.state.personaId);
+    for (const bot of scammers) {
+      const rng = createRng(`${room.seed}:${bot.id}:${target.id}`, "scam", room.turn);
+      const scam = scams.find((s) => {
+        let p = s.probability * (persona?.scamMultiplier ?? 1);
+        if (s.trigger === "after_bad_toss") {
+          p = hadBadEvent.has(target.id) ? p * content.scams.afterBadTossMultiplier : 0;
+        }
+        return rng.chance(Math.min(1, p));
+      });
+      if (!scam) continue;
+      target.state.pendingScams.push({
+        instanceId: `${scam.id}@${room.turn}:${bot.id}`,
+        scamId: scam.id,
+        turn: room.turn,
+        fromMemberId: bot.id,
+      });
+      target.state.status = "awaiting_scam_response";
+      break; // at most one friend offer per player per turn
+    }
+  }
+}
+
+// ── What each player sees ───────────────────────────────────────────────────
+function publicMember(m: RoomMember): PublicMember {
+  return {
+    id: m.id,
+    nickname: m.nickname,
+    avatarId: m.avatarId,
+    isBot: m.isBot,
+    seat: m.seat,
+    trustScore: m.trustScore,
+    ready: m.ready,
+    awaitingScam: m.state.status === "awaiting_scam_response",
+    finished: m.state.status === "chapter_complete",
+  };
+}
+
+function auctionFor(auction: AuctionState | null, memberId: string | null): AuctionState | null {
+  if (!auction || auction.status === "closed") return auction;
+  const myPools = new Set(
+    auction.pools.filter((p) => p.members.some((x) => x.memberId === memberId)).map((p) => p.id),
+  );
+  return {
+    ...auction,
+    // Sealed bids: before the auction closes a player sees only their own and their pool bid.
+    bids: auction.bids.filter(
+      (b) =>
+        (b.memberId !== undefined && b.memberId === memberId) ||
+        (b.poolId !== undefined && myPools.has(b.poolId)),
+    ),
+  };
+}
+
+/**
+ * The room as one player may see it: their own full state; for everyone else only public
+ * info (nickname, avatar, Trust Score, ready). The server sends exactly this to each player.
+ */
+export function viewRoomFor(room: RoomState, userId: string | null): RoomView {
+  const me = room.members.find((m) => m.userId !== null && m.userId === userId) ?? null;
+  return {
+    code: room.code,
+    chapterId: room.chapterId,
+    status: room.status,
+    turn: room.turn,
+    hostMemberId: room.hostMemberId,
+    me,
+    members: room.members.map(publicMember),
+    loans: room.loans,
+    auction: auctionFor(room.auction, me?.id ?? null),
+    tosses: room.tosses,
+    reactions: room.reactions,
+  };
+}
+
+/** Takes the queued decision records out of the room (the server persists them). */
+export function drainOutbox(room: RoomState): { room: RoomState; records: MemberDecision[] } {
+  return { room: { ...room, outbox: [] }, records: room.outbox ?? [] };
 }
 
 /** Every member's Life Report, with the multiplayer Trust component counted. */

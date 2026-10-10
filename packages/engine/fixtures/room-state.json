@@ -108,6 +108,7 @@
           ],
           "windfallReceived": 0,
           "windfallSaved": 0,
+          "windfallUnallocated": 0,
           "cashLost": 0,
           "sipInstalmentsMissed": 0,
           "loansTaken": 1,
@@ -330,6 +331,7 @@
           ],
           "windfallReceived": 3674160,
           "windfallSaved": 0,
+          "windfallUnallocated": 3674160,
           "cashLost": 0,
           "sipInstalmentsMissed": 0,
           "loansTaken": 0,
@@ -600,6 +602,7 @@
           "badEventsCoveredByFund": [],
           "windfallReceived": 0,
           "windfallSaved": 0,
+          "windfallUnallocated": 0,
           "cashLost": 0,
           "sipInstalmentsMissed": 0,
           "loansTaken": 0,
@@ -901,5 +904,6 @@
       "emoteId": "thumbs-up",
       "turn": 3
     }
-  ]
+  ],
+  "outbox": []
 }

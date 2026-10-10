@@ -8,6 +8,14 @@ import { buy, isLocked, sell, withdrawalPenalty } from "./portfolio";
 import { payTask } from "./tasks";
 import type { Action, ActionOption, GameState } from "./types";
 
+/** Counts money saved or invested against a windfall that is still waiting to be saved. */
+function allocateWindfall(state: GameState, amount: number): void {
+  const open = state.stats.windfallUnallocated ?? 0;
+  const saved = Math.min(open, Math.max(0, amount));
+  state.stats.windfallSaved += saved;
+  state.stats.windfallUnallocated = open - saved;
+}
+
 export function getAvailableActions(state: GameState, content: ContentBundle): ActionOption[] {
   if (state.status === "chapter_complete") return [];
   const chapter = getChapter(content, state.chapterId);
@@ -93,9 +101,15 @@ export function applyAction(state: GameState, action: Action, content: ContentBu
   const chapter = getChapter(content, state.chapterId);
 
   switch (action.type) {
-    case "pay_task":
+    case "pay_task": {
+      const paidBefore = next.tasks.find((t) => t.taskId === action.taskId)?.paid ?? 0;
       payTask(next, action.taskId, action.amount, chapter, content, options);
+      if (chapter.tasks.find((t) => t.id === action.taskId)?.kind === "safety") {
+        const paid = (next.tasks.find((t) => t.taskId === action.taskId)?.paid ?? 0) - paidBefore;
+        allocateWindfall(next, paid);
+      }
       break;
+    }
     case "invest": {
       const opt = options.get(action.optionId);
       if (!opt) throw new EngineError("bad_option", `unknown option ${action.optionId}`);
@@ -108,6 +122,7 @@ export function applyAction(state: GameState, action: Action, content: ContentBu
       }
       next.cash -= action.amount;
       buy(next, opt, action.amount);
+      allocateWindfall(next, action.amount);
       break;
     }
     case "withdraw": {

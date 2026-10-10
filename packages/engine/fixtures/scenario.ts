@@ -11,6 +11,7 @@ import {
 import {
   acceptLoan,
   createRoomState,
+  drainOutbox,
   joinRoomPool,
   memberAction,
   react,
@@ -112,5 +113,6 @@ export function sampleRoom(content: ContentBundle): RoomState {
   room = requestLoan(room, "m1", { amount: 10000_00, dueTurn: 5 }, content);
   room = joinRoomPool(room, "m1", { poolId: "pool-1", contribution: 25000_00 }, content);
   room = react(room, "m1", content.multiplayer.emotes[0]!.id, content);
-  return room;
+  // Stored the way the server stores it: decision records already written out.
+  return drainOutbox(room).room;
 }

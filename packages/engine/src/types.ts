@@ -69,6 +69,8 @@ export interface PendingScam {
   instanceId: string;
   scamId: string;
   turn: number;
+  /** Set when a (bot) friend in a Friends' Room pushed the offer (e.g. a Ponzi scheme). */
+  fromMemberId?: string;
 }
 
 export interface WealthSnapshot {
@@ -87,9 +89,13 @@ export interface ChapterStats {
   fdBrokenEarly: boolean;
   /** Bad life events fully paid from cash/savings without borrowing. */
   badEventsCoveredByFund: string[];
-  /** Total good-event money received and how much of it was still saved at turn end. */
+  /** Good-event money received (bonus, scholarship). */
   windfallReceived: Paise;
+  /** Windfall money the player moved into savings or investments in the decide phase right
+   *  after it arrived (capped at the windfall). Drives `windfallSavedPct`. */
   windfallSaved: Paise;
+  /** Windfall still waiting to be saved; the window closes at the next toss. */
+  windfallUnallocated: Paise;
   /** Cash lost at home (lost / stolen). */
   cashLost: Paise;
   /** SIP instalments skipped because there wasn't enough cash. */
@@ -423,6 +429,50 @@ export interface RoomState {
   loans: Loan[];
   auction: AuctionState | null;
   /** Shared market toss per turn. */
+  tosses: TossResult[];
+  reactions: RoomReaction[];
+  /**
+   * Decision records produced since the server last saved the room. The server writes them to
+   * the `decisions` table and empties the list; the mock room just discards them.
+   */
+  outbox: MemberDecision[];
+}
+
+export interface MemberDecision {
+  memberId: string;
+  record: DecisionRecord;
+}
+
+/** What other players can see about a member: no cash, holdings or sealed bids (§6). */
+export interface PublicMember {
+  id: string;
+  nickname: string;
+  avatarId: string;
+  isBot: boolean;
+  seat: number;
+  trustScore: number;
+  /** Has submitted this turn. */
+  ready: boolean;
+  /** Still has to answer a scam card before the turn can resolve. */
+  awaitingScam: boolean;
+  finished: boolean;
+}
+
+/**
+ * One player's view of a room (what the server sends to that player). Only `me` carries a
+ * full `GameState`. Before an auction closes, other bidders' sealed bids are hidden; pools
+ * stay visible because pooling is done together.
+ */
+export interface RoomView {
+  code: string;
+  chapterId: ChapterId;
+  status: RoomState["status"];
+  turn: number;
+  hostMemberId: string;
+  me: RoomMember | null;
+  members: PublicMember[];
+  loans: Loan[];
+  auction: AuctionState | null;
   tosses: TossResult[];
   reactions: RoomReaction[];
 }

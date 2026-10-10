@@ -49,6 +49,7 @@ export function emptyStats(): ChapterStats {
     badEventsCoveredByFund: [],
     windfallReceived: 0,
     windfallSaved: 0,
+    windfallUnallocated: 0,
     cashLost: 0,
     sipInstalmentsMissed: 0,
     loansTaken: 0,

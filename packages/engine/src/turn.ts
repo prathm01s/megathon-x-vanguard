@@ -44,6 +44,8 @@ export function advanceTurn(
   const events: GameEvent[] = [];
   const months = monthsPerTurn(state.turnUnit);
   next.turn += 1;
+  // A windfall must be saved in the decide phase right after it arrives (see windfallSavedPct).
+  next.stats.windfallUnallocated = 0;
 
   // ── Toss ──────────────────────────────────────────────────────────────────
   const toss = tossFor(state.marketSeed ?? state.seed, next.turn, content, state.turnUnit);

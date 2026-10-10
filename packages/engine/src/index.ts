@@ -15,6 +15,7 @@ export { assignPersona } from "./persona";
 export { healthScore, componentFraction, weakestComponent } from "./score";
 export { selectReportItems } from "./report";
 export { netWorth } from "./helpers";
+export { chapterResultRecords } from "./decisions";
 export { optionYearlyRate } from "./market";
 export {
   bankRateFor,
@@ -65,5 +66,14 @@ export {
   resolveTurn,
   endRoomChapter,
   loansOwedBy,
+  viewRoomFor,
+  drainOutbox,
   type PlayerInfo,
 } from "./room";
+export {
+  applyRoomRequest,
+  parseRoomRequest,
+  roomRequestSchema,
+  actionSchema,
+  type RoomRequest,
+} from "./room-protocol";

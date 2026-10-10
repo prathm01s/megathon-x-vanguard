@@ -28,11 +28,13 @@
     "db:types": "supabase gen types typescript --local > packages/db-types/src/database.ts"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@eslint/js": "^9",
     "@toss/content": "workspace:*",
     "@toss/engine": "workspace:*",
     "@types/node": "^24",
     "concurrently": "^10.0.6",
+    "esbuild": "^0.28.2",
     "eslint": "^9",
     "prettier": "^3.9.9",
     "supabase": "^2.120.0",

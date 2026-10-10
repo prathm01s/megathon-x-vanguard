@@ -202,8 +202,8 @@ export const METRICS: Record<MetricId, MetricDef> = {
     compute: (ctx) => ctx.state.stats.highInterestDebt,
   },
   windfallSavedPct: {
-    // TODO(samarth): `windfallSaved` isn't tracked yet (needs attributing next-turn spending to
-    // the windfall), so this is 0 and the `saved-windfall` report rule never fires.
+    // DECISION: a windfall counts as saved when, in the decide phase right after it arrives,
+    // the player moves money into savings or investments (lump sums or the emergency fund).
     description: "Share of good-event money (bonus, scholarship) that was saved rather than spent.",
     compute: (ctx) =>
       ctx.state.stats.windfallReceived > 0

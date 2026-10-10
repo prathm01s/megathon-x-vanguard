@@ -1,6 +1,6 @@
 // Maps engine actions and events to the append-only `decisions` table (§15.4 C).
 // Prathmesh's statistics views read only these records.
-import type { Action, DecisionRecord, GameEvent } from "./types";
+import type { Action, ChapterResult, DecisionRecord, GameEvent } from "./types";
 
 const SAFE_SCAM_RESPONSES = new Set(["ignore", "report", "ask_friend"]);
 
@@ -60,9 +60,31 @@ export function toDecisionLog(
           ratePerYear: item.ratePerYear,
         },
       };
-    case "chapter_complete":
-      return { ...base, type: "chapter_end", payload: {} };
     default:
+      // `chapter_complete` is logged from the ChapterResult instead (chapterResultRecords),
+      // which knows the score; other events (income, returns…) aren't decisions.
       return null;
   }
+}
+
+/** Records for a finished chapter: `chapter_end` (with the score) and any `persona_shift`. */
+export function chapterResultRecords(result: ChapterResult, turn: number): DecisionRecord[] {
+  const base = { chapterId: result.chapterId, turn };
+  const records: DecisionRecord[] = [
+    {
+      ...base,
+      type: "chapter_end",
+      payload: {
+        healthScore: result.healthScore,
+        passed: result.passed,
+        attempt: result.attempt,
+        badges: result.badgesEarned,
+        weakestComponentId: result.weakestComponentId,
+      },
+    },
+  ];
+  if (result.personaShift) {
+    records.push({ ...base, type: "persona_shift", payload: { ...result.personaShift } });
+  }
+  return records;
 }
