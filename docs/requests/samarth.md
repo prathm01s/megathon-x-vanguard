@@ -2,26 +2,34 @@
 
 Add new requests at the bottom: what you need, why, and the interface you propose.
 
-## From day-zero setup (2026-10-10)
+## From day-zero setup (2026-10-10) — all resolved in session 2
 
-1. **Debt fund breaks the "can lose money" guardrail.** §8.6 gives `debt-fund` +8.5% / +7% / +5.5%,
-   so it never loses money, but §1 says market options must be able to lose money in a bad year.
-   `content:validate` warns about it. Decide whether to give it a small negative crash return or
-   accept the exception (and silence the warning for it).
-2. **Balance is off (day-zero engine).** `pnpm sim --runs 300` gives all-cash 63 avg / 95% pass,
-   balanced 77 / 95%, all-equity 73 / 96%. §10 wants all-cash to usually _fail_. Average
-   real-value growth is negative for every strategy because `realValueGrowthPct` (metrics.ts)
-   deflates by the whole-chapter index even for money invested late. Needs a time-weighted real
-   return plus tuning.
-3. **"What if" can be a no-op.** If the chosen candidate matches what the player already did
-   (e.g. `idle-cash` → start a SIP the player already had), `difference` is 0. Skip candidates
-   whose replay changes nothing and fall through to the next one.
-4. **Simplified parts of `packages/engine/src/api.ts`** (marked `TODO(samarth)`): income modifiers
-   (job break), business income variability, monthly SIP timing and units, cash-at-home loss,
-   loan-app debt as a real loan, persona shift streaks across chapters, and the remaining
-   what-if transforms (`moveShare`, `emergencyFundFirst`, `holdThroughCrash`, which currently
-   throw `NotImplementedError` and are caught). Split these into the modules listed in §3.2
-   (market.ts, portfolio.ts, tasks.ts, events.ts, loans.ts, auction.ts, bots.ts).
-5. **Personas start in ch1, but ch1 is an outline (`enabled: false`).** Until ch1 is playable, the
-   UI should start everyone in ch2 (the prototype). Maybe add an engine helper `startChapterFor(personaId)`
-   that falls back to the first enabled chapter.
+1. ~~**Debt fund breaks the "can lose money" guardrail.**~~ **Done:** returns re-shaped to
+   +10 / +8 / −0.5% (expected 6.9%, shown ~7%). See the `DECISION` in `content/investments/options.yaml`.
+   Still to confirm with Vanguard mentors.
+2. ~~**Balance is off.**~~ **Done:** time-weighted real growth (`investedReal`), monthly simulation
+   and real bot strategies. All §10 targets hold and are tested (`test/bots.test.ts`). Numbers are
+   in `handoff.md` §7.
+3. ~~**"What if" can be a no-op.**~~ **Done:** `chooseWhatIf` skips candidates that don't leave the
+   player better off.
+4. ~~**Simplified parts of `api.ts`.**~~ **Done:** split into modules. Job break, business
+   variability, monthly SIP/RD units, cash loss, forced borrowing, persona streaks and all five
+   What-if transforms are implemented.
+5. ~~**Personas start in a disabled ch1.**~~ **Done:** `startChapterFor(personaId, content)` falls
+   back to the first enabled chapter.
+
+## Still open (Samarth's own backlog)
+
+6. **Room server:** room migrations with RLS, room Edge Functions that call
+   `packages/engine/src/room.ts` (turn timer → `resolveTurn`), and a realtime `useRoom` replacing the
+   mock store (§15.5 items 14–16).
+7. **Decision records for rooms:** loan, auction and persona-shift actions should emit
+   `DecisionRecord`s (`loan_requested`, `loan_offered`, `loan_taken`, `loan_repaid`, `loan_late`,
+   `loan_defaulted`, `auction_bid`, `auction_won`, `pool_joined`, `persona_shift`), so Prathmesh's
+   multiplayer stats work.
+8. **`windfallSavedPct`** is always 0: attribute next-turn spending to the windfall.
+9. **`scammer-friend` bot** should push `friend-ponzi-scheme` in ch3b rooms.
+10. **`/dev/sim` route** and the engine performance check (a ch2 turn in under 50 ms on a
+    mid-range phone).
+11. **Team decision (handoff §7.2):** should all-cash fail the chapter, or only the growth
+    component? Today it passes with 63.

@@ -22,3 +22,22 @@ Add new requests at the bottom: what you need, why, and the interface you propos
    create `.github/workflows/` (the credential had no `workflow` scope). Move it back with
    `git mv docs/pending/ci.yml .github/workflows/ci.yml` from a credential that has the scope.
    Then turn on branch protection for `main` (require PR + passing CI).
+
+## From Samarth's engine session (2026-10-10)
+
+7. **Load saved games through `migrateState`.** `GameState` is now schema v2. When you read
+   `playthroughs.state`, call `migrateState(raw, content)` from `@toss/engine` before using it. It
+   upgrades older saves, and it throws `EngineError("save_too_new")` if the save came from a newer
+   app.
+8. **Chapter-to-chapter carry-over.** `ChapterResult.carryOver` (blocked goals, salary bonus,
+   persona-shift streaks) must be saved with the chapter result and passed to
+   `createPlaythrough({ …, carryOver })` for the next chapter. The `chapter_results.report jsonb`
+   column could hold it, or add a column.
+9. **New decision mapping:** forced bank borrowing (bad toss + no safety net) is logged as
+   `loan_taken` with `payload.forced = true`. Room loans and auctions don't emit records yet (my
+   backlog item 7).
+10. **Demo seed:** `scripts/seed.ts` can call `playChapter(strategy, { content, personaId, seed,
+chapterId })` with `SIM_STRATEGIES` from `@toss/engine` to generate varied, realistic
+    playthroughs. It returns the final `GameState` and the `ChapterResult`.
+11. **Where a new player starts:** use `startChapterFor(personaId, content)`, not
+    `persona.startChapter`. ch1 is still disabled, so everyone starts in ch2.

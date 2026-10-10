@@ -1,34 +1,40 @@
 # Handoff — Toss Life
 
-_Last updated: 2026-10-10 (day-zero setup)._
+_Last updated: 2026-10-10 (after Samarth's engine + mock room session)._
 
 This file records what has been built so far, how to run it, which decisions were made and what
 comes next. **Read [`CLAUDE.md`](./CLAUDE.md) first.** It is the spec, and it wins over this
 file. The original pitch is `Toss Life.pdf`.
 
+**Log of sessions**
+
+1. **Day zero** (shared setup, on `main`): monorepo, content system, engine contract, web skeleton,
+   first migration. The user asked to ignore the per-person ownership split for this first setup
+   only.
+2. **Samarth — engine modules + mock room** (branch `samarth/engine-modules`, PR into `main`):
+   CLAUDE.md §15.5 items 3–13. Details in §3.4 and §3.5 below.
+
+From now on, each person works only in their own paths (§15.3).
+
 ---
 
 ## 1. Status at a glance
 
-The **day-zero setup from CLAUDE.md §15.2 is done for all three tracks** in one shared session. The
-user asked to ignore the per-person ownership split for this first setup only. From now on, each
-person works only in their own paths (§15.3).
-
 | Check                                          | Result                                                               |
 | ---------------------------------------------- | -------------------------------------------------------------------- |
 | `pnpm install`                                 | ✅ pnpm 12, 5 workspace projects                                      |
-| `pnpm content:validate`                        | ✅ 21 files valid, 1 expected warning (see §7.1)                      |
+| `pnpm content:validate`                        | ✅ 21 files valid, **no warnings** (the debt-fund guardrail issue is fixed) |
 | `pnpm content:build`                           | ✅ writes `packages/content/dist/content.json` + 17 JSON Schemas      |
 | `pnpm lint`                                    | ✅ no errors, no warnings                                             |
 | `pnpm typecheck`                               | ✅ all packages + scripts                                             |
-| `pnpm test`                                    | ✅ 40 tests in 7 files (engine 30, content 7, web 3)                  |
+| `pnpm test`                                    | ✅ **109 tests** in 16 files (engine 95, content 7, web 7)            |
 | `pnpm build`                                   | ✅ Next.js production build, every locale prerendered                 |
-| `pnpm dev` → `/`, `/en`, `/ur`, `/te/play`, …  | ✅ all return 200; `/ur` has `dir="rtl"`                              |
-| `pnpm sim --runs 300`                          | ✅ runs; balance is **not tuned** yet (see §7.2)                      |
+| `pnpm dev` → `/`, `/en`, `/ur`, `/te/play`, …  | ✅ all return 200; `/ur` has `dir="rtl"` (checked on day zero)        |
+| `pnpm sim --runs 300`                          | ✅ meets the §10 balance targets (see §7.1 for the table)             |
 | Supabase migration                             | ⚠️ **written but never applied**: Docker Desktop was not running      |
 | `pnpm test:e2e` (Playwright)                   | ⚠️ configured with a smoke test but **not run** (browsers not installed) |
-| Git                                            | ✅ day-zero skeleton committed and pushed to `main` on `origin` (`github.com/IIIT-ECell/megathon26-prajis`) |
-| CI on GitHub                                   | ⚠️ **not active yet**: the workflow is parked in `docs/pending/ci.yml` (see §7.8) |
+| Git                                            | ✅ `main` = day zero. `samarth/engine-modules` = 2 more commits, pushed, waiting for review |
+| CI on GitHub                                   | ⚠️ **not active yet**: the workflow is parked in `docs/pending/ci.yml` (see §8.3) |
 
 ---
 
@@ -69,8 +75,8 @@ Before every commit: `pnpm content:validate && pnpm lint && pnpm typecheck && pn
 - Root `vitest.config.ts` runs the `engine`, `content` and `web` projects together.
 - CI workflow (install → `content:validate` → `content:build` → lint → typecheck → test; a
   Playwright job runs only on PRs into `main`) is written but **parked at `docs/pending/ci.yml`**.
-  See §7.8: it must be moved to `.github/workflows/ci.yml` by someone whose GitHub credential has
-  the `workflow` scope.
+  See §8.3: someone whose GitHub credential has the `workflow` scope must move it to
+  `.github/workflows/ci.yml`.
 - `README.md` (setup, layout, scripts, conventions).
 - `docs/requests/<owner>.md` (open asks per person) and `docs/progress/<name>.md`.
 
@@ -91,6 +97,8 @@ Before every commit: `pnpm content:validate && pnpm lint && pnpm typecheck && pn
   a `# yaml-language-server: $schema=…` line) and `watch.ts`.
 - Package exports: `@toss/content` (browser-safe schemas, types and helpers), `@toss/content/load`
   (Node only) and `@toss/content/bundle` (the compiled JSON).
+- _Session 2:_ `config/multiplayer.yaml` loans gained `defaultAfterTurnsLate`, and
+  `bankRateByTrust[].ratePerTurn` became **`ratePerYear`** (decision 17).
 
 ### 3.3 Game content (`content/`, Pragya writes text, Samarth owns numbers)
 
@@ -101,7 +109,8 @@ All files from §3.2 exist with the §8 data in English only:
   assignment rules (§8.3, exact) and shift rules.
 - `chapters/`: **`ch2-first-job` is complete** (the prototype). `ch1`, `ch3a`, `ch3b` and `ch4` are
   outlines with `enabled: false`.
-- `investments/`: 9 options with fictional names and returns as in §8.6; 7 techniques.
+- `investments/`: 9 options with fictional names and returns as in §8.6, **except the debt fund**
+  (decision 15); 7 techniques.
 - `events/`: 8 life events; 8 scams (the 7 from §8.9 plus `job-fee-offer-repeat`, the repeat
   variant that ch2 asks for).
 - `multiplayer/auctions.yaml` (used bike, property pool, shop space), `report/` (Life Report rules
@@ -110,40 +119,49 @@ All files from §3.2 exist with the §8 data in English only:
 
 ### 3.4 Engine (`packages/engine`, Samarth)
 
-**Contract (§15.4 A, C)**: `src/types.ts` defines `GameState`, `Action`, `ActionOption`,
-`TossResult`, `GameEvent`, `ChapterResult`, `LifeReport`, `WhatIfResult`, `DecisionRecord` with
-`DECISION_TYPES`, and the room types (`RoomState`, `RoomMember`, `Loan`, `AuctionState`, `Bid`,
-`BidPool`). All money is **integer paise**.
+**Contract (§15.4 A, C)**: `src/types.ts` defines `GameState` (**schema v2**), `Action`,
+`ActionOption`, `TossResult`, `GameEvent`, `ChapterResult` (now with `carryOver`), `LifeReport`,
+`WhatIfResult`, `DecisionRecord` with `DECISION_TYPES`, and the room types. All money is
+**integer paise**.
 
-**API (`src/api.ts`)**, all pure: `scoreMindset`, `createPlaythrough`, `getAvailableActions`,
-`applyAction`, `advanceTurn`, `endChapter`, `replayWithChange`, `toDecisionLog`, plus `replay`
-and `tossFor`.
+**Public API** (`src/api.ts` is a thin facade; `src/index.ts` exports everything):
+`scoreMindset`, `createPlaythrough`, `getAvailableActions`, `applyAction`, `advanceTurn`,
+`endChapter`, `replayWithChange`, `toDecisionLog`, plus `migrateState`, `startChapterFor`,
+`chooseWhatIf`, `replay`, `tossFor`, the loan / auction / bot / room functions below.
 
-What actually works today:
+**Modules** (one job each, as listed in CLAUDE.md §3.2):
 
-- `rng.ts`: in-house seeded PRNG (cyrb128 → sfc32) with **named streams** (`market`, `independent`,
-  `life`, `scam`, …) derived from `(seed, stream, turn)`. Tosses never depend on decisions, which
-  makes "What if" exact.
-- Persona scoring and assignment (`persona.ts`), the condition DSL, and a metrics registry with
-  **every metric from §8.10** (`metrics.ts`; it is a `Record<MetricId, …>`, so a missing metric
-  fails the type check).
-- Health Score with linear, steps and inverse scales and weight redistribution (`score.ts`), and
-  Life Report rule selection (`report.ts`).
-- A **simplified but complete turn loop**: market and gold tosses → returns → income and expenses
-  → SIP buying → one life event → one scam offer → inflation and salary growth → task due dates
-  and fines → history snapshot. Also FD/RD locks with early-break penalties, crash-sell tracking,
-  scam responses, repeat-scam spotting, the salary bonus from the laptop task, and `blockNextChapterGoal`.
-- `endChapter` returns the score, report, badges, a persona shift, the next chapter(s) and a What-if.
-- `replayWithChange` replays the chapter from turn 0 with the same seed. It supports
-  `replace_action` and the `ignoreScams` and `startSip` candidates.
-- **Fixtures** (`fixtures/`): ch2 state at turns 0, 2 and 5, a `ChapterResult` and a room. They are
-  generated from a scripted playthrough (`fixtures/scenario.ts`) by
-  `pnpm --filter @toss/engine fixtures`, so they always match the types. Import them from
-  `@toss/engine/fixtures`.
-- **Tests (30):** RNG determinism and distribution, every persona rule, every DSL operator, Health
-  Score with and without multiplayer, FD penalty, fixed returns, inflation and Real Value, the
-  emergency-fund task, **same seed + same decisions = identical results**, and replay-with-no-change
-  = identical.
+| File | Does |
+| --- | --- |
+| `playthrough.ts` | `createPlaythrough`; takes the previous chapter's `carryOver` |
+| `actions.ts` | decide phase: `getAvailableActions`, `applyAction` |
+| `turn.ts` | **the toss, simulated month by month** (12 steps in a year-long turn): NAVs move, prices rise, income arrives, expenses are paid, a life event hits in its drawn month, debt accrues and is repaid, SIP/RD instalments buy units; then cash loss, scam offer, salary growth, task due dates |
+| `market.ts` | shared market toss + independent tosses; yearly return per option; monthly NAV factor |
+| `portfolio.ts` | unit-priced holdings (a unit starts at ₹10), buy/sell, penalties, drawing on the emergency fund |
+| `economy.ts` | inflation per month, monthly expenses, income with modifiers and business variability, cash-at-home loss |
+| `cashflow.ts` | **one rule for every unavoidable payment: wallet → emergency fund → forced bank loan** |
+| `tasks.ts` | task list, payments (safety tasks move money into savings), inflation, due dates, fines, `blockNextChapterGoal` / `blockGoal:<id>` / `salaryBonus` |
+| `events.ts` | life events (cooldowns, weights, persona multipliers, drawn month) and scams (`after_bad_toss`, repeat variants, responses) |
+| `loans.ts` | interest (simple/compound), repay, late → default, Trust Score, bank rate by trust, forced-borrowing debt |
+| `auction.ts` | sealed bids, pool bids, exact pro-rata splits (largest remainder), income from won items |
+| `bots.ts` | strategies `cautious`, `balanced`, `impulsive`, `scammer-friend` + balancing-only `all-cash`, `all-equity-no-fund`; `playChapter`; room behaviour (loan offers, bids). Bots pick options **by kind, never by content id** |
+| `room.ts` | **Friends' Room rules** (see §3.5) |
+| `chapter.ts` | `endChapter`: score, report, What-if, badges, persona shift with streaks carried across chapters |
+| `whatif.ts` | same-seed replay; all 5 transforms (`ignoreScams`, `startSip`, `moveShare`, `emergencyFundFirst`, `holdThroughCrash`); `chooseWhatIf` skips changes that don't help |
+| `migrate.ts` | upgrades v1 saves to v2 (§8.1: never crash on an older save) |
+| `metrics.ts`, `score.ts`, `report.ts`, `persona.ts`, `conditions.ts`, `rng.ts`, `money.ts`, `decisions.ts`, `helpers.ts`, `errors.ts` | as on day zero, plus the new growth formula (decision 18) |
+
+- **Fixtures** (`fixtures/`, regenerate with `pnpm --filter @toss/engine fixtures`): ch2 at turns
+  0/2/5 and its `ChapterResult` from a scripted game, plus **`room-state.json`, now built with the
+  real room rules** (room `TOSS42` at turn 3: the bike auction is open, there's one active friend
+  loan and one open request with bank / loan-app / bot offers).
+- **Tests (95)**: everything from day zero plus SIP rupee-cost averaging (more units in a crash,
+  fewer in a boom), recurring deposits, job break, wallet → fund → loan order, debt interest and
+  repayment, cash-loss odds, every life-event effect, scam triggers (`after_bad_toss`, repeats,
+  persona multiplier), loans (interest, on-time/late/default, trust, limits, bank rates), auctions
+  and pools (exact splits), all What-if transforms, migration, room rules (lobby, bots, lockstep,
+  shared market / separate lives, loans, pool auction, multiplayer scoring), and **§10 balance
+  checks** that fail if content tuning breaks the targets.
 
 ### 3.5 Web app (`apps/web`, shared; see §15.3 for who owns which folder)
 
@@ -161,12 +179,21 @@ What actually works today:
   return with the "assumed" chip). `components.json` is set up for `shadcn add`.
 - `lib/format.ts`: `₹1,00,000` Indian formatting from paise. `lib/content.ts`: the typed bundle.
 - **Persistence API (§15.4 D)**: `lib/data/` with types and a **localStorage mock**.
-- **Room API (§15.4 E)**: `lib/room/index.ts`, typed `useRoom` / `createRoom` stubs that return
-  the fixture room.
+- **Room API (§15.4 E) — working mock room (Samarth, session 2):**
+  - `lib/room/store.ts` runs the real engine room rules in memory, with bots, and notifies
+    subscribers. `lib/room/index.ts` exposes the **`useRoom(code)`** hook (built on
+    `useSyncExternalStore`) and `createRoom(chapterId)`.
+  - The actions are the contract's (`join`, `leave`, `ready`, `submitTurn`, `requestLoan`,
+    `offerLoan`, `acceptLoan`, `repayLoan`, `placeBid`, `createPool`, `joinPool`) plus three
+    backwards-compatible additions: **`act(action)`** (your own decisions inside the room),
+    **`react(emoteId)`** and a `myDebts` list. `ready()` from the host starts the game.
+  - Room **`TOSS42`** is preloaded from the fixture, and its human player is the mock session user.
+  - Later the realtime client swaps the store's internals for Edge Function calls and Supabase
+    Realtime, keeping the same hook.
 - Supabase clients: `lib/supabase/client.ts` (browser) and `lib/supabase/server.ts` (server plus a
   service-role `createAdminClient`, both `server-only`).
-- Tests: Vitest with jsdom (`lib/format.test.ts`) and Playwright (`e2e/smoke.spec.ts`, Pixel 5
-  viewport).
+- Tests: Vitest with jsdom (`lib/format.test.ts`, `lib/room/store.test.ts`) and Playwright
+  (`e2e/smoke.spec.ts`, Pixel 5 viewport).
 
 ### 3.6 Database (`supabase/`, Prathmesh)
 
@@ -179,6 +206,7 @@ What actually works today:
   It also adds a trigger that stops clients changing role, org, username or Player ID, and two
   RPCs: `create_organization` (NGO signup) and `respond_to_join_request`.
 - `packages/db-types` holds a **placeholder** `Database` type until `pnpm db:types` runs.
+- Room tables (rooms, members, loans, auctions, bids, pools) are **not written yet** (Samarth, next).
 
 ---
 
@@ -204,13 +232,39 @@ What actually works today:
    blocks "the first optional goal of whichever chapter comes next".
 10. **Option lock length is in months** (`lockMonths`), so it means the same in month-based and
     year-based chapters.
-11. **The engine never returns UI text.** Warnings and disabled reasons are codes, translated in
-    `messages/*.json` → `engine.*`.
+11. **The engine never returns UI text.** Warnings, disabled reasons and errors are codes,
+    translated in `messages/*.json`.
 12. **Persistence API changes:** `startPlaythrough` also takes the initial state, and
     `savePlaythroughState` was added. Prathmesh should confirm this in a `contract` PR.
 13. **Latin digits** in every locale for now (`numberingSystem: "latn"`).
 14. **Scams were added to content:** `job-fee-offer-repeat` (the repeat variant), a
     `createsHighInterestDebt` flag for the loan app, and `afterBadTossMultiplier: 2.5`.
+
+_Session 2 (Samarth):_
+
+15. **Debt fund returns re-shaped** to +10 / +8 / −0.5% (expected 6.9%, shown ~7%). The §8.6 numbers
+    could never lose money, which broke the §1 guardrail. Confirm with Vanguard mentors.
+16. **Turns are simulated month by month.** A year's return is spread geometrically over its
+    months, so SIP instalments buy more units in a falling year (rupee-cost averaging), and a bill
+    lands in a specific month instead of after a full year of salary has piled up.
+17. **Bank rates are per YEAR** (`bankRateByTrust[].ratePerYear`). Friend-loan rates stay per turn
+    as §8.14 says. Friend loans are capped at `maxLoanMultipleOfIncome` × **monthly** income.
+18. **Growth = real return on saved and invested money.** Each contribution is valued in
+    chapter-start prices when it's made (`Holding.investedReal`), so money invested late isn't
+    penalised for inflation it never saw. Salary piling up as cash doesn't count as growth.
+19. **No negative cash.** Unavoidable payments go wallet → instant savings → a forced bank loan
+    (`GameState.debt`) at the bank's rate for the player's Trust Score, or the loan app's rate if the
+    bank refuses. The loan counts in `loansTaken`. Debt accrues monthly and is repaid from spare
+    cash automatically.
+20. **Units start at ₹10** (NAV index 1), like a newly launched fund.
+21. **A recurring deposit is a monthly plan**, offered and run as `sip_start` / `sip_stop` on the
+    `monthlyDepositOnly` option, never as a lump-sum `invest`.
+22. **Rooms share a market seed, not a life.** Every member's `GameState` has the room's
+    `marketSeed` (same market tosses for all) and its own `seed` (own life events and scams).
+23. **The room rules live in the engine** (`room.ts`, pure functions). The mock room uses them now,
+    and the room Edge Functions will call the same code later.
+24. **What if never shows a change that doesn't help.** `chooseWhatIf` takes the highest-priority
+    matching candidate whose replay ends with more Real Value; otherwise it shows none.
 
 ---
 
@@ -218,15 +272,17 @@ What actually works today:
 
 Each of these is marked `TODO(<owner>)` in the code:
 
-- **Engine (Samarth):** income modifiers such as job break, business income variability, monthly
-  SIP timing and units, cash-at-home loss, loans, auctions, bots, persona shift streaks across
-  chapters, and the What-if transforms `moveShare`, `emergencyFundFirst` and `holdThroughCrash`.
-  Everything currently lives in `api.ts`; split it into the modules from §3.2.
-- **Room server (Samarth):** room migrations, Edge Functions, the in-memory mock room and realtime
-  `useRoom`.
+- **Engine (Samarth):**
+  - `windfallSavedPct` is always 0 (the `saved-windfall` rule never fires), because spending in
+    later turns isn't attributed to the windfall.
+  - Room loan, auction and persona-shift actions don't emit `DecisionRecord`s yet.
+  - The `scammer-friend` bot doesn't push the Ponzi offer in rooms yet (ch3b is disabled anyway).
+  - `/dev/sim` route; the engine performance check (§15.5 item 18).
+- **Room server (Samarth):** room migrations with RLS, room Edge Functions (call `room.ts`; turn
+  timer = call `resolveTurn` when it expires), and the realtime `useRoom` client (§15.5 items 14–16).
 - **Platform (Prathmesh):** auth flows, `redeem-code` and admin Edge Functions, real persistence
-  with an IndexedDB offline queue, stats views, the dashboard, `scripts/seed.ts` (currently a stub),
-  and Supabase session refresh in `proxy.ts`.
+  with an IndexedDB offline queue, stats views, the dashboard, `scripts/seed.ts` (stub, but it can
+  now use `playChapter`), and Supabase session refresh in `proxy.ts`.
 - **UI (Pragya):** every real screen, animations, translations and the PWA (§9.4; nothing is set
   up yet).
 
@@ -236,34 +292,55 @@ Each of these is marked `TODO(<owner>)` in the code:
 
 | Who           | Start with                                                                                                         |
 | ------------- | ------------------------------------------------------------------------------------------------------------------ |
-| **Anyone**    | Turn on branch protection for `main` on GitHub (require PR + passing CI). Done already: repo, first commit, push. |
-| **Samarth**   | `docs/requests/samarth.md`, then §15.5 items 3–12 (split `api.ts` into modules, balance with `pnpm sim`, then the mock room). |
-| **Prathmesh** | Activate CI first (§7.8). Then start Docker, run `pnpm db:start && pnpm db:reset`, fix the migration, run `pnpm db:types`, then auth and the public screens (§15.6 items 2–5). |
-| **Pragya**    | `docs/requests/pragya.md`, then the mindset check, persona reveal and turn screen against the fixtures and `lib/data` mock (§15.7 items 2–5). |
+| **Anyone**    | Review and merge PR `samarth/engine-modules` → `main`. Turn on branch protection for `main` (require PR + passing CI). |
+| **Samarth**   | Room migrations, room Edge Functions on top of `room.ts`, realtime `useRoom` (§15.5 items 14–16), then `/dev/sim` and the performance check. Open items in `docs/requests/samarth.md`. |
+| **Prathmesh** | Activate CI first (§8.3). Then start Docker, run `pnpm db:start && pnpm db:reset`, fix the migration, run `pnpm db:types`, then auth and the public screens (§15.6 items 2–5). Load saved games with `migrateState` (see `docs/requests/prathmesh.md`). |
+| **Pragya**    | `docs/requests/pragya.md`, then the mindset check, persona reveal and turn screen against the fixtures and `lib/data` mock (§15.7 items 2–5). The **Friends' Room UI can start now** against `useRoom` (room `TOSS42`). |
 
 ---
 
-## 7. Known issues
+## 7. Balance (`pnpm sim --runs 300`, ch2, persona safe-keeper)
 
-1. **The debt fund can never lose money.** §8.6 gives it +8.5 / +7 / +5.5%, which conflicts with
-   the §1 guardrail that market options must be able to lose money. `content:validate` warns about
-   it. Samarth needs to decide.
-2. **Balance:** `pnpm sim --runs 300` gives all-cash 63 avg / 95% pass, balanced 77 / 95% and
-   all-equity 73 / 96%. All-cash should usually fail (§10). `realValueGrowthPct` is also negative
-   for every strategy because it deflates by the whole-chapter index; it needs a time-weighted
-   real return.
-3. **What-if can show ₹0** when the chosen candidate matches what the player already did.
-4. **Personas start in ch1, but ch1 is disabled.** Until ch1 is playable, start everyone in ch2.
-5. **The migration is untested.** Expect small fixes on its first `db reset`.
-6. **Git identity on the setup machine.** The first commit was made with that machine's git
+### 7.1 Current results
+
+| Strategy | Avg score | Pass | Growth < half points | Avg real growth | Forced to borrow | Scams fallen |
+| --- | --- | --- | --- | --- | --- | --- |
+| cautious | 76.8 | 97% | 100% | −1.4% | 2% | 0.00 |
+| balanced | 83.8 | 98% | 69% | +7.5% | 2% | 0.00 |
+| impulsive | 66.8 | 67% | 78% | −0.3% | 2% | 0.98 |
+| all-cash | 63.4 | 96% | 100% | −10.8% | 2% | 0.00 |
+| all-equity-no-fund | 62.1 | 59% | 49% | +14.3% | 11% | 0.00 |
+
+All three §10 targets hold, and `test/bots.test.ts` checks them on every run:
+
+- balanced passes most of the time;
+- all-cash usually fails the growth component;
+- all-equity with no fund sometimes fails after bad tosses.
+
+### 7.2 Open question for the team
+
+All-cash still passes the chapter (63, just above 60). §10 only asks that it fail *growth*. If the
+team wants all-cash to fail the chapter, the cleanest lever is `growth` weight or `max` in
+`content/config/health-score.yaml`. That's a content decision, not an engine change.
+
+---
+
+## 8. Known issues
+
+1. **The migration is untested.** Expect small fixes on its first `db reset`.
+2. **Git identity on the setup machine.** The first commit was made with that machine's git
    config (`samarth-singla`). Everyone should check `git config user.name` / `user.email` on their
    own machine before committing.
-7. **CI is parked, not running.** The first push was rejected: the setup machine's GitHub
+3. **CI is parked, not running.** The first push was rejected: the setup machine's GitHub
    credential has no `workflow` scope, and GitHub blocks adding `.github/workflows/*` without it.
    Fix: from a machine or token with that scope, run
    `git mv docs/pending/ci.yml .github/workflows/ci.yml`, commit on a branch and open a PR. If you
    use the Git Credential Manager, `gh auth refresh -s workflow` or signing in again with a token
    that includes `workflow` is enough. Until then, run the checks locally before every PR.
-8. **Shell tool quirk on this Windows machine** (only matters if you use Claude Code here): bash
+4. **Shell tool quirk on this Windows machine** (only matters if you use Claude Code here): bash
    heredocs that contain an apostrophe fail in the Bash tool, so write files with the editor or
    Write tool instead.
+
+_Resolved in session 2:_ the debt fund now can lose money in a storm (decision 15); balance meets
+§10 (§7); What if no longer shows ₹0 changes (decision 24); personas whose start chapter is
+disabled start in the first enabled one (`startChapterFor`).
