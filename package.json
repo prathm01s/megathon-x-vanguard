@@ -29,7 +29,8 @@
     "functions:build": "pnpm content:build && tsx supabase/functions/room-action/build.ts",
     "functions:serve": "pnpm functions:build && supabase functions serve room-action",
     "functions:deploy": "pnpm functions:build && supabase functions deploy room-action",
-    "functions:smoke": "pnpm functions:build && tsx supabase/tests/deno-smoke.ts"
+    "functions:smoke": "pnpm functions:build && tsx supabase/tests/deno-smoke.ts",
+    "bench": "tsx scripts/bench.ts"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.8",
