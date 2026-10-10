@@ -198,13 +198,14 @@
     "returns": "{name}",
     "sipBuy": "SIP into {name}",
     "lifeEvent": "Life event",
-    "shortfall": "Your wallet went below zero to pay for this.",
-    "coveredByCash": "Paid from your savings.",
+    "shortfall": "You had no safety net left, so you had to borrow to pay for this.",
+    "coveredByCash": "Your emergency fund covered this.",
     "taskMissed": "Missed: {name}",
     "fine": "Fine {amount}",
     "cashLost": "Cash at home got lost",
     "inflation": "Prices rose {pct}",
-    "continue": "Continue"
+    "continue": "Continue",
+    "coveredByWallet": "Paid from your wallet."
   },
   "scam": {
     "incoming": "Incoming {channel, select, message {message} call {call} app {app notification} investment_listing {investment offer} friend_offer {offer from a friend} other {message}}",

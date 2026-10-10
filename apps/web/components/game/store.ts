@@ -6,9 +6,11 @@
 import {
   advanceTurn,
   applyAction,
+  chapterResultRecords,
   createPlaythrough,
   EngineError,
   endChapter,
+  migrateState,
   newSeed,
   toDecisionLog,
   type Action,
@@ -108,9 +110,10 @@ export const useGameStore = create<GameStore>()(
           personaId,
           seed,
           chapterId,
-          // Consequences from the previous chapter (blocked goal, salary bonus) carry over.
+          // Consequences from the previous chapter (blocked goal, salary bonus, persona-shift
+          // streaks) carry over. The RESULT's carryOver has the updated streaks (engine v2).
           ...(prev && prevResult && prev.chapterId !== chapterId
-            ? { carryOver: prev.carryOver, trustScore: prev.trustScore }
+            ? { carryOver: prevResult.carryOver, trustScore: prev.trustScore }
             : {}),
         });
         const attempts = { ...get().attempts, [chapterId]: (get().attempts[chapterId] ?? 0) + 1 };
@@ -167,24 +170,8 @@ export const useGameStore = create<GameStore>()(
         });
         if (playthroughId) {
           void saveChapterResult(playthroughId, result);
-          void appendDecisions(playthroughId, [
-            {
-              type: "chapter_end",
-              chapterId: state.chapterId,
-              turn: state.turn,
-              payload: { healthScore: result.healthScore, passed: result.passed },
-            },
-            ...(result.personaShift
-              ? [
-                  {
-                    type: "persona_shift" as const,
-                    chapterId: state.chapterId,
-                    turn: state.turn,
-                    payload: { ...result.personaShift },
-                  },
-                ]
-              : []),
-          ]);
+          // chapter_end (with score, badges, weakest part) + persona_shift, same as rooms log.
+          void appendDecisions(playthroughId, chapterResultRecords(result, state.turn));
         }
         return result;
       },
@@ -200,6 +187,20 @@ export const useGameStore = create<GameStore>()(
     {
       name: "toss-life:game:v1",
       storage: createJSONStorage(() => localStorage),
+      // v2: engine GameState schema v2. Saved games from older builds are upgraded with the
+      // engine's migrateState instead of crashing on load (§8.1).
+      version: 2,
+      migrate: (persisted, version) => {
+        const saved = persisted as Partial<GameStore>;
+        if (version < 2 && saved.state) {
+          try {
+            saved.state = migrateState(saved.state, content);
+          } catch {
+            saved.state = null; // unreadable: start the chapter again rather than crash
+          }
+        }
+        return saved as GameStore;
+      },
       // Rehydrated manually after mount (see `useGameHydrated`) to avoid SSR mismatches.
       skipHydration: true,
       partialize: ({ lastTurn: _lastTurn, ...rest }) => rest,

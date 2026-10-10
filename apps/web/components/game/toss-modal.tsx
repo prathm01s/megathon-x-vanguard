@@ -183,11 +183,23 @@ export function TossModal({ outcome, state, onContinue }: TossModalProps) {
                               <ContentIcon name={lifeDef?.icon} className="size-4" />
                               {lifeDef ? l(lifeDef.title) : ev.eventId}
                             </span>
-                            <span className="text-loss">−{formatPaise(ev.amount)}</span>
+                            {ev.amount > 0 &&
+                              (lifeDef?.type === "good" ? (
+                                <span className="text-gain">+{formatPaise(ev.amount)}</span>
+                              ) : (
+                                <span className="text-loss">−{formatPaise(ev.amount)}</span>
+                              ))}
                           </div>
-                          <p className="text-[11px] text-muted-foreground">
-                            {ev.coveredBy === "cash" ? t("coveredByCash") : t("shortfall")}
-                          </p>
+                          {/* How a bad event was paid: wallet, emergency fund, or a forced loan. */}
+                          {lifeDef?.type === "bad" && ev.amount > 0 && (
+                            <p className="text-[11px] text-muted-foreground">
+                              {ev.coveredBy === "cash"
+                                ? t("coveredByWallet")
+                                : ev.coveredBy === "savings"
+                                  ? t("coveredByCash")
+                                  : t("shortfall")}
+                            </p>
+                          )}
                         </li>
                       );
                     }
