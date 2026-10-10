@@ -26,10 +26,34 @@ const SUPABASE_BASELINE = `
 
   create schema auth;
   grant usage on schema auth to anon, authenticated, service_role;
+  -- The columns of Supabase's auth.users / auth.identities that seeds and migrations use.
   create table auth.users (
+    instance_id uuid,
     id uuid primary key default gen_random_uuid(),
+    aud varchar(255),
+    role varchar(255),
     email text unique,
-    created_at timestamptz not null default now()
+    encrypted_password varchar(255),
+    email_confirmed_at timestamptz,
+    raw_app_meta_data jsonb,
+    raw_user_meta_data jsonb,
+    confirmation_token varchar(255),
+    recovery_token varchar(255),
+    email_change_token_new varchar(255),
+    email_change varchar(255),
+    created_at timestamptz not null default now(),
+    updated_at timestamptz
+  );
+  create table auth.identities (
+    id uuid primary key default gen_random_uuid(),
+    provider_id text not null,
+    user_id uuid not null references auth.users (id) on delete cascade,
+    identity_data jsonb not null,
+    provider text not null,
+    last_sign_in_at timestamptz,
+    created_at timestamptz,
+    updated_at timestamptz,
+    unique (provider_id, provider)
   );
 
   -- Same definitions as Supabase: claims come from the request's JWT.
