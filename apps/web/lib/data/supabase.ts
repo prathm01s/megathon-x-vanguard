@@ -125,6 +125,7 @@ async function flushDecisionQueue(id: PlaythroughId): Promise<void> {
 }
 
 async function flushDecisionQueueUnsafe(id: PlaythroughId): Promise<void> {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return;
   const queue = await getQueuedDecisions(id);
   if (!queue || queue.length === 0) return;
 

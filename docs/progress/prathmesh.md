@@ -43,9 +43,36 @@
 - **Database Types Synchronization (`@toss/db-types`):**
   - Updated `packages/db-types/src/database.ts` with all room tables (`rooms`, `room_members`, `room_views`, `loans`, `auctions`, `bids`, `bid_pools`, `bid_pool_members`), missing views (`org_seats_v`, `org_student_detail_v`), and new RPCs.
 
+- **Personal Learner Linking by Player ID (`TL-XXXXX`) (§4.4, §15.6 #7):**
+  - Added server actions `sendJoinRequestByPlayerId`, `getStudentPendingJoinRequests`, `respondToJoinRequest`, and `getOrgJoinRequests`.
+  - Added "Link Personal Learner by Player ID" card in Admin Portal with real-time invitation dispatch and sent request tracking.
+  - Added student-side invitation card in `apps/web/components/game/profile.tsx` allowing personal learners to Accept (linking to NGO cohort while preserving progress/badges) or Decline.
+- **NGO Group / Batch Management (§4.1, §4.6):**
+  - Added server actions `createOrgGroup` and `getOrgGroups`.
+  - Added batch selector dropdown + inline "+ New Batch" creator in the code generation panel, allowing codes to be tagged directly to classroom cohorts.
+  - Added batch cohort filter on the students list.
+- **Printable Code Handout Slips Modal (§4.3, §15.6 #6):**
+  - Designed printable student access pass slips modal with Toss Life branding, single-use codes, instructions for `/join`, and dashed cutoff guidelines.
+  - Implemented `@media print` CSS rules isolating printable cards and hiding web chrome on `window.print()`.
+- **Offline Persistence & Mock Resilience:**
+  - Upgraded persistence decision logging to IndexedDB with automatic localStorage fallback.
+  - Added graceful fallback to `mockPersistence` in `apps/web/lib/data/index.ts` and `supabase.ts` when remote Supabase credentials are not configured (local dev, offline, and CI environments).
+- **Playwright End-to-End Test Suite for Demo Path (`apps/web/e2e/demo.spec.ts`) (§13, §15.6 #13):**
+  - Built comprehensive mobile-first E2E test covering the full demo journey:
+    1. Welcome screen routes to Student and NGO paths.
+    2. Student onboarding `/join` tabs (NGO Code, Personal, Login).
+    3. Money Mindset Pre-Check (answering all 6 questions sequentially).
+    4. Persona Reveal Screen (money style, strengths, blind spots).
+    5. Life Ladder navigation with unlocked Chapter 2 (`ch2-first-job`).
+    6. Chapter 2 gameplay turn screen and coin toss.
+    7. Friends' Room multiplayer classroom (`/en/room` & `/en/room/TOSS42`).
+    8. Student profile displaying Player ID (`TL-...`).
+    9. NGO Admin Portal with cohort management, code generator, and printable slips modal.
+  - All 4 Playwright tests passing on Pixel 5 mobile viewport.
+
 ## In progress
 
-- Batch 3: Join requests server actions/UI, Admin group management, and printable code handouts.
+- Final review and verification before pull request.
 
 ## Verification Status
 
@@ -53,4 +80,5 @@
 - `pnpm lint`: PASS (0 errors, 0 warnings across monorepo)
 - `pnpm typecheck`: PASS (0 errors across monorepo, web, scripts, and supabase tests)
 - `pnpm test`: PASS (24/24 test files, 155/155 unit & integration tests passing)
-- `pnpm build`: PASS (Turbopack production build compiled with all 107 static and partial prerender routes)
+- `pnpm test:e2e`: PASS (4/4 Playwright tests passing on mobile Pixel 5 emulator)
+

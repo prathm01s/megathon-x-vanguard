@@ -493,3 +493,298 @@ export async function resetStudentPassword(
     return { success: false, error: err instanceof Error ? err.message : "Password reset failed" };
   }
 }
+
+/**
+ * Admin: Send a join request to a personal learner by Player ID (§4.4, §15.6 #7)
+ */
+export async function sendJoinRequestByPlayerId(
+  playerId: string,
+): Promise<ActionResult<{ nickname: string; studentUserId: string }>> {
+  try {
+    const client = await createClient();
+    const { data: user } = await client.auth.getUser();
+    if (!user.user) return { success: false, error: "Not authenticated" };
+
+    const { data: org } = await client
+      .from("organizations")
+      .select("id, name")
+      .eq("admin_user_id", user.user.id)
+      .single();
+
+    if (!org) return { success: false, error: "Only NGO admins can invite students." };
+
+    const cleanPlayerId = playerId.trim().toUpperCase();
+    if (!/^TL-[A-Z2-9]{5}$/.test(cleanPlayerId)) {
+      return { success: false, error: "Invalid Player ID format (e.g. TL-7K92M)." };
+    }
+
+    const admin = createAdminClient();
+    const { data: student, error: studentErr } = await admin
+      .from("profiles")
+      .select("user_id, org_id, nickname, role")
+      .eq("player_id", cleanPlayerId)
+      .maybeSingle();
+
+    if (studentErr || !student) {
+      return { success: false, error: `Student with Player ID ${cleanPlayerId} not found.` };
+    }
+
+    if (student.role !== "student") {
+      return { success: false, error: "Cannot invite an NGO admin." };
+    }
+
+    if (student.org_id) {
+      if (student.org_id === org.id) {
+        return { success: false, error: "This student is already a member of your organisation." };
+      }
+      return { success: false, error: "This student is already linked to another NGO." };
+    }
+
+    // Check if an existing pending request was already sent
+    const { data: existing } = await admin
+      .from("org_join_requests")
+      .select("id")
+      .eq("org_id", org.id)
+      .eq("student_user_id", student.user_id)
+      .eq("status", "pending")
+      .maybeSingle();
+
+    if (existing) {
+      return { success: false, error: "A join request has already been sent to this student." };
+    }
+
+    const { error: insertErr } = await admin.from("org_join_requests").insert({
+      org_id: org.id,
+      student_user_id: student.user_id,
+      requested_by: user.user.id,
+      status: "pending",
+    });
+
+    if (insertErr) {
+      return { success: false, error: insertErr.message };
+    }
+
+    revalidatePath("/[locale]/admin");
+    return {
+      success: true,
+      data: { nickname: student.nickname, studentUserId: student.user_id },
+    };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to send join request.",
+    };
+  }
+}
+
+/**
+ * Student: Fetch any pending join requests (§4.4)
+ */
+export async function getStudentPendingJoinRequests(): Promise<
+  ActionResult<Array<{ id: string; orgId: string; orgName: string; createdAt: string }>>
+> {
+  try {
+    const client = await createClient();
+    const { data: user } = await client.auth.getUser();
+    if (!user.user) return { success: true, data: [] };
+
+    const { data, error } = await client
+      .from("org_join_requests")
+      .select("id, org_id, created_at, organizations ( name )")
+      .eq("student_user_id", user.user.id)
+      .eq("status", "pending")
+      .order("created_at", { ascending: false });
+
+    if (error) return { success: false, error: error.message };
+
+    const formatted = ((data as unknown) as Array<{
+      id: string;
+      org_id: string;
+      created_at: string;
+      organizations: { name: string } | null;
+    }>).map((r) => ({
+      id: r.id,
+      orgId: r.org_id,
+      orgName: r.organizations?.name || "Unknown NGO",
+      createdAt: r.created_at,
+    }));
+
+    return { success: true, data: formatted };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to fetch join requests.",
+    };
+  }
+}
+
+/**
+ * Student: Accept or decline a join request (§4.4)
+ */
+export async function respondToJoinRequest(
+  requestId: string,
+  accept: boolean,
+): Promise<ActionResult> {
+  try {
+    const client = await createClient();
+    const { error } = await client.rpc("respond_to_join_request", {
+      p_request_id: requestId,
+      p_accept: accept,
+    });
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    revalidatePath("/[locale]/profile");
+    revalidatePath("/[locale]/admin");
+    return { success: true };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to respond to request.",
+    };
+  }
+}
+
+/**
+ * Admin: Get all join requests sent by the NGO (§4.4)
+ */
+export async function getOrgJoinRequests(): Promise<
+  ActionResult<
+    Array<{
+      id: string;
+      status: string;
+      createdAt: string;
+      nickname: string;
+      playerId: string;
+    }>
+  >
+> {
+  try {
+    const client = await createClient();
+    const { data: user } = await client.auth.getUser();
+    if (!user.user) return { success: false, error: "Not authenticated" };
+
+    const { data: org } = await client
+      .from("organizations")
+      .select("id")
+      .eq("admin_user_id", user.user.id)
+      .single();
+
+    if (!org) return { success: false, error: "Unauthorized" };
+
+    const admin = createAdminClient();
+    const { data: requests, error } = await admin
+      .from("org_join_requests")
+      .select("id, status, created_at, student_user_id")
+      .eq("org_id", org.id)
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    if (error) return { success: false, error: error.message };
+    if (!requests || requests.length === 0) return { success: true, data: [] };
+
+    // Fetch nicknames for the students
+    const studentIds = requests.map((r) => r.student_user_id);
+    const { data: profiles } = await admin
+      .from("profiles")
+      .select("user_id, nickname, player_id")
+      .in("user_id", studentIds);
+
+    const profileMap = new Map(profiles?.map((p) => [p.user_id, p]) ?? []);
+
+    const result = requests.map((r) => {
+      const p = profileMap.get(r.student_user_id);
+      return {
+        id: r.id,
+        status: r.status,
+        createdAt: r.created_at,
+        nickname: p?.nickname || "Student",
+        playerId: p?.player_id || "Unknown",
+      };
+    });
+
+    return { success: true, data: result };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to load requests.",
+    };
+  }
+}
+
+/**
+ * Admin: Create an organization cohort / group (§4.1, §4.6)
+ */
+export async function createOrgGroup(
+  name: string,
+): Promise<ActionResult<{ id: string; name: string }>> {
+  try {
+    const client = await createClient();
+    const { data: user } = await client.auth.getUser();
+    if (!user.user) return { success: false, error: "Not authenticated" };
+
+    const { data: org } = await client
+      .from("organizations")
+      .select("id")
+      .eq("admin_user_id", user.user.id)
+      .single();
+
+    if (!org) return { success: false, error: "Unauthorized" };
+
+    const cleanName = name.trim().slice(0, 60);
+    if (!cleanName) return { success: false, error: "Group name is required." };
+
+    const { data, error } = await client
+      .from("groups")
+      .insert({ org_id: org.id, name: cleanName })
+      .select("id, name")
+      .single();
+
+    if (error) return { success: false, error: error.message };
+
+    revalidatePath("/[locale]/admin");
+    return { success: true, data };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to create group.",
+    };
+  }
+}
+
+/**
+ * Admin: List all groups for the NGO (§4.6)
+ */
+export async function getOrgGroups(): Promise<
+  ActionResult<Array<{ id: string; name: string }>>
+> {
+  try {
+    const client = await createClient();
+    const { data: user } = await client.auth.getUser();
+    if (!user.user) return { success: false, error: "Not authenticated" };
+
+    const { data: org } = await client
+      .from("organizations")
+      .select("id")
+      .eq("admin_user_id", user.user.id)
+      .single();
+
+    if (!org) return { success: false, error: "Unauthorized" };
+
+    const { data, error } = await client
+      .from("groups")
+      .select("id, name")
+      .eq("org_id", org.id)
+      .order("name", { ascending: true });
+
+    if (error) return { success: false, error: error.message };
+    return { success: true, data: data || [] };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to load groups.",
+    };
+  }
+}

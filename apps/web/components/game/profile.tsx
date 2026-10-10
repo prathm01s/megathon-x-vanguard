@@ -2,12 +2,13 @@
 
 import { Award, Building2, Check, Copy, RotateCcw, Sparkles, User } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Link, useRouter } from "@/i18n/navigation";
 import { content } from "@/lib/content";
 import { useSession } from "@/lib/data";
+import { getStudentPendingJoinRequests, respondToJoinRequest } from "@/lib/auth/actions";
 import { GameGate } from "./game-gate";
 import { ContentIcon } from "./icon";
 import { PersonaAvatar } from "./persona-reveal";
@@ -48,6 +49,34 @@ function ProfileView() {
   }
 
   const router = useRouter();
+
+  const [pendingRequests, setPendingRequests] = useState<
+    Array<{ id: string; orgName: string }>
+  >([]);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  useEffect(() => {
+    if (session.org) return;
+    async function loadRequests() {
+      const res = await getStudentPendingJoinRequests();
+      if (res.success && res.data) {
+        setPendingRequests(res.data);
+      }
+    }
+    void loadRequests();
+  }, [session.org]);
+
+  async function handleRespond(requestId: string, accept: boolean) {
+    setActionLoading(true);
+    const res = await respondToJoinRequest(requestId, accept);
+    setActionLoading(false);
+    if (res.success) {
+      setPendingRequests((prev) => prev.filter((r) => r.id !== requestId));
+      if (accept) {
+        window.location.reload();
+      }
+    }
+  }
 
   function handleReset() {
     if (confirm(t("resetConfirm"))) {
@@ -109,6 +138,37 @@ function ProfileView() {
         <p className="text-sm font-semibold">
           {session.org ? t("linkedNgo", { name: session.org.name }) : t("noNgo")}
         </p>
+
+        {pendingRequests.length > 0 && (
+          <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 space-y-2 mt-2">
+            <p className="text-xs font-bold text-primary flex items-center gap-1.5">
+              <Building2 className="size-3.5" />
+              Invitation from {pendingRequests[0]!.orgName}
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              This organization has invited you to join their cohort. You will keep all your progress and badges.
+            </p>
+            <div className="flex gap-2 pt-1">
+              <Button
+                size="default"
+                className="h-7 text-xs font-bold flex-1"
+                disabled={actionLoading}
+                onClick={() => handleRespond(pendingRequests[0]!.id, true)}
+              >
+                Accept & Link
+              </Button>
+              <Button
+                size="default"
+                variant="outline"
+                className="h-7 text-xs font-bold flex-1 text-muted-foreground"
+                disabled={actionLoading}
+                onClick={() => handleRespond(pendingRequests[0]!.id, false)}
+              >
+                Decline
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
 
       {/* Persona Info */}

@@ -4,7 +4,7 @@
 // Owner: Prathmesh
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { mockSession } from "./mock";
+import { mockPersistence, mockSession } from "./mock";
 import { supabasePersistence } from "./supabase";
 import type { PersistenceApi, Session } from "./types";
 
@@ -84,7 +84,9 @@ export function useSession(): Session {
   return session;
 }
 
-const api: PersistenceApi = supabasePersistence;
+const api: PersistenceApi = process.env.NEXT_PUBLIC_SUPABASE_URL
+  ? supabasePersistence
+  : mockPersistence;
 
 export const saveMindset = api.saveMindset;
 export const startPlaythrough = api.startPlaythrough;
