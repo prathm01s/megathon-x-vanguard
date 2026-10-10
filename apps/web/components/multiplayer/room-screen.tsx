@@ -2,7 +2,7 @@
 
 import { CheckCircle2, Clock, Gavel, Handshake, Shield, TrendingUp } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { RoomLobby } from "@/components/multiplayer/room-lobby";
@@ -17,15 +17,8 @@ import { useRoom } from "@/lib/room";
 import { formatPaise } from "@/lib/format";
 import { playCoinTossSound, playSuccessChime } from "@/lib/sound";
 import { content } from "@/lib/content";
-import type { Loan, RoomView } from "@toss/engine";
-
-let idCounter = 0;
-function nextId(prefix: string): string {
-  idCounter += 1;
-  return `${prefix}-${idCounter}`;
-}
-
-let peerEmoteIndex = 0;
+import { useGameStore } from "@/components/game/store";
+import { cn } from "@/lib/utils";
 
 export interface RoomScreenProps {
   code: string;
@@ -36,171 +29,134 @@ export function RoomScreen({ code }: RoomScreenProps) {
   const tc = useTranslations("common");
 
   const roomHook = useRoom(code);
-  const baseRoom = roomHook.room;
+  const room = roomHook.room;
+  const me = roomHook.me;
+  const personaId = useGameStore((s) => s.personaId);
 
-  // Local state for interactive demo
-  // NOTE (merge review): local copy for the interactive prototype. Turns, loans and emotes
-  // below are simulated locally and not yet sent through `roomHook.actions` (see
-  // docs/requests/pragya.md). `useRoom` returns this player's redacted RoomView.
-  // Local overrides on top of the live room. (useState(baseRoom) captured the hydration
-  // snapshot, which is null, so the screen stayed on "Loading…" forever — merge review.)
-  const [localRoom, setRoomState] = useState<RoomView | null>(null);
-  const roomState = localRoom ?? baseRoom;
-  const [isLobby, setIsLobby] = useState(false);
-  const [timerSeconds, setTimerSeconds] = useState(45);
-  const [hasSubmittedTurn, setHasSubmittedTurn] = useState(false);
+  // Auto-join lobby with student's persona if not yet joined
+  useEffect(() => {
+    if (room && !me) {
+      void roomHook.actions.join(personaId ?? "safe-keeper");
+    }
+  }, [room, me, roomHook.actions, personaId]);
+
+  const currentTurn = room?.turn ?? 2;
+  const totalTurns = me?.state.totalTurns ?? 5;
 
   // Modals
   const [showLoanModal, setShowLoanModal] = useState(false);
   const [showAuctionModal, setShowAuctionModal] = useState(false);
 
-  // Emotes stream
-  const [emotes, setEmotes] = useState<EmoteMessage[]>([]);
+  // Live timer countdown from content.multiplayer.turnTimerSeconds
+  const turnTimerLimit = content.multiplayer.turnTimerSeconds ?? 90;
+  const [timerSeconds, setTimerSeconds] = useState(turnTimerLimit);
+  const [prevTurn, setPrevTurn] = useState(currentTurn);
+  if (prevTurn !== currentTurn) {
+    setPrevTurn(currentTurn);
+    setTimerSeconds(turnTimerLimit);
+  }
 
-  // Local loans copy
-  const [localLoans, setLocalLoans] = useState<Loan[] | null>(null);
-  const loans = localLoans ?? baseRoom?.loans ?? [];
-  const setLoans = (update: (prev: Loan[]) => Loan[]) => setLocalLoans(update(loans));
-
-  // Shared market toss reveal banner
-  const [showTossNotice, setShowTossNotice] = useState(true);
-
-  // The signed-in player, with their own full game state (others are public info only).
-  const me = roomHook.me;
-  const myTrust = roomState?.members.find((m) => m.id === me?.id)?.trustScore ?? me?.trustScore;
-  const currentTurn = roomState?.turn ?? 2;
-  const totalTurns = 5;
-
-  // Timer countdown
   useEffect(() => {
-    if (isLobby || hasSubmittedTurn) return;
+    if (room?.status !== "playing" || me?.ready) return;
     const interval = setInterval(() => {
-      setTimerSeconds((prev) => (prev > 0 ? prev - 1 : 45));
+      setTimerSeconds((prev) => {
+        if (prev <= 1) {
+          void roomHook.actions.tick();
+          return turnTimerLimit;
+        }
+        return prev - 1;
+      });
     }, 1000);
     return () => clearInterval(interval);
-  }, [isLobby, hasSubmittedTurn]);
+  }, [room?.status, me?.ready, roomHook.actions, turnTimerLimit]);
 
-  // Handle emote send
-  function handleSendEmote(emoteId: string) {
-    const emoteDef = content.multiplayer.emotes.find((e) => e.id === emoteId);
-    if (!emoteDef) return;
+  // Live reactions overlay from room.reactions
+  const [emotes, setEmotes] = useState<EmoteMessage[]>([]);
+  const lastReactionKeyRef = useRef<string | null>(null);
 
-    const newEmote: EmoteMessage = {
-      id: nextId("emote"),
-      senderName: me?.nickname ?? "You",
-      emoteId,
-      icon: emoteDef.icon,
-      label: emoteDef.label.en,
-    };
+  useEffect(() => {
+    if (!room?.reactions?.length) return;
+    const count = room.reactions.length;
+    const latest = room.reactions[count - 1];
+    if (latest) {
+      const reactionKey = `${latest.memberId}-${latest.emoteId}-${count}`;
+      if (reactionKey !== lastReactionKeyRef.current) {
+        lastReactionKeyRef.current = reactionKey;
+        const sender =
+          room.members.find((m) => m.id === latest.memberId)?.nickname ??
+          (latest.memberId === me?.id ? "You" : "Friend");
+        const emoteDef = content.multiplayer.emotes.find((e) => e.id === latest.emoteId);
+        if (emoteDef) {
+          const newMsg: EmoteMessage = {
+            id: reactionKey,
+            senderName: sender,
+            emoteId: latest.emoteId,
+            icon: emoteDef.icon,
+            label: emoteDef.label.en,
+          };
+          const timer = setTimeout(() => {
+            setEmotes((prev) => [...prev.slice(-3), newMsg]);
+            setTimeout(() => {
+              setEmotes((prev) => prev.filter((e) => e.id !== newMsg.id));
+            }, 2500);
+          }, 0);
+          return () => clearTimeout(timer);
+        }
+      }
+    }
+  }, [room?.reactions, room?.members, me?.id]);
 
-    setEmotes((prev) => [...prev.slice(-3), newEmote]);
-    setTimeout(() => {
-      setEmotes((prev) => prev.filter((e) => e.id !== newEmote.id));
-    }, 2500);
-
-    // Simulated peer response
-    setTimeout(() => {
-      const peer = roomState?.members.find((m) => m.isBot) ?? {
-        nickname: "Careful Kavya",
-      };
-      const emoteList = content.multiplayer.emotes;
-      peerEmoteIndex = (peerEmoteIndex + 1) % emoteList.length;
-      const peerEmote = emoteList[peerEmoteIndex];
-      const peerMsg: EmoteMessage = {
-        id: nextId("peer-emote"),
-        senderName: peer.nickname,
-        emoteId: peerEmote.id,
-        icon: peerEmote.icon,
-        label: peerEmote.label.en,
-      };
-      setEmotes((prev) => [...prev.slice(-3), peerMsg]);
-      setTimeout(() => {
-        setEmotes((prev) => prev.filter((e) => e.id !== peerMsg.id));
-      }, 2500);
-    }, 900);
-  }
-
-  // Handle ready toggle in lobby
-  function handleToggleReady() {
-    if (!roomState) return;
-    const updatedMembers = roomState.members.map((m) =>
-      m.id === me?.id ? { ...m, ready: !m.ready } : m,
-    );
-    setRoomState({ ...roomState, members: updatedMembers });
-    if (updatedMembers.every((m) => m.ready)) {
-      playSuccessChime();
-      setIsLobby(false);
+  async function handleSendEmote(emoteId: string) {
+    try {
+      await roomHook.actions.react(emoteId);
+    } catch (err) {
+      console.error("Failed to send reaction:", err);
     }
   }
 
-  // Submit Turn Decisions (Lockstep sync)
-  function handleSubmitTurn() {
-    setHasSubmittedTurn(true);
+  // Turn submission
+  async function handleSubmitTurn() {
     playCoinTossSound();
-
-    // Simulate lockstep sync with peers
-    setTimeout(() => {
+    try {
+      await roomHook.actions.submitTurn();
       playSuccessChime();
-      if (!roomState) return;
-
-      const nextTurn = Math.min(roomState.turn + 1, totalTurns);
-      setRoomState({
-        ...roomState,
-        turn: nextTurn,
-        members: roomState.members.map((m) => ({
-          ...m,
-          ready: false,
-        })),
-      });
-      setHasSubmittedTurn(false);
-      setTimerSeconds(45);
-      setShowTossNotice(true);
-    }, 2000);
-  }
-
-  // Handle loan actions
-  function handleRequestLoan(amountRupees: number, due: number) {
-    const newLoan: Loan = {
-      id: nextId("loan"),
-      lenderMemberId: "m-bot-1",
-      borrowerMemberId: me?.id ?? "m-human",
-      principal: amountRupees * 100,
-      ratePerTurn: 0.03,
-      interestType: "simple",
-      startTurn: currentTurn,
-      dueTurn: due,
-      status: "offered",
-      repaidAmount: 0,
-    };
-    setLoans((prev) => [newLoan, ...prev]);
-  }
-
-  function handleAcceptLoan(loanId: string) {
-    setLoans((prev) =>
-      prev.map((l) => (l.id === loanId ? { ...l, status: "active" as const } : l)),
-    );
-    playSuccessChime();
-  }
-
-  function handleRepayLoan(loanId: string, amountPaise: number) {
-    setLoans((prev) =>
-      prev.map((l) =>
-        l.id === loanId ? { ...l, status: "repaid" as const, repaidAmount: amountPaise } : l,
-      ),
-    );
-    // Increase trust score on timely repayment
-    if (roomState && me) {
-      setRoomState({
-        ...roomState,
-        members: roomState.members.map((m) =>
-          m.id === me.id ? { ...m, trustScore: Math.min(100, m.trustScore + 5) } : m,
-        ),
-      });
+    } catch (err) {
+      console.error("Failed to submit turn:", err);
     }
-    playSuccessChime();
   }
 
-  if (!roomState) {
+  // Loan handlers wired to useRoom actions
+  async function handleRequestLoan(amountRupees: number, due: number) {
+    try {
+      await roomHook.actions.requestLoan({
+        amount: amountRupees * 100,
+        dueTurn: due,
+      });
+      playSuccessChime();
+    } catch (err) {
+      console.error("Failed to request loan:", err);
+    }
+  }
+
+  async function handleAcceptLoan(offerId: string) {
+    try {
+      await roomHook.actions.acceptLoan(offerId);
+      playSuccessChime();
+    } catch (err) {
+      console.error("Failed to accept loan:", err);
+    }
+  }
+
+  async function handleRepayLoan(loanId: string, amountPaise: number) {
+    try {
+      await roomHook.actions.repayLoan({ loanId, amount: amountPaise });
+      playSuccessChime();
+    } catch (err) {
+      console.error("Failed to repay loan:", err);
+    }
+  }
+
+  if (!room || roomHook.status === "loading") {
     return (
       <div className="flex min-h-[60vh] items-center justify-center p-4">
         <p className="text-muted-foreground">{tc("loading")}</p>
@@ -208,19 +164,27 @@ export function RoomScreen({ code }: RoomScreenProps) {
     );
   }
 
-  if (isLobby) {
+  if (room.status === "lobby") {
     return (
       <div className="mx-auto max-w-md p-4">
-        <RoomLobby room={roomState} me={me} onToggleReady={handleToggleReady} />
+        <RoomLobby
+          room={room}
+          me={me}
+          isHost={roomHook.isHost}
+          onToggleReady={() => void roomHook.actions.ready()}
+        />
       </div>
     );
   }
 
   // Active playing view
-  const currentToss = roomState.tosses.find((t) => t.turn === currentTurn);
-  const activeLoansCount = loans.filter(
-    (l) => l.borrowerMemberId === me?.id && l.status === "active",
-  ).length;
+  const currentToss = room.tosses.find((t) => t.turn === currentTurn);
+  const myTrust = room.members.find((m) => m.id === me?.id)?.trustScore ?? me?.trustScore ?? 50;
+  const activeLoansCount = roomHook.myDebts.length;
+  const hasSubmitted = me?.ready ?? false;
+
+  const myTasks = me?.state.tasks ?? [];
+  const paidTasksCount = myTasks.filter((t) => t.status === "done").length;
 
   return (
     <div className="relative mx-auto flex min-h-[calc(100vh-4rem)] max-w-lg flex-col gap-4 p-4 pb-20">
@@ -232,7 +196,7 @@ export function RoomScreen({ code }: RoomScreenProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="rounded-md bg-primary/10 px-2 py-0.5 font-mono text-xs font-black text-primary">
-              {roomState.code}
+              {room.code}
             </span>
             <span className="text-xs font-extrabold uppercase tracking-wide text-foreground">
               {t("title")}
@@ -259,9 +223,9 @@ export function RoomScreen({ code }: RoomScreenProps) {
 
           {/* Peer roster pills */}
           <div className="flex items-center gap-1.5 overflow-x-auto py-1">
-            {roomState.members.map((member) => {
+            {room.members.map((member) => {
               const isThisMe = member.id === me?.id;
-              const isDecided = isThisMe ? hasSubmittedTurn : true;
+              const isDecided = member.ready;
               return (
                 <div
                   key={member.id}
@@ -282,7 +246,7 @@ export function RoomScreen({ code }: RoomScreenProps) {
       </header>
 
       {/* Shared Market Toss Card */}
-      {showTossNotice && (
+      {currentToss && (
         <Card className="p-3.5 space-y-1.5 border-2 border-coin/40 bg-coin/5 relative">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-xs font-black text-foreground">
@@ -290,12 +254,19 @@ export function RoomScreen({ code }: RoomScreenProps) {
               <span>Shared Market Toss: Turn {currentTurn}</span>
             </div>
             <span className="rounded bg-gain/20 px-1.5 py-0.5 text-[10px] font-extrabold text-gain">
-              {currentToss?.marketState?.toUpperCase() ?? "NORMAL"}
+              {currentToss.marketState.toUpperCase()}
             </span>
           </div>
           <p className="text-[11px] text-muted-foreground leading-snug">
-            All players in this room share the same market toss outcome! Gold is up +4%, inflation
-            is at 6%.
+            Market: <strong className="capitalize">{currentToss.marketState}</strong> · Inflation:{" "}
+            <strong>+{Math.round(currentToss.inflation * 100)}%</strong>
+            {currentToss.lifeEventId && (
+              <>
+                {" "}
+                · Life Event:{" "}
+                <strong className="capitalize">{currentToss.lifeEventId.replace(/-/g, " ")}</strong>
+              </>
+            )}
           </p>
         </Card>
       )}
@@ -308,16 +279,16 @@ export function RoomScreen({ code }: RoomScreenProps) {
               Cash in Hand
             </p>
             <p className="font-mono text-2xl font-black text-foreground">
-              {formatPaise(me?.state.cash ?? 15528000)}
+              {formatPaise(me?.state.cash ?? 0)}
             </p>
           </div>
           <div className="text-end">
             <div className="flex items-center justify-end gap-1 text-xs font-bold text-foreground">
               <Shield className="size-3.5 text-coin" />
-              <span>Trust: {myTrust ?? 50}/100</span>
+              <span>Trust: {myTrust}/100</span>
             </div>
             <p className="text-[10px] text-muted-foreground mt-0.5">
-              Income: {formatPaise(me?.state.incomePerMonth ?? 3674160)}/yr
+              Income: {formatPaise(me?.state.incomePerMonth ?? 0)} / mo
             </p>
           </div>
         </div>
@@ -351,37 +322,67 @@ export function RoomScreen({ code }: RoomScreenProps) {
         </Button>
       </div>
 
-      {/* Turn Decisions Checklist */}
+      {/* Dynamic Turn Decisions & Tasks Checklist */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <h3 className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
             Turn Decisions
           </h3>
-          <span className="text-[11px] font-semibold text-gain">Tasks Paid (4/5)</span>
+          <span className="text-[11px] font-semibold text-gain">
+            Tasks Done ({paidTasksCount}/{myTasks.length})
+          </span>
         </div>
 
         <Card className="p-3 text-xs space-y-2 border border-border">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="size-4 text-gain" />
-              <div>
-                <p className="font-bold">Emergency Fund Goal</p>
-                <p className="text-[10px] text-muted-foreground">₹54,000 paid</p>
-              </div>
-            </div>
-            <span className="font-extrabold text-gain">Done</span>
-          </div>
-
-          <div className="flex items-center justify-between pt-1 border-t border-border/50">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="size-4 text-gain" />
-              <div>
-                <p className="font-bold">Sister&apos;s College Fees</p>
-                <p className="text-[10px] text-muted-foreground">₹25,000 paid</p>
-              </div>
-            </div>
-            <span className="font-extrabold text-gain">Done</span>
-          </div>
+          {myTasks.length === 0 ? (
+            <p className="text-muted-foreground text-center py-2">No tasks due this turn.</p>
+          ) : (
+            myTasks.map((task, idx) => {
+              const isDone = task.status === "done";
+              const isDue = task.dueTurn === currentTurn;
+              return (
+                <div
+                  key={task.taskId}
+                  className={cn(
+                    "flex items-center justify-between py-1",
+                    idx > 0 && "border-t border-border/50",
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2
+                      className={cn("size-4", isDone ? "text-gain" : "text-muted-foreground")}
+                    />
+                    <div>
+                      <p className="font-bold capitalize">
+                        {task.taskId.replace(/^ch\d+-/, "").replace(/-/g, " ")}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {formatPaise(task.paid)} / {formatPaise(task.amount)}
+                        {isDue && " · Due this turn"}
+                      </p>
+                    </div>
+                  </div>
+                  {isDone ? (
+                    <span className="font-extrabold text-gain">Done</span>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      className="h-7 text-xs font-bold"
+                      onClick={() =>
+                        void roomHook.actions.act({
+                          type: "pay_task",
+                          taskId: task.taskId,
+                          amount: task.amount - task.paid,
+                        })
+                      }
+                    >
+                      Pay
+                    </Button>
+                  )}
+                </div>
+              );
+            })
+          )}
         </Card>
       </div>
 
@@ -390,10 +391,10 @@ export function RoomScreen({ code }: RoomScreenProps) {
         <Button
           size="lg"
           onClick={handleSubmitTurn}
-          disabled={hasSubmittedTurn}
+          disabled={hasSubmitted}
           className="w-full text-base font-extrabold shadow-xl"
         >
-          {hasSubmittedTurn ? t("submitted") : t("submitTurn")}
+          {hasSubmitted ? t("submitted") : t("submitTurn")}
         </Button>
       </div>
 
@@ -405,9 +406,9 @@ export function RoomScreen({ code }: RoomScreenProps) {
       {/* Loan Modal */}
       {showLoanModal && (
         <LoanModal
-          loans={loans}
+          loans={room.loans}
           me={me}
-          members={roomState.members}
+          members={room.members}
           currentTurn={currentTurn}
           onRequestLoan={handleRequestLoan}
           onAcceptLoan={handleAcceptLoan}
@@ -420,9 +421,12 @@ export function RoomScreen({ code }: RoomScreenProps) {
       {showAuctionModal && (
         <AuctionModal
           currentTurn={currentTurn}
-          chapterId={roomState.chapterId}
+          chapterId={room.chapterId}
           me={me}
-          members={roomState.members}
+          members={room.members}
+          auction={roomHook.auction}
+          onPlaceBid={(amt) => void roomHook.actions.placeBid(amt)}
+          onJoinPool={(amt) => void roomHook.actions.createPool(amt)}
           onClose={() => setShowAuctionModal(false)}
         />
       )}

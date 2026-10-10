@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { content } from "@/lib/content";
 import { formatPaise, formatRate } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import type { Loan, PublicMember, RoomMember } from "@toss/engine";
 
 export interface LoanModalProps {
@@ -173,71 +174,73 @@ export function LoanModal({
                           {t("offers")}:
                         </p>
 
-                        {/* Friend Offer */}
-                        <div className="flex items-center justify-between rounded-lg border border-border bg-card p-2 text-xs">
-                          <div className="flex items-center gap-2">
-                            <Users className="size-4 text-gain" />
-                            <div>
-                              <p className="font-bold">Friend Balanced Bala</p>
-                              <p className="text-[10px] text-muted-foreground">3% fair interest</p>
-                            </div>
-                          </div>
-                          <Button
-                            size="default"
-                            className="h-7 text-xs font-bold"
-                            onClick={() => onAcceptLoan(req.id)}
-                          >
-                            {t("accept")}
-                          </Button>
-                        </div>
-
-                        {/* Bank Offer */}
-                        {bankRate ? (
-                          <div className="flex items-center justify-between rounded-lg border border-border bg-card p-2 text-xs">
-                            <div className="flex items-center gap-2">
-                              <Building className="size-4 text-primary" />
-                              <div>
-                                <p className="font-bold">Big Bank</p>
-                                <p className="text-[10px] text-muted-foreground">
-                                  {formatRate(bankRate)} a year · institutional rate
-                                </p>
-                              </div>
-                            </div>
-                            <Button
-                              size="default"
-                              variant="outline"
-                              className="h-7 text-xs font-bold"
-                              onClick={() => onAcceptLoan(req.id)}
-                            >
-                              {t("accept")}
-                            </Button>
-                          </div>
-                        ) : (
-                          <div className="rounded-lg bg-muted p-2 text-[11px] text-muted-foreground">
-                            Bank refused loan: Trust score is too low (&lt;20).
-                          </div>
-                        )}
-
-                        {/* Loan App Offer (Dangerous) */}
-                        <div className="flex items-center justify-between rounded-lg border border-loss/40 bg-loss/5 p-2 text-xs">
-                          <div className="flex items-center gap-2">
-                            <Smartphone className="size-4 text-loss" />
-                            <div>
-                              <p className="font-bold text-loss">Instant Loan App</p>
-                              <p className="text-[10px] text-loss font-semibold">
-                                15% predatory rate! (Hidden fees)
+                        {(() => {
+                          const reqOffers = loans.filter(
+                            (l) => l.requestId === req.id && l.status === "offered",
+                          );
+                          if (reqOffers.length === 0) {
+                            return (
+                              <p className="text-[11px] text-muted-foreground py-1">
+                                Waiting for offers from friends or bank…
                               </p>
-                            </div>
-                          </div>
-                          <Button
-                            size="default"
-                            variant="destructive"
-                            className="h-7 text-xs font-bold"
-                            onClick={() => onAcceptLoan(req.id)}
-                          >
-                            {t("accept")}
-                          </Button>
-                        </div>
+                            );
+                          }
+                          return reqOffers.map((offer) => {
+                            const isBank = offer.lenderMemberId === "bank";
+                            const isLoanApp = offer.lenderMemberId === "loan-app";
+                            const lenderMember = members.find((m) => m.id === offer.lenderMemberId);
+                            const lenderName = isBank
+                              ? "Big Bank"
+                              : isLoanApp
+                                ? "Instant Loan App"
+                                : (lenderMember?.nickname ?? "Friend");
+
+                            return (
+                              <div
+                                key={offer.id}
+                                className={cn(
+                                  "flex items-center justify-between rounded-lg border p-2 text-xs",
+                                  isLoanApp ? "border-loss/40 bg-loss/5" : "border-border bg-card",
+                                )}
+                              >
+                                <div className="flex items-center gap-2">
+                                  {isBank ? (
+                                    <Building className="size-4 text-primary" />
+                                  ) : isLoanApp ? (
+                                    <Smartphone className="size-4 text-loss" />
+                                  ) : (
+                                    <Users className="size-4 text-gain" />
+                                  )}
+                                  <div>
+                                    <p className={cn("font-bold", isLoanApp && "text-loss")}>
+                                      {lenderName}
+                                    </p>
+                                    <p
+                                      className={cn(
+                                        "text-[10px]",
+                                        isLoanApp
+                                          ? "text-loss font-semibold"
+                                          : "text-muted-foreground",
+                                      )}
+                                    >
+                                      {formatRate(offer.ratePerTurn)} / turn{" "}
+                                      {isLoanApp && "· Predatory 15% rate!"}
+                                    </p>
+                                  </div>
+                                </div>
+                                <Button
+                                  variant={
+                                    isLoanApp ? "destructive" : isBank ? "outline" : "default"
+                                  }
+                                  className="h-7 text-xs font-bold"
+                                  onClick={() => onAcceptLoan(offer.id)}
+                                >
+                                  {t("accept")}
+                                </Button>
+                              </div>
+                            );
+                          });
+                        })()}
                       </div>
                     </Card>
                   ))}
@@ -288,8 +291,9 @@ export function LoanModal({
                   <span>Borrowing Rules</span>
                 </div>
                 <p className="text-[11px] text-muted-foreground">
-                  On-time repayment raises Trust Score by +5. Late repayment incurs a ₹500 fine and
-                  drops Trust by -15.
+                  Your Trust Score is {trust}. Bank rate:{" "}
+                  {bankRate ? `${Math.round(bankRate * 100)}%/yr` : "12%/yr"}. On-time repayment
+                  raises Trust by +5. Late repayment incurs a ₹500 fine and drops Trust by -15.
                 </p>
               </div>
 

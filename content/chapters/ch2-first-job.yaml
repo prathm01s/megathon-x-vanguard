@@ -5,30 +5,30 @@ version: 1
 id: ch2-first-job
 enabled: true
 order: 2
-title: { en: "First Job" }
+title: { en: "First Job", te: "మొదటి ఉద్యోగం" }
 ageRange: [22, 27]
-stage: { en: "Young adult" }
+stage: { en: "Young adult", te: "యువత" }
 turnUnit: year
 turns: 5
 startingBalance: 15000
 income:
-  label: { en: "Salary" }
+  label: { en: "Salary", te: "జీతం" }
   amountPerMonth: 30000          # ₹3,60,000 a year
   growthPerYear: economy         # uses economy.salaryGrowthPerYear
 fixedExpenses:
   - id: rent-food
-    label: { en: "Rent and food" }
+    label: { en: "Rent and food", te: "అద్దె మరియు భోజనం" }
     amountPerMonth: 15000
     inflationAdjusted: true
     icon: home
   - id: money-home
-    label: { en: "Money sent home" }
+    label: { en: "Money sent home", te: "ఇంటికి పంపే డబ్బు" }
     amountPerMonth: 3000
     inflationAdjusted: true
     icon: heart-handshake
 tasks:
   - id: ch2-friend-wedding
-    title: { en: "Friend's wedding: gift and travel" }
+    title: { en: "Friend's wedding: gift and travel", te: "స్నేహితుడి పెళ్లి: బహుమతి మరియు ప్రయాణం" }
     kind: want
     amount: 5000
     dueTurn: 1
@@ -36,8 +36,8 @@ tasks:
     pillar: plan-budget
     icon: party-popper
   - id: ch2-emergency-fund
-    title: { en: "Build an emergency fund of 3 months' expenses" }
-    description: { en: "Keep it in cash or a savings account so you can reach it fast." }
+    title: { en: "Build an emergency fund of 3 months' expenses", te: "3 నెలల ఖర్చులకు అత్యవసర నిధిని ఏర్పాటు చేయండి" }
+    description: { en: "Keep it in cash or a savings account so you can reach it fast.", te: "దీన్ని నగదు లేదా సేవింగ్స్ ఖాతాలో ఉంచండి, తద్వారా త్వరగా అందుబాటులో ఉంటుంది." }
     kind: safety
     amount: 54000                # 3 × (15,000 + 3,000); recomputed from expenses
     targetMonthsOfExpenses: 3
@@ -46,7 +46,7 @@ tasks:
     pillar: save-manage
     icon: shield
   - id: ch2-sister-fees
-    title: { en: "Sister's college fees" }
+    title: { en: "Sister's college fees", te: "చెల్లెలి కళాశాల ఫీజులు" }
     kind: need
     amount: 25000
     dueTurn: 2
@@ -56,7 +56,7 @@ tasks:
     pillar: plan-budget
     icon: graduation-cap
   - id: ch2-laptop
-    title: { en: "Laptop for an upskilling course" }
+    title: { en: "Laptop for an upskilling course", te: "శిక్షణ కోర్సు కోసం ల్యాప్‌టాప్" }
     kind: goal
     amount: 40000
     dueTurn: 3
@@ -65,7 +65,7 @@ tasks:
     pillar: plan-budget
     icon: laptop
   - id: ch2-two-wheeler
-    title: { en: "Two-wheeler to commute" }
+    title: { en: "Two-wheeler to commute", te: "ప్రయాణానికి ద్విచక్ర వాహనం" }
     kind: goal
     amount: 70000
     dueTurn: 5
@@ -86,6 +86,8 @@ auctionIds: [used-bike-auction]
 next: { choice: [ch3a-salaried, ch3b-business] }
 intro:
   en: "You got your first job! ₹30,000 lands in your account every month. Rent, food and family come first — what you do with the rest is up to you."
+  te: "మీకు మొదటి ఉద్యోగం వచ్చింది! ప్రతి నెలా మీ ఖాతాలో ₹30,000 జమ అవుతుంది. అద్దె, భోజనం మరియు కుటుంబ అవసరాలు ముందు — మిగిలిన డబ్బుతో ఏమి చేయాలో మీరే నిర్ణయించుకోవాలి."
 outro:
   en: "Five years flew by. Time to see how your choices — and the coin tosses — shaped your money."
+  te: "ఐదేళ్లు ఇట్టే గడిచిపోయాయి. మీ ఎంపికలు — మరియు నాణెం విసిరిన ఫలితాలు — మీ సంపదను ఎలా తీర్చిదిద్దాయో చూసే సమయం వచ్చింది."
 discussionPromptIds: [ch2-prompt-fd-vs-sip, ch2-prompt-lending, ch2-prompt-scam]

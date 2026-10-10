@@ -1,10 +1,35 @@
-const CACHE_NAME = "toss-life-v1";
-const STATIC_ASSETS = ["/", "/manifest.json", "/icon.svg"];
+const CACHE_NAME = "toss-life-v2";
+const STATIC_ASSETS = [
+  "/",
+  "/manifest.json",
+  "/icon.svg",
+  "/en/mindset",
+  "/te/mindset",
+  "/en/persona",
+  "/te/persona",
+  "/en/ladder",
+  "/te/ladder",
+  "/en/play",
+  "/te/play",
+  "/en/report",
+  "/te/report",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
+    caches.open(CACHE_NAME).then(async (cache) => {
+      await Promise.allSettled(
+        STATIC_ASSETS.map(async (url) => {
+          try {
+            const res = await fetch(url);
+            if (res && res.status === 200) {
+              await cache.put(url, res);
+            }
+          } catch {
+            // Silently ignore if offline during install
+          }
+        }),
+      );
     }),
   );
   self.skipWaiting();
@@ -29,12 +54,13 @@ self.addEventListener("fetch", (event) => {
 
       return fetch(event.request)
         .then((response) => {
-          // Cache successful responses
+          // Cache successful responses for static assets and page navigations
           if (
             response &&
             response.status === 200 &&
-            response.type === "basic" &&
-            (event.request.url.includes("/_next/") || event.request.url.includes("/icon."))
+            (event.request.url.includes("/_next/") ||
+              event.request.url.includes("/icon.") ||
+              event.request.mode === "navigate")
           ) {
             const responseToCache = response.clone();
             caches.open(CACHE_NAME).then((cache) => {
@@ -43,9 +69,11 @@ self.addEventListener("fetch", (event) => {
           }
           return response;
         })
-        .catch(() => {
-          // If offline and request is HTML navigation, fallback to root or cached page
+        .catch(async () => {
+          // If offline and request is HTML navigation, fallback to exact match or root
           if (event.request.mode === "navigate") {
+            const matched = await caches.match(event.request);
+            if (matched) return matched;
             return caches.match("/");
           }
         });

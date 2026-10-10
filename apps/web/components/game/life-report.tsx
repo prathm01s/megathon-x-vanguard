@@ -96,7 +96,7 @@ function ReportContent() {
         {/* Score Component Breakdown */}
         <div className="space-y-2 border-t border-border/80 pt-3 text-start">
           <h2 className="text-xs font-bold uppercase text-muted-foreground tracking-wider">
-            Score Breakdown
+            {t("scoreBreakdown")}
           </h2>
           <div className="space-y-1.5">
             {/* Only parts that count (e.g. Trust Score is multiplayer-only); weights are
