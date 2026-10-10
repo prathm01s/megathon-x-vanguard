@@ -408,8 +408,7 @@ export async function completeStudentProfile(formData: {
       });
       if (error) return { success: false, error: codeErrorMessage(error.message || "") };
       claimed =
-        (data as Array<{ code_id: string; org_id: string; group_id: string | null }>)?.[0] ??
-        null;
+        (data as Array<{ code_id: string; org_id: string; group_id: string | null }>)?.[0] ?? null;
       if (!claimed) return { success: false, error: codeErrorMessage("") };
     }
 

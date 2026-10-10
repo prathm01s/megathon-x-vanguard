@@ -1,7 +1,7 @@
-import { User, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
+import { HeaderNav } from "./header-nav";
 import { LanguageSwitcher } from "./language-switcher";
 
 /** Mobile-first shell, designed at 360px wide (§9.1). */
@@ -16,21 +16,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </Link>
         <div className="flex items-center gap-2">
           <LanguageSwitcher />
-          <Link
-            href="/room"
-            aria-label="Friends' Room"
-            title="Friends' Room"
-            className="grid size-11 place-items-center rounded-lg border-2 border-border bg-card text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
-          >
-            <Users className="size-5" />
-          </Link>
-          <Link
-            href="/profile"
-            aria-label="Profile"
-            className="grid size-11 place-items-center rounded-lg border-2 border-border bg-card text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
-          >
-            <User className="size-5" />
-          </Link>
+          <HeaderNav />
         </div>
       </header>
       <main className="flex flex-1 flex-col px-4 pb-6">{children}</main>

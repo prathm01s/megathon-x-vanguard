@@ -6,22 +6,24 @@ import { expect, test } from "@playwright/test";
 loadEnvConfig(resolve(__dirname, "../../.."), true, { info: () => {}, error: console.error });
 const mockRooms = process.env.NEXT_PUBLIC_ROOM_BACKEND !== "supabase";
 
+// Mock mode only: the mock student is always signed in. With Supabase every student screen needs
+// a real account; that path is covered by demo-supabase.spec.ts.
+test.skip(!!process.env.NEXT_PUBLIC_SUPABASE_URL, "mock-mode journey (Supabase is configured)");
+
 test.describe("Full Hackathon Demo Path (§13)", () => {
   test("Complete student journey: Mindset Check -> Persona -> Ladder -> Chapter 2 Gameplay", async ({
     page,
   }) => {
     test.setTimeout(60_000);
 
-    // 1. Welcome Screen
+    // 1. Welcome Screen: the (mock) signed-in student gets one Continue button
     await page.goto("/");
     await expect(page).toHaveURL(/\/en$/);
-    await expect(page.getByRole("link", { name: /student/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /ngo/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Continue/ })).toBeVisible();
 
-    // 2. Student Onboarding / Join Page
+    // 2. Old join links now go to sign-up (a signed-in student is sent on to the game)
     await page.goto("/en/join");
-    await expect(page.getByText("Start Your Journey")).toBeVisible();
-    await expect(page.getByText("STUDENT CODE", { exact: true })).toBeVisible();
+    await expect(page).not.toHaveURL(/\/join$/);
 
     // 3. Money Mindset Pre-Check
     await page.goto("/en/mindset");
@@ -84,19 +86,8 @@ test.describe("Full Hackathon Demo Path (§13)", () => {
     await expect(page.getByText(/TL-/i).first()).toBeVisible();
   });
 
-  test("NGO Admin Portal: cohort management, code generator, and printable slips", async ({
-    page,
-  }) => {
+  test("the NGO dashboard is only for NGO admins", async ({ page }) => {
     await page.goto("/en/admin");
-    await expect(page.getByText("NGO Facilitator Portal")).toBeVisible();
-
-    // Verify Admin Log In vs Register toggling
-    const registerBtn = page.getByRole("button", { name: /Register New NGO/i });
-    await registerBtn.click();
-    await expect(page.getByText("ORGANISATION NAME")).toBeVisible();
-
-    const loginBtn = page.getByRole("button", { name: /Admin Log In/i });
-    await loginBtn.click();
-    await expect(page.getByText("ADMIN EMAIL")).toBeVisible();
+    await expect(page).toHaveURL(/\/en\/ladder$/, { timeout: 30_000 });
   });
 });

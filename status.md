@@ -120,9 +120,12 @@ The app runs on local mocks: game saves to the browser, rooms run in memory with
    pnpm functions:deploy
    ```
 
-3. **Demo Logins** (password `TossLifeDemo-2026` for all):
-   - **NGO admin:** `facilitator@demo.tosslife.invalid` → `/en/join` → Log In → dashboard
-   - **Students:** usernames `student_aarav_1` … `student_shreya_30` as listed in `supabase/seed.sql`
+3. **Accounts are email + password** (2026-10-11): `/login` for everyone, `/signup` (Student or
+   NGO) → "Set up your profile" (students: nickname, avatar, optional NGO code; NGOs: NGO name and
+   your name). Demo logins (password `TossLifeDemo-2026`):
+   - **NGO admin:** `facilitator@demo.tosslife.invalid` → dashboard
+   - **Students:** `student_aarav_1@students.tosslife.invalid`, `student_fatima_2@…`, … (see
+     `supabase/seed.sql`). Typing just the username still works.
 
 ### Running the Tests & Browser Demo
 

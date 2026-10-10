@@ -1,14 +1,18 @@
 "use client";
 
-import { Award, Building2, Check, Copy, RotateCcw, Sparkles, User } from "lucide-react";
+import { Award, Building2, Check, Copy, LogOut, RotateCcw, Sparkles, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Link, useRouter } from "@/i18n/navigation";
 import { content } from "@/lib/content";
-import { useSession } from "@/lib/data";
-import { getStudentPendingJoinRequests, respondToJoinRequest } from "@/lib/auth/actions";
+import { refreshSession, useSession } from "@/lib/data";
+import {
+  getStudentPendingJoinRequests,
+  respondToJoinRequest,
+  signOutUser,
+} from "@/lib/auth/actions";
 import { GameGate } from "./game-gate";
 import { ContentIcon } from "./icon";
 import { PersonaAvatar } from "./persona-reveal";
@@ -32,6 +36,15 @@ function ProfileView() {
   const personaId = useGameStore((s) => s.personaId);
   const results = useGameStore((s) => s.results);
   const reset = useGameStore((s) => s.reset);
+  const ta = useTranslations("auth");
+
+  async function handleLogout() {
+    // The game is saved on the device: clear it so the next person on this phone starts fresh.
+    reset();
+    await signOutUser();
+    await refreshSession();
+    router.replace("/");
+  }
 
   const persona = content.personas.personas.find((p) => p.id === personaId);
 
@@ -241,6 +254,11 @@ function ProfileView() {
         >
           <RotateCcw className="size-4" /> {t("reset")}
         </Button>
+        {session.status === "ready" && process.env.NEXT_PUBLIC_SUPABASE_URL && (
+          <Button variant="outline" className="w-full text-xs font-bold" onClick={handleLogout}>
+            <LogOut className="size-4" /> {ta("logout")}
+          </Button>
+        )}
       </Card>
     </div>
   );

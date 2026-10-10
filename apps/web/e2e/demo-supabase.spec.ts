@@ -30,13 +30,13 @@ async function fillAll(page: Page, fields: [selector: string, value: string][]) 
 }
 
 async function adminLogin(page: Page) {
-  await page.goto("/en/admin");
+  await page.goto("/en/login");
   await page.waitForLoadState("networkidle");
   await fillAll(page, [
-    ['input[placeholder="admin@ngo.org"]', ADMIN_EMAIL],
+    ['input[type="email"]', ADMIN_EMAIL],
     ['input[type="password"]', ADMIN_PASSWORD],
   ]);
-  await page.getByRole("button", { name: "Log In to Dashboard" }).click();
+  await page.getByRole("button", { name: "Log in" }).click();
   await expect(page.getByRole("button", { name: "Codes & Seats" })).toBeVisible({
     timeout: 60_000,
   });
@@ -52,18 +52,24 @@ test("1. NGO admin generates a Student Code", async ({ page }) => {
   code = (await box.innerText()).match(/[A-Z2-9]{4}-[A-Z2-9]{4}/)![0];
 });
 
-test("2–4. student redeems the code, takes the Mindset Check and plays Chapter 2", async ({
+test("2–4. student signs up, joins with the code, takes the Mindset Check and plays Chapter 2", async ({
   page,
 }) => {
   expect(code, "step 1 must run first").not.toBe("");
-  await page.goto("/en/join");
+  // Sign up with email + password, then set up the profile with the NGO's code.
+  await page.goto("/en/signup");
   await page.waitForLoadState("networkidle");
   await fillAll(page, [
-    ['input[placeholder="XXXX-XXXX"]', code],
-    ['input[placeholder="e.g. Sunny or Priya"]', nickname],
-    ['input[placeholder="At least 4 characters"]', "demo-pass-1"],
+    ['input[type="email"]', `${nickname.toLowerCase()}@example.com`],
+    ['input[type="password"]', "demo-pass-1"],
   ]);
-  await page.getByRole("button", { name: /Redeem Code/ }).click();
+  await page.getByRole("button", { name: "Create account" }).click();
+  await page.getByRole("heading", { name: "Set up your profile" }).waitFor({ timeout: 90_000 });
+  await fillAll(page, [
+    ['input[placeholder="e.g. Sunny"]', nickname],
+    ['input[placeholder="XXXX-XXXX"]', code],
+  ]);
+  await page.getByRole("button", { name: "Save and continue" }).click();
   await page.waitForURL(/\/mindset/, { timeout: 90_000 });
 
   // Money Mindset Check. These answers (plan 4, risk 0, know 6) give the Smart Planner,

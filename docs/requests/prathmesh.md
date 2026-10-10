@@ -124,3 +124,22 @@ PostCSS config, so under webpack the CSS is served unprocessed and every page re
 `dev` is plain `next dev` again. If Turbopack crashed on your machine (on Windows we've seen a
 one-off `0xc0000142` "node process exited" panic that a restart fixes), tell us; a webpack
 fallback would need `@tailwindcss/postcss` + `postcss.config.mjs`.
+
+## Email + password accounts (2026-10-11, Samarth, at the user's request)
+
+The team asked for one simple sign-in: email + password for students and NGOs, then "set up your
+profile". Changes in your area, please review:
+
+- `lib/auth/actions.ts`: new `signUpWithEmail`, `completeStudentProfile` (nickname, avatar,
+  optional NGO code: claims it with your atomic RPCs, then creates the profile and finalizes) and
+  `completeNgoProfile` (calls `create_organization` as the signed-in user). `loginUser` sends a
+  user without a profile to `/setup` and returning students to `/ladder`. The old
+  `redeemStudentCode` / `signUpPersonal` / `signUpNgo` are no longer used by any screen.
+  Note: `signUpNgo` was broken: it called `create_organization` with the service-role client, so
+  `auth.uid()` was null and the RPC raised "not signed in".
+- `lib/data/index.ts`: `useSession()` is one shared store with `status`
+  (`loading | signed-out | needs-setup | ready`) and `accountType`; `refreshSession()` after
+  login/sign-up/setup. Before, a signed-in user without a profile stayed on the mock session.
+- New pages `(public)/login`, `(public)/signup`, `(public)/setup`; `/join` redirects to `/signup`
+  (printed slips still work). `(student)/layout.tsx` and `(ngo)/layout.tsx` gate by role.
+- Admin page: its own login/register forms removed (the gate sends non-admins away).

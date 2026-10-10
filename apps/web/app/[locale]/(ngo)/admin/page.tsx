@@ -10,8 +10,6 @@ import {
   generateStudentCodes,
   revokeStudentCode,
   resetStudentPassword,
-  signUpNgo,
-  loginUser,
   sendJoinRequestByPlayerId,
   getOrgJoinRequests,
   createOrgGroup,
@@ -39,16 +37,6 @@ import { uuid } from "@/lib/uuid";
 export default function AdminPage() {
   const session = useSession();
   const [tab, setTab] = useState<"overview" | "codes" | "students" | "prompts">("overview");
-
-  // Registration & Auth states if not signed in as ngo_admin
-  const [ngoName, setNgoName] = useState("");
-  const [adminEmail, setAdminEmail] = useState("");
-  const [adminUsername, setAdminUsername] = useState("");
-  const [adminNickname, setAdminNickname] = useState("");
-  const [adminPassword, setAdminPassword] = useState("");
-  const [isRegistering, setIsRegistering] = useState(false);
-  const [authError, setAuthError] = useState<string | null>(null);
-  const [authSuccess, setAuthSuccess] = useState<string | null>(null);
 
   // Code generation state
   const [codeCount, setCodeCount] = useState(5);
@@ -320,40 +308,6 @@ export default function AdminPage() {
     }
   };
 
-  // Handle NGO Signup
-  const handleNgoRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthError(null);
-    const res = await signUpNgo({
-      ngoName,
-      adminEmail,
-      username: adminUsername,
-      nickname: adminNickname,
-      password: adminPassword,
-    });
-    if (!res.success) {
-      setAuthError(res.error || "Failed to register NGO.");
-    } else {
-      setAuthSuccess("NGO account created! Signing in...");
-      window.location.reload();
-    }
-  };
-
-  // Handle NGO Login
-  const handleNgoLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthError(null);
-    const res = await loginUser({
-      identifier: adminEmail,
-      password: adminPassword,
-    });
-    if (!res.success) {
-      setAuthError(res.error || "Login failed.");
-    } else {
-      window.location.reload();
-    }
-  };
-
   // Handle Code Generation
   const handleGenerateCodes = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -418,766 +372,603 @@ export default function AdminPage() {
     document.body.removeChild(link);
   };
 
-  // If user is not logged in as NGO Admin, show NGO login/signup
-  const isNgoAdmin = session.role === "ngo_admin";
-
   return (
     <AppShell>
       <div className="flex flex-1 flex-col gap-4 py-2">
-        {!isNgoAdmin ? (
-          <div className="flex flex-col gap-4">
-            <div className="text-center">
-              <h1 className="text-2xl font-bold">NGO Facilitator Portal</h1>
-              <p className="text-sm text-muted-foreground">
-                Manage student cohorts, generate single-use codes, and view learning impact
-                analytics (§4.7).
-              </p>
+        {/* Only NGO admins reach this page: see AccountGate in (ngo)/layout.tsx. */}
+        <div className="flex flex-col gap-4">
+          {/* Top Navigation Tabs */}
+          <div className="flex overflow-x-auto rounded-lg bg-muted p-1 text-xs font-medium">
+            <button
+              type="button"
+              onClick={() => setTab("overview")}
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 whitespace-nowrap transition-all ${
+                tab === "overview"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground"
+              }`}
+            >
+              <BarChart3 className="size-3.5" />
+              Overview
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("codes")}
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 whitespace-nowrap transition-all ${
+                tab === "codes"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground"
+              }`}
+            >
+              <KeyRound className="size-3.5" />
+              Codes & Seats
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("students")}
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 whitespace-nowrap transition-all ${
+                tab === "students"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground"
+              }`}
+            >
+              <Users className="size-3.5" />
+              Students
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("prompts")}
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 whitespace-nowrap transition-all ${
+                tab === "prompts"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground"
+              }`}
+            >
+              <BookOpen className="size-3.5" />
+              Prompts
+            </button>
+          </div>
+
+          {/* TAB 1: OVERVIEW & STATS */}
+          {tab === "overview" && (
+            <div className="flex flex-col gap-4">
+              {/* 4 Summary Cards */}
+              <div className="grid grid-cols-2 gap-2">
+                <Card className="p-3 text-center">
+                  <p className="text-xs text-muted-foreground font-medium">ENROLLED</p>
+                  <p className="text-2xl font-black mt-1">{stats.totalStudents}</p>
+                  <p className="text-[10px] text-emerald-600 font-semibold mt-0.5">
+                    {stats.active7d} active this week
+                  </p>
+                </Card>
+                <Card className="p-3 text-center">
+                  <p className="text-xs text-muted-foreground font-medium">AVG HEALTH</p>
+                  <p className="text-2xl font-black mt-1 text-primary">
+                    {stats.avgHealthScore}/100
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    {stats.chaptersCompleted} chapters passed
+                  </p>
+                </Card>
+                <Card className="p-3 text-center">
+                  <p className="text-xs text-muted-foreground font-medium">SCAM SAFETY</p>
+                  <p className="text-2xl font-black mt-1 text-rose-600">{stats.scamFallRate}%</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Scam fall rate</p>
+                </Card>
+                <Card className="p-3 text-center">
+                  <p className="text-xs text-muted-foreground font-medium">SEATS LEFT</p>
+                  <p className="text-2xl font-black mt-1">16</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Pending codes</p>
+                </Card>
+              </div>
+
+              {/* Learning Gain Card (§4.7) */}
+              <Card className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-bold text-sm">Learning Gain (Pre vs Post)</h3>
+                  <span className="text-[11px] text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full">
+                    +118% Avg Gain
+                  </span>
+                </div>
+                <div className="flex flex-col gap-2.5 text-xs">
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <span className="font-medium text-muted-foreground">
+                        Planning & Budgeting
+                      </span>
+                      <span className="font-bold">
+                        {stats.preVsPost.plan.pre} → {stats.preVsPost.plan.post} / 4.0
+                      </span>
+                    </div>
+                    <div className="h-2 w-full rounded-full bg-muted overflow-hidden flex">
+                      <div
+                        className="bg-primary/40 h-full"
+                        style={{ width: `${(stats.preVsPost.plan.pre / 4) * 100}%` }}
+                      />
+                      <div
+                        className="bg-primary h-full"
+                        style={{
+                          width: `${((stats.preVsPost.plan.post - stats.preVsPost.plan.pre) / 4) * 100}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <span className="font-medium text-muted-foreground">Risk Understanding</span>
+                      <span className="font-bold">
+                        {stats.preVsPost.risk.pre} → {stats.preVsPost.risk.post} / 2.0
+                      </span>
+                    </div>
+                    <div className="h-2 w-full rounded-full bg-muted overflow-hidden flex">
+                      <div
+                        className="bg-primary/40 h-full"
+                        style={{ width: `${(stats.preVsPost.risk.pre / 2) * 100}%` }}
+                      />
+                      <div
+                        className="bg-primary h-full"
+                        style={{
+                          width: `${((stats.preVsPost.risk.post - stats.preVsPost.risk.pre) / 2) * 100}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <span className="font-medium text-muted-foreground">
+                        Investing & Safety Knowledge
+                      </span>
+                      <span className="font-bold">
+                        {stats.preVsPost.know.pre} → {stats.preVsPost.know.post} / 6.0
+                      </span>
+                    </div>
+                    <div className="h-2 w-full rounded-full bg-muted overflow-hidden flex">
+                      <div
+                        className="bg-primary/40 h-full"
+                        style={{ width: `${(stats.preVsPost.know.pre / 6) * 100}%` }}
+                      />
+                      <div
+                        className="bg-primary h-full"
+                        style={{
+                          width: `${((stats.preVsPost.know.post - stats.preVsPost.know.pre) / 6) * 100}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Persona Distribution */}
+              <Card className="p-4">
+                <h3 className="font-bold text-sm mb-3">Money Mindset Personas</h3>
+                <div className="flex flex-col gap-2">
+                  {stats.personas.map((p) => (
+                    <div key={p.name} className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className={`size-2.5 rounded-full ${p.color}`} />
+                        <span className="font-medium">{p.name}</span>
+                      </div>
+                      <span className="font-bold">
+                        {p.count} students ({Math.round((p.count / stats.totalStudents) * 100)}%)
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
             </div>
+          )}
 
-            {authError && (
-              <div className="flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
-                <AlertCircle className="size-4 shrink-0" />
-                <span>{authError}</span>
-              </div>
-            )}
-
-            {authSuccess && (
-              <div className="flex items-center gap-2 rounded-lg bg-primary/10 p-3 text-sm text-primary">
-                <CheckCircle2 className="size-4 shrink-0" />
-                <span>{authSuccess}</span>
-              </div>
-            )}
-
-            <Card className="p-5">
-              <div className="mb-4 flex border-b border-border pb-2">
-                <button
-                  type="button"
-                  onClick={() => setIsRegistering(false)}
-                  className={`flex-1 pb-2 text-center text-sm font-semibold transition-colors ${
-                    !isRegistering
-                      ? "border-b-2 border-primary text-primary"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  Admin Log In
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsRegistering(true)}
-                  className={`flex-1 pb-2 text-center text-sm font-semibold transition-colors ${
-                    isRegistering
-                      ? "border-b-2 border-primary text-primary"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  Register New NGO
-                </button>
-              </div>
-
-              {!isRegistering ? (
-                <form onSubmit={handleNgoLogin} className="flex flex-col gap-3">
-                  <div>
-                    <label className="text-xs font-semibold text-muted-foreground">
-                      ADMIN EMAIL
-                    </label>
-                    <input
-                      required
-                      type="email"
-                      placeholder="admin@ngo.org"
-                      value={adminEmail}
-                      onChange={(e) => setAdminEmail(e.target.value)}
-                      className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold text-muted-foreground">PASSWORD</label>
-                    <input
-                      required
-                      type="password"
-                      placeholder="••••••••"
-                      value={adminPassword}
-                      onChange={(e) => setAdminPassword(e.target.value)}
-                      className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
-                    />
-                  </div>
-                  <Button type="submit" size="lg" className="w-full mt-2">
-                    Log In to Dashboard
-                  </Button>
-                </form>
-              ) : (
-                <form onSubmit={handleNgoRegister} className="flex flex-col gap-3">
-                  <div>
-                    <label className="text-xs font-semibold text-muted-foreground">
-                      ORGANISATION NAME
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      placeholder="e.g. Hyderabad Youth Trust"
-                      value={ngoName}
-                      onChange={(e) => setNgoName(e.target.value)}
-                      className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold text-muted-foreground">
-                      ADMIN EMAIL
-                    </label>
-                    <input
-                      required
-                      type="email"
-                      placeholder="admin@hyderabadtrust.org"
-                      value={adminEmail}
-                      onChange={(e) => setAdminEmail(e.target.value)}
-                      className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
-                    />
-                  </div>
+          {/* TAB 2: CODES & SEATS (§4.3) */}
+          {tab === "codes" && (
+            <div className="flex flex-col gap-4">
+              <Card className="p-4">
+                <h3 className="font-bold text-sm mb-2">Generate Student Codes</h3>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Generate single-use codes (XXXX-XXXX) to hand out to students.
+                </p>
+                <form onSubmit={handleGenerateCodes} className="flex flex-col gap-3">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="text-xs font-semibold text-muted-foreground">
-                        USERNAME
+                        QUANTITY
                       </label>
                       <input
-                        required
-                        type="text"
-                        placeholder="hyt_admin"
-                        value={adminUsername}
-                        onChange={(e) => setAdminUsername(e.target.value)}
+                        type="number"
+                        min={1}
+                        max={50}
+                        value={codeCount}
+                        onChange={(e) => setCodeCount(Number(e.target.value))}
                         className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
                       />
                     </div>
                     <div>
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold text-muted-foreground">
+                          BATCH / GROUP
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setIsCreatingGroup(!isCreatingGroup)}
+                          className="text-[11px] text-primary font-semibold hover:underline flex items-center gap-0.5"
+                        >
+                          <Plus className="size-3" />
+                          {isCreatingGroup ? "Cancel" : "New"}
+                        </button>
+                      </div>
+                      {isCreatingGroup ? (
+                        <div className="mt-1 flex gap-1">
+                          <input
+                            type="text"
+                            placeholder="Batch name"
+                            value={newGroupName}
+                            onChange={(e) => setNewGroupName(e.target.value)}
+                            className="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs focus:border-primary focus:outline-none"
+                          />
+                          <Button
+                            type="button"
+                            size="default"
+                            className="h-[34px] px-2.5 text-xs shrink-0"
+                            onClick={handleCreateGroup}
+                          >
+                            Save
+                          </Button>
+                        </div>
+                      ) : (
+                        <select
+                          value={selectedGroupId}
+                          onChange={(e) => {
+                            setSelectedGroupId(e.target.value);
+                            if (e.target.value !== "all") {
+                              const g = groupsList.find((grp) => grp.id === e.target.value);
+                              if (g) setCodeLabel(g.name);
+                            }
+                          }}
+                          className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                        >
+                          <option value="all">None / Custom</option>
+                          {groupsList.map((g) => (
+                            <option key={g.id} value={g.id}>
+                              {g.name}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                  </div>
+                  {selectedGroupId === "all" && !isCreatingGroup && (
+                    <div>
                       <label className="text-xs font-semibold text-muted-foreground">
-                        NICKNAME
+                        CUSTOM LABEL (OPTIONAL)
                       </label>
                       <input
-                        required
                         type="text"
-                        placeholder="Kavitha M."
-                        value={adminNickname}
-                        onChange={(e) => setAdminNickname(e.target.value)}
+                        placeholder="e.g. Batch A or Morning Cohort"
+                        value={codeLabel}
+                        onChange={(e) => setCodeLabel(e.target.value)}
                         className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
                       />
                     </div>
+                  )}
+                  <Button type="submit" disabled={codeLoading} className="w-full">
+                    <Plus className="size-4" />
+                    {codeLoading ? "Generating..." : `Generate ${codeCount} Codes`}
+                  </Button>
+                </form>
+
+                {newlyGeneratedCodes.length > 0 && (
+                  <div className="mt-4 rounded-lg bg-primary/10 border border-primary/20 p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs font-bold text-primary">New Codes Generated:</p>
+                      <Button
+                        size="default"
+                        variant="ghost"
+                        onClick={() => setShowPrintModal(true)}
+                        className="h-6 text-[11px] font-bold text-primary gap-1"
+                      >
+                        <Printer className="size-3" />
+                        Print Slips
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-1.5 font-mono text-xs font-bold">
+                      {newlyGeneratedCodes.map((c) => (
+                        <span
+                          key={c}
+                          className="rounded bg-background px-2 py-1 border text-center"
+                        >
+                          {c}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-xs font-semibold text-muted-foreground">PASSWORD</label>
+                )}
+              </Card>
+
+              {/* Codes list */}
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-sm">Issued Codes ({codesList.length})</h3>
+                <div className="flex items-center gap-1.5">
+                  <Button
+                    size="default"
+                    variant="outline"
+                    onClick={() => setShowPrintModal(true)}
+                    className="h-8 text-xs gap-1"
+                  >
+                    <Printer className="size-3.5" />
+                    Print Slips
+                  </Button>
+                  <Button
+                    size="default"
+                    variant="outline"
+                    onClick={exportCodesCsv}
+                    className="h-8 text-xs gap-1"
+                  >
+                    <Download className="size-3.5" />
+                    Export CSV
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                {codesList.map((c) => (
+                  <Card key={c.id} className="p-3 flex items-center justify-between text-xs">
+                    <div>
+                      <p className="font-mono font-bold text-sm">{c.code}</p>
+                      <p className="text-muted-foreground text-[11px]">
+                        {c.label || "No label"} • {c.date}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`rounded px-2 py-0.5 text-[10px] font-semibold uppercase ${
+                          c.status === "active"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : c.status === "pending"
+                              ? "bg-amber-100 text-amber-700"
+                              : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        {c.status}
+                      </span>
+                      {c.status === "pending" && (
+                        <button
+                          type="button"
+                          onClick={() => handleRevoke(c.id)}
+                          className="text-destructive font-semibold hover:underline text-[11px]"
+                        >
+                          Revoke
+                        </button>
+                      )}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: STUDENTS LIST (§4.7) */}
+          {tab === "students" && (
+            <div className="flex flex-col gap-3">
+              {/* Link Personal Learner Card (§4.4) */}
+              <Card className="p-4 border-primary/30 bg-primary/5">
+                <div className="flex items-center gap-2 mb-1">
+                  <UserPlus className="size-4 text-primary" />
+                  <h4 className="font-bold text-sm text-primary">Link Personal Learner</h4>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Students who registered on their own can share their Player ID (e.g. TL-8M29R).
+                  Sending an invitation links them to your NGO cohort once accepted in their
+                  Profile.
+                </p>
+                <form onSubmit={handleSendJoinRequest} className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Enter Player ID (e.g. TL-5M29R)"
+                    value={joinPlayerId}
+                    onChange={(e) => setJoinPlayerId(e.target.value.toUpperCase())}
+                    className="flex-1 rounded-lg border border-input bg-background px-3 py-1.5 text-xs font-mono uppercase focus:border-primary focus:outline-none"
+                  />
+                  <Button
+                    type="submit"
+                    size="default"
+                    disabled={joinLoading}
+                    className="h-8 text-xs font-bold gap-1 shrink-0"
+                  >
+                    <Send className="size-3" />
+                    {joinLoading ? "Sending..." : "Send Invite"}
+                  </Button>
+                </form>
+
+                {joinMessage && (
+                  <div
+                    className={`mt-2 flex items-center gap-1.5 text-xs font-medium p-2 rounded-md ${
+                      joinMessage.error
+                        ? "bg-destructive/10 text-destructive"
+                        : "bg-emerald-500/10 text-emerald-600"
+                    }`}
+                  >
+                    {joinMessage.error ? (
+                      <AlertCircle className="size-3.5 shrink-0" />
+                    ) : (
+                      <CheckCircle2 className="size-3.5 shrink-0" />
+                    )}
+                    <span>{joinMessage.text}</span>
+                  </div>
+                )}
+
+                {/* Sent Invitations Table/List */}
+                {joinRequestsList.length > 0 && (
+                  <div className="mt-4 border-t border-border/60 pt-3">
+                    <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                      Sent Join Invitations ({joinRequestsList.length})
+                    </p>
+                    <div className="flex flex-col gap-1.5">
+                      {joinRequestsList.map((req) => (
+                        <div
+                          key={req.id}
+                          className="flex items-center justify-between rounded-lg bg-background border px-3 py-1.5 text-xs"
+                        >
+                          <div>
+                            <span className="font-bold">{req.nickname}</span>
+                            <span className="text-[10px] font-mono text-muted-foreground ml-2">
+                              {req.playerId}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase ${
+                                req.status === "pending"
+                                  ? "bg-amber-100 text-amber-700"
+                                  : req.status === "accepted"
+                                    ? "bg-emerald-100 text-emerald-700"
+                                    : "bg-rose-100 text-rose-700"
+                              }`}
+                            >
+                              {req.status}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">
+                              {req.createdAt}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </Card>
+
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="font-bold text-sm">Students Cohort</h3>
+                  <span className="text-xs text-muted-foreground">
+                    {studentsList.length} learners
+                  </span>
+                </div>
+                {groupsList.length > 0 && (
+                  <select
+                    value={selectedGroupId}
+                    onChange={(e) => setSelectedGroupId(e.target.value)}
+                    className="rounded-lg border border-input bg-background px-2.5 py-1 text-xs focus:border-primary focus:outline-none"
+                  >
+                    <option value="all">All Batches</option>
+                    {groupsList.map((g) => (
+                      <option key={g.id} value={g.id}>
+                        {g.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-2">
+                {studentsList.map((s) => (
+                  <Card key={s.id} className="p-3 flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-bold text-sm">{s.nickname}</p>
+                        <p className="text-[11px] font-mono text-muted-foreground">
+                          {s.playerId} • {s.persona}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-primary text-sm">{s.score} pts</p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {s.badges} badges earned
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex justify-end pt-1 border-t border-border">
+                      <button
+                        type="button"
+                        onClick={() => setResetStudentId(s.id)}
+                        className="flex items-center gap-1 text-[11px] text-primary font-medium hover:underline"
+                      >
+                        <Lock className="size-3" />
+                        Reset Password
+                      </button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Password reset dialog */}
+              {resetStudentId && (
+                <Card className="p-4 border-primary">
+                  <h4 className="font-bold text-xs mb-2">Set New Password for Student</h4>
+                  <form onSubmit={handleResetPassword} className="flex flex-col gap-2">
                     <input
                       required
                       type="password"
-                      placeholder="••••••••"
-                      value={adminPassword}
-                      onChange={(e) => setAdminPassword(e.target.value)}
-                      className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                      placeholder="New password (min 4 chars)"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="w-full rounded border border-input bg-background px-3 py-1.5 text-xs"
                     />
-                  </div>
-                  <Button type="submit" size="lg" className="w-full mt-2">
-                    Create NGO Account
-                  </Button>
-                </form>
-              )}
-            </Card>
-          </div>
-        ) : (
-          /* Logged In NGO Admin Portal */
-          <div className="flex flex-col gap-4">
-            {/* Top Navigation Tabs */}
-            <div className="flex overflow-x-auto rounded-lg bg-muted p-1 text-xs font-medium">
-              <button
-                type="button"
-                onClick={() => setTab("overview")}
-                className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 whitespace-nowrap transition-all ${
-                  tab === "overview"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground"
-                }`}
-              >
-                <BarChart3 className="size-3.5" />
-                Overview
-              </button>
-              <button
-                type="button"
-                onClick={() => setTab("codes")}
-                className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 whitespace-nowrap transition-all ${
-                  tab === "codes"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground"
-                }`}
-              >
-                <KeyRound className="size-3.5" />
-                Codes & Seats
-              </button>
-              <button
-                type="button"
-                onClick={() => setTab("students")}
-                className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 whitespace-nowrap transition-all ${
-                  tab === "students"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground"
-                }`}
-              >
-                <Users className="size-3.5" />
-                Students
-              </button>
-              <button
-                type="button"
-                onClick={() => setTab("prompts")}
-                className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 whitespace-nowrap transition-all ${
-                  tab === "prompts"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground"
-                }`}
-              >
-                <BookOpen className="size-3.5" />
-                Prompts
-              </button>
-            </div>
-
-            {/* TAB 1: OVERVIEW & STATS */}
-            {tab === "overview" && (
-              <div className="flex flex-col gap-4">
-                {/* 4 Summary Cards */}
-                <div className="grid grid-cols-2 gap-2">
-                  <Card className="p-3 text-center">
-                    <p className="text-xs text-muted-foreground font-medium">ENROLLED</p>
-                    <p className="text-2xl font-black mt-1">{stats.totalStudents}</p>
-                    <p className="text-[10px] text-emerald-600 font-semibold mt-0.5">
-                      {stats.active7d} active this week
-                    </p>
-                  </Card>
-                  <Card className="p-3 text-center">
-                    <p className="text-xs text-muted-foreground font-medium">AVG HEALTH</p>
-                    <p className="text-2xl font-black mt-1 text-primary">
-                      {stats.avgHealthScore}/100
-                    </p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">
-                      {stats.chaptersCompleted} chapters passed
-                    </p>
-                  </Card>
-                  <Card className="p-3 text-center">
-                    <p className="text-xs text-muted-foreground font-medium">SCAM SAFETY</p>
-                    <p className="text-2xl font-black mt-1 text-rose-600">{stats.scamFallRate}%</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">Scam fall rate</p>
-                  </Card>
-                  <Card className="p-3 text-center">
-                    <p className="text-xs text-muted-foreground font-medium">SEATS LEFT</p>
-                    <p className="text-2xl font-black mt-1">16</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">Pending codes</p>
-                  </Card>
-                </div>
-
-                {/* Learning Gain Card (§4.7) */}
-                <Card className="p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-bold text-sm">Learning Gain (Pre vs Post)</h3>
-                    <span className="text-[11px] text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full">
-                      +118% Avg Gain
-                    </span>
-                  </div>
-                  <div className="flex flex-col gap-2.5 text-xs">
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span className="font-medium text-muted-foreground">
-                          Planning & Budgeting
-                        </span>
-                        <span className="font-bold">
-                          {stats.preVsPost.plan.pre} → {stats.preVsPost.plan.post} / 4.0
-                        </span>
-                      </div>
-                      <div className="h-2 w-full rounded-full bg-muted overflow-hidden flex">
-                        <div
-                          className="bg-primary/40 h-full"
-                          style={{ width: `${(stats.preVsPost.plan.pre / 4) * 100}%` }}
-                        />
-                        <div
-                          className="bg-primary h-full"
-                          style={{
-                            width: `${((stats.preVsPost.plan.post - stats.preVsPost.plan.pre) / 4) * 100}%`,
-                          }}
-                        />
-                      </div>
+                    <div className="flex gap-2">
+                      <Button type="submit" size="default" className="h-8 text-xs flex-1">
+                        Confirm Reset
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => setResetStudentId(null)}
+                        className="h-8 text-xs"
+                      >
+                        Cancel
+                      </Button>
                     </div>
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span className="font-medium text-muted-foreground">
-                          Risk Understanding
-                        </span>
-                        <span className="font-bold">
-                          {stats.preVsPost.risk.pre} → {stats.preVsPost.risk.post} / 2.0
-                        </span>
-                      </div>
-                      <div className="h-2 w-full rounded-full bg-muted overflow-hidden flex">
-                        <div
-                          className="bg-primary/40 h-full"
-                          style={{ width: `${(stats.preVsPost.risk.pre / 2) * 100}%` }}
-                        />
-                        <div
-                          className="bg-primary h-full"
-                          style={{
-                            width: `${((stats.preVsPost.risk.post - stats.preVsPost.risk.pre) / 2) * 100}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span className="font-medium text-muted-foreground">
-                          Investing & Safety Knowledge
-                        </span>
-                        <span className="font-bold">
-                          {stats.preVsPost.know.pre} → {stats.preVsPost.know.post} / 6.0
-                        </span>
-                      </div>
-                      <div className="h-2 w-full rounded-full bg-muted overflow-hidden flex">
-                        <div
-                          className="bg-primary/40 h-full"
-                          style={{ width: `${(stats.preVsPost.know.pre / 6) * 100}%` }}
-                        />
-                        <div
-                          className="bg-primary h-full"
-                          style={{
-                            width: `${((stats.preVsPost.know.post - stats.preVsPost.know.pre) / 6) * 100}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-
-                {/* Persona Distribution */}
-                <Card className="p-4">
-                  <h3 className="font-bold text-sm mb-3">Money Mindset Personas</h3>
-                  <div className="flex flex-col gap-2">
-                    {stats.personas.map((p) => (
-                      <div key={p.name} className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-2">
-                          <span className={`size-2.5 rounded-full ${p.color}`} />
-                          <span className="font-medium">{p.name}</span>
-                        </div>
-                        <span className="font-bold">
-                          {p.count} students ({Math.round((p.count / stats.totalStudents) * 100)}%)
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </Card>
-              </div>
-            )}
-
-            {/* TAB 2: CODES & SEATS (§4.3) */}
-            {tab === "codes" && (
-              <div className="flex flex-col gap-4">
-                <Card className="p-4">
-                  <h3 className="font-bold text-sm mb-2">Generate Student Codes</h3>
-                  <p className="text-xs text-muted-foreground mb-3">
-                    Generate single-use codes (XXXX-XXXX) to hand out to students.
-                  </p>
-                  <form onSubmit={handleGenerateCodes} className="flex flex-col gap-3">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="text-xs font-semibold text-muted-foreground">
-                          QUANTITY
-                        </label>
-                        <input
-                          type="number"
-                          min={1}
-                          max={50}
-                          value={codeCount}
-                          onChange={(e) => setCodeCount(Number(e.target.value))}
-                          className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
-                        />
-                      </div>
-                      <div>
-                        <div className="flex items-center justify-between">
-                          <label className="text-xs font-semibold text-muted-foreground">
-                            BATCH / GROUP
-                          </label>
-                          <button
-                            type="button"
-                            onClick={() => setIsCreatingGroup(!isCreatingGroup)}
-                            className="text-[11px] text-primary font-semibold hover:underline flex items-center gap-0.5"
-                          >
-                            <Plus className="size-3" />
-                            {isCreatingGroup ? "Cancel" : "New"}
-                          </button>
-                        </div>
-                        {isCreatingGroup ? (
-                          <div className="mt-1 flex gap-1">
-                            <input
-                              type="text"
-                              placeholder="Batch name"
-                              value={newGroupName}
-                              onChange={(e) => setNewGroupName(e.target.value)}
-                              className="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs focus:border-primary focus:outline-none"
-                            />
-                            <Button
-                              type="button"
-                              size="default"
-                              className="h-[34px] px-2.5 text-xs shrink-0"
-                              onClick={handleCreateGroup}
-                            >
-                              Save
-                            </Button>
-                          </div>
-                        ) : (
-                          <select
-                            value={selectedGroupId}
-                            onChange={(e) => {
-                              setSelectedGroupId(e.target.value);
-                              if (e.target.value !== "all") {
-                                const g = groupsList.find((grp) => grp.id === e.target.value);
-                                if (g) setCodeLabel(g.name);
-                              }
-                            }}
-                            className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
-                          >
-                            <option value="all">None / Custom</option>
-                            {groupsList.map((g) => (
-                              <option key={g.id} value={g.id}>
-                                {g.name}
-                              </option>
-                            ))}
-                          </select>
-                        )}
-                      </div>
-                    </div>
-                    {selectedGroupId === "all" && !isCreatingGroup && (
-                      <div>
-                        <label className="text-xs font-semibold text-muted-foreground">
-                          CUSTOM LABEL (OPTIONAL)
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Batch A or Morning Cohort"
-                          value={codeLabel}
-                          onChange={(e) => setCodeLabel(e.target.value)}
-                          className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
-                        />
-                      </div>
+                    {resetMessage && (
+                      <p className="text-xs text-primary font-semibold mt-1">{resetMessage}</p>
                     )}
-                    <Button type="submit" disabled={codeLoading} className="w-full">
-                      <Plus className="size-4" />
-                      {codeLoading ? "Generating..." : `Generate ${codeCount} Codes`}
-                    </Button>
                   </form>
-
-                  {newlyGeneratedCodes.length > 0 && (
-                    <div className="mt-4 rounded-lg bg-primary/10 border border-primary/20 p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs font-bold text-primary">New Codes Generated:</p>
-                        <Button
-                          size="default"
-                          variant="ghost"
-                          onClick={() => setShowPrintModal(true)}
-                          className="h-6 text-[11px] font-bold text-primary gap-1"
-                        >
-                          <Printer className="size-3" />
-                          Print Slips
-                        </Button>
-                      </div>
-                      <div className="grid grid-cols-2 gap-1.5 font-mono text-xs font-bold">
-                        {newlyGeneratedCodes.map((c) => (
-                          <span
-                            key={c}
-                            className="rounded bg-background px-2 py-1 border text-center"
-                          >
-                            {c}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </Card>
+              )}
+            </div>
+          )}
 
-                {/* Codes list */}
-                <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-sm">Issued Codes ({codesList.length})</h3>
-                  <div className="flex items-center gap-1.5">
-                    <Button
-                      size="default"
-                      variant="outline"
-                      onClick={() => setShowPrintModal(true)}
-                      className="h-8 text-xs gap-1"
-                    >
-                      <Printer className="size-3.5" />
-                      Print Slips
-                    </Button>
-                    <Button
-                      size="default"
-                      variant="outline"
-                      onClick={exportCodesCsv}
-                      className="h-8 text-xs gap-1"
-                    >
-                      <Download className="size-3.5" />
-                      Export CSV
-                    </Button>
-                  </div>
-                </div>
+          {/* TAB 4: DISCUSSION PROMPTS (§8.15) */}
+          {tab === "prompts" && (
+            <div className="flex flex-col gap-3">
+              <Card className="p-4 bg-primary/5 border-primary/20">
+                <h3 className="font-bold text-sm text-primary mb-1">Chapter 2 Discussion Guide</h3>
+                <p className="text-xs text-muted-foreground">
+                  Use these prompts during NGO classroom reflection after students play Chapter 2.
+                </p>
+              </Card>
 
-                <div className="flex flex-col gap-2">
-                  {codesList.map((c) => (
-                    <Card key={c.id} className="p-3 flex items-center justify-between text-xs">
-                      <div>
-                        <p className="font-mono font-bold text-sm">{c.code}</p>
-                        <p className="text-muted-foreground text-[11px]">
-                          {c.label || "No label"} • {c.date}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`rounded px-2 py-0.5 text-[10px] font-semibold uppercase ${
-                            c.status === "active"
-                              ? "bg-emerald-100 text-emerald-700"
-                              : c.status === "pending"
-                                ? "bg-amber-100 text-amber-700"
-                                : "bg-muted text-muted-foreground"
-                          }`}
-                        >
-                          {c.status}
-                        </span>
-                        {c.status === "pending" && (
-                          <button
-                            type="button"
-                            onClick={() => handleRevoke(c.id)}
-                            className="text-destructive font-semibold hover:underline text-[11px]"
-                          >
-                            Revoke
-                          </button>
-                        )}
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            )}
+              <Card className="p-4 flex flex-col gap-1.5">
+                <p className="font-bold text-xs text-primary">1. Investment Trade-offs</p>
+                <p className="text-sm">
+                  &quot;Who chose an FD and who chose a SIP? How did the market storm feel when it
+                  hit?&quot;
+                </p>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  Goal: Highlight patience during market dips vs. cash loss to inflation.
+                </p>
+              </Card>
 
-            {/* TAB 3: STUDENTS LIST (§4.7) */}
-            {tab === "students" && (
-              <div className="flex flex-col gap-3">
-                {/* Link Personal Learner Card (§4.4) */}
-                <Card className="p-4 border-primary/30 bg-primary/5">
-                  <div className="flex items-center gap-2 mb-1">
-                    <UserPlus className="size-4 text-primary" />
-                    <h4 className="font-bold text-sm text-primary">Link Personal Learner</h4>
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-3">
-                    Students who registered on their own can share their Player ID (e.g. TL-8M29R).
-                    Sending an invitation links them to your NGO cohort once accepted in their
-                    Profile.
-                  </p>
-                  <form onSubmit={handleSendJoinRequest} className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Enter Player ID (e.g. TL-5M29R)"
-                      value={joinPlayerId}
-                      onChange={(e) => setJoinPlayerId(e.target.value.toUpperCase())}
-                      className="flex-1 rounded-lg border border-input bg-background px-3 py-1.5 text-xs font-mono uppercase focus:border-primary focus:outline-none"
-                    />
-                    <Button
-                      type="submit"
-                      size="default"
-                      disabled={joinLoading}
-                      className="h-8 text-xs font-bold gap-1 shrink-0"
-                    >
-                      <Send className="size-3" />
-                      {joinLoading ? "Sending..." : "Send Invite"}
-                    </Button>
-                  </form>
+              <Card className="p-4 flex flex-col gap-1.5">
+                <p className="font-bold text-xs text-primary">2. Peer Loans</p>
+                <p className="text-sm">
+                  &quot;Did anyone lend money to a peer? Was the interest rate fair, or did anyone
+                  face a default?&quot;
+                </p>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  Goal: Discuss trust scores and lending obligations.
+                </p>
+              </Card>
 
-                  {joinMessage && (
-                    <div
-                      className={`mt-2 flex items-center gap-1.5 text-xs font-medium p-2 rounded-md ${
-                        joinMessage.error
-                          ? "bg-destructive/10 text-destructive"
-                          : "bg-emerald-500/10 text-emerald-600"
-                      }`}
-                    >
-                      {joinMessage.error ? (
-                        <AlertCircle className="size-3.5 shrink-0" />
-                      ) : (
-                        <CheckCircle2 className="size-3.5 shrink-0" />
-                      )}
-                      <span>{joinMessage.text}</span>
-                    </div>
-                  )}
-
-                  {/* Sent Invitations Table/List */}
-                  {joinRequestsList.length > 0 && (
-                    <div className="mt-4 border-t border-border/60 pt-3">
-                      <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
-                        Sent Join Invitations ({joinRequestsList.length})
-                      </p>
-                      <div className="flex flex-col gap-1.5">
-                        {joinRequestsList.map((req) => (
-                          <div
-                            key={req.id}
-                            className="flex items-center justify-between rounded-lg bg-background border px-3 py-1.5 text-xs"
-                          >
-                            <div>
-                              <span className="font-bold">{req.nickname}</span>
-                              <span className="text-[10px] font-mono text-muted-foreground ml-2">
-                                {req.playerId}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span
-                                className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase ${
-                                  req.status === "pending"
-                                    ? "bg-amber-100 text-amber-700"
-                                    : req.status === "accepted"
-                                      ? "bg-emerald-100 text-emerald-700"
-                                      : "bg-rose-100 text-rose-700"
-                                }`}
-                              >
-                                {req.status}
-                              </span>
-                              <span className="text-[10px] text-muted-foreground">
-                                {req.createdAt}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </Card>
-
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="font-bold text-sm">Students Cohort</h3>
-                    <span className="text-xs text-muted-foreground">
-                      {studentsList.length} learners
-                    </span>
-                  </div>
-                  {groupsList.length > 0 && (
-                    <select
-                      value={selectedGroupId}
-                      onChange={(e) => setSelectedGroupId(e.target.value)}
-                      className="rounded-lg border border-input bg-background px-2.5 py-1 text-xs focus:border-primary focus:outline-none"
-                    >
-                      <option value="all">All Batches</option>
-                      {groupsList.map((g) => (
-                        <option key={g.id} value={g.id}>
-                          {g.name}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  {studentsList.map((s) => (
-                    <Card key={s.id} className="p-3 flex flex-col gap-2">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-bold text-sm">{s.nickname}</p>
-                          <p className="text-[11px] font-mono text-muted-foreground">
-                            {s.playerId} • {s.persona}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-primary text-sm">{s.score} pts</p>
-                          <p className="text-[11px] text-muted-foreground">
-                            {s.badges} badges earned
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex justify-end pt-1 border-t border-border">
-                        <button
-                          type="button"
-                          onClick={() => setResetStudentId(s.id)}
-                          className="flex items-center gap-1 text-[11px] text-primary font-medium hover:underline"
-                        >
-                          <Lock className="size-3" />
-                          Reset Password
-                        </button>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-
-                {/* Password reset dialog */}
-                {resetStudentId && (
-                  <Card className="p-4 border-primary">
-                    <h4 className="font-bold text-xs mb-2">Set New Password for Student</h4>
-                    <form onSubmit={handleResetPassword} className="flex flex-col gap-2">
-                      <input
-                        required
-                        type="password"
-                        placeholder="New password (min 4 chars)"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        className="w-full rounded border border-input bg-background px-3 py-1.5 text-xs"
-                      />
-                      <div className="flex gap-2">
-                        <Button type="submit" size="default" className="h-8 text-xs flex-1">
-                          Confirm Reset
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          onClick={() => setResetStudentId(null)}
-                          className="h-8 text-xs"
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                      {resetMessage && (
-                        <p className="text-xs text-primary font-semibold mt-1">{resetMessage}</p>
-                      )}
-                    </form>
-                  </Card>
-                )}
-              </div>
-            )}
-
-            {/* TAB 4: DISCUSSION PROMPTS (§8.15) */}
-            {tab === "prompts" && (
-              <div className="flex flex-col gap-3">
-                <Card className="p-4 bg-primary/5 border-primary/20">
-                  <h3 className="font-bold text-sm text-primary mb-1">
-                    Chapter 2 Discussion Guide
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    Use these prompts during NGO classroom reflection after students play Chapter 2.
-                  </p>
-                </Card>
-
-                <Card className="p-4 flex flex-col gap-1.5">
-                  <p className="font-bold text-xs text-primary">1. Investment Trade-offs</p>
-                  <p className="text-sm">
-                    &quot;Who chose an FD and who chose a SIP? How did the market storm feel when it
-                    hit?&quot;
-                  </p>
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    Goal: Highlight patience during market dips vs. cash loss to inflation.
-                  </p>
-                </Card>
-
-                <Card className="p-4 flex flex-col gap-1.5">
-                  <p className="font-bold text-xs text-primary">2. Peer Loans</p>
-                  <p className="text-sm">
-                    &quot;Did anyone lend money to a peer? Was the interest rate fair, or did anyone
-                    face a default?&quot;
-                  </p>
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    Goal: Discuss trust scores and lending obligations.
-                  </p>
-                </Card>
-
-                <Card className="p-4 flex flex-col gap-1.5">
-                  <p className="font-bold text-xs text-primary">3. Scam Safety</p>
-                  <p className="text-sm">
-                    &quot;Which scam almost fooled you, and what red flags gave it away?&quot;
-                  </p>
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    Goal: Reinforce that banks never ask for OTPs or upfront processing fees.
-                  </p>
-                </Card>
-              </div>
-            )}
-          </div>
-        )}
+              <Card className="p-4 flex flex-col gap-1.5">
+                <p className="font-bold text-xs text-primary">3. Scam Safety</p>
+                <p className="text-sm">
+                  &quot;Which scam almost fooled you, and what red flags gave it away?&quot;
+                </p>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  Goal: Reinforce that banks never ask for OTPs or upfront processing fees.
+                </p>
+              </Card>
+            </div>
+          )}
+        </div>
 
         {/* PRINTABLE SLIPS MODAL (§4.3, §15.6 #6) */}
         {showPrintModal && (

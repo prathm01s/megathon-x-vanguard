@@ -1,13 +1,10 @@
-import { GraduationCap, Building2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { use } from "react";
-import { buttonVariants } from "@/components/ui/button";
+import { WelcomeActions } from "@/components/auth/welcome-actions";
 import { AppShell } from "@/components/ui/app-shell";
-import { Link } from "@/i18n/navigation";
-import { cn } from "@/lib/utils";
 
-// Welcome screen (§4.2, §9.2 #1). Owner: Prathmesh (public flow); visuals by Pragya.
+// Welcome screen (§4.2, §9.2 #1): Log in or Create account. Owner: Prathmesh (public flow).
 export default function WelcomePage({ params }: PageProps<"/[locale]">) {
   const { locale } = use(params);
   setRequestLocale(locale);
@@ -24,22 +21,7 @@ export default function WelcomePage({ params }: PageProps<"/[locale]">) {
           <h1 className="text-3xl font-extrabold">{t("app.name")}</h1>
           <p className="text-lg text-muted-foreground">{t("app.tagline")}</p>
         </div>
-        <div className="flex flex-col gap-3">
-          <Link href="/join" className={cn(buttonVariants({ size: "lg" }))}>
-            <GraduationCap aria-hidden />
-            {t("welcome.student")}
-          </Link>
-          <Link href="/admin" className={cn(buttonVariants({ size: "lg", variant: "secondary" }))}>
-            <Building2 aria-hidden />
-            {t("welcome.ngo")}
-          </Link>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          {t("welcome.haveAccount")}{" "}
-          <Link href="/" className="font-semibold text-primary underline underline-offset-4">
-            {t("welcome.login")}
-          </Link>
-        </p>
+        <WelcomeActions />
       </section>
     </AppShell>
   );
