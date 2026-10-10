@@ -176,7 +176,17 @@
     "investTitle": "Put money in: {name}",
     "withdrawTitle": "Take out of: {name}",
     "sipTitle": "Start a monthly SIP: {name}",
-    "sipHint": "This amount moves from your wallet every month, automatically."
+    "sipHint": "This amount moves from your wallet every month, automatically.",
+    "notEnough": "Not enough money for this yet.",
+    "perMonth": " / month",
+    "pick": {
+      "quarter": "A little",
+      "half": "Half",
+      "all": "All of it",
+      "monthly5": "Small",
+      "monthly10": "Medium",
+      "monthly20": "Big"
+    }
   },
   "shop": {
     "title": "Save and invest",
@@ -385,6 +395,11 @@
     "ruinsHelp": "This one was missed. Plan ahead next time.",
     "buildFor": "Build · {amount}",
     "tip": "Tap a flag to build it. Then toss the coin!",
-    "next": "Toss · next {unit, select, month {month} other {year}}"
+    "next": "Toss · next {unit, select, month {month} other {year}}",
+    "noCash": "No cash right now",
+    "payPart": "Pay {amount} now",
+    "toastBuilt": "Built! ⭐",
+    "toastPart": "Construction started 🔨",
+    "toastDone": "Done! ✅"
   }
 }

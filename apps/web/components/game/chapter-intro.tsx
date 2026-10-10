@@ -29,10 +29,10 @@ export function ChapterIntro({ chapterId }: { chapterId: string }) {
 
 function StatTile({ icon, value, label }: { icon: ReactNode; value: string; label: string }) {
   return (
-    <div className="flex flex-col items-center gap-0.5 rounded-2xl border-2 border-b-4 border-[#2b1d12]/60 bg-[#fff8e7] px-1 py-2 text-center">
+    <div className="flex flex-col items-center gap-0.5 rounded-2xl border-2 border-b-4 border-[#2b1d12]/60 bg-[#fff8e7] px-1 py-2 text-center text-[#2b1d12]">
       {icon}
       <span className={cn(GAME_TEXT, "text-lg leading-none")}>{value}</span>
-      <span className="text-[11px] font-bold leading-tight text-muted-foreground">{label}</span>
+      <span className="text-[11px] font-bold leading-tight text-[#6b5a45]">{label}</span>
     </div>
   );
 }
@@ -86,7 +86,7 @@ function Intro({ chapterId }: { chapterId: string }) {
         </div>
       </header>
 
-      <p className="rounded-2xl border-2 border-[#2b1d12]/30 bg-white px-3 py-2 text-sm">
+      <p className="rounded-2xl border-2 border-[#2b1d12]/30 bg-white px-3 py-2 text-sm text-[#2b1d12]">
         {l(chapter.intro)}
       </p>
 
@@ -97,19 +97,19 @@ function Intro({ chapterId }: { chapterId: string }) {
           label={t("tileStart")}
         />
         <StatTile
-          icon={<ArrowUpCircle className="size-6 text-gain" aria-hidden />}
+          icon={<ArrowUpCircle className="size-6 text-[#1f8a3b]" aria-hidden />}
           value={formatShort(rupeesToPaise(chapter.income.amountPerMonth))}
           label={t("tileIncome")}
         />
         <StatTile
-          icon={<ArrowDownCircle className="size-6 text-loss" aria-hidden />}
+          icon={<ArrowDownCircle className="size-6 text-[#c0262d]" aria-hidden />}
           value={formatShort(rupeesToPaise(costs))}
           label={t("tileCosts")}
         />
       </div>
 
       {level && (
-        <div className="rounded-2xl border-2 border-[#2b1d12]/60 bg-[#efe6ff] p-3">
+        <div className="rounded-2xl border-2 border-[#2b1d12]/60 bg-[#efe6ff] p-3 text-[#2b1d12]">
           <p className={cn(GAME_TEXT, "text-lg leading-tight")}>
             <span className="text-[#d4a017]" aria-hidden>
               {"★".repeat(level.stars)}

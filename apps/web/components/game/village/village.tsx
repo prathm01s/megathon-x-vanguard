@@ -27,8 +27,13 @@ import { useLocalize } from "../use-localize";
 import { PlotArt, TownHallArt, type PlotStage } from "./art";
 import { GAME_TEXT, GRASS_STYLE } from "@/lib/game-style";
 
+/** Fully paid counts as built, even if it was paid late (the engine keeps "late" for scoring). */
+export function isBuilt(task: TaskState): boolean {
+  return task.status === "done" || (task.amount > 0 && task.paid >= task.amount);
+}
+
 export function stageOf(task: TaskState): PlotStage {
-  if (task.status === "done") return "building";
+  if (isBuilt(task)) return "building";
   if (task.status === "missed" || task.status === "blocked") return "ruins";
   return task.paid > 0 ? "scaffold" : "flag";
 }
@@ -56,22 +61,22 @@ function RailStat({
         aria-expanded={open}
         aria-label={`${label}: ${value}. ${help}`}
         className={cn(
-          "flex w-full flex-col items-center gap-0.5 rounded-2xl border-2 border-b-4 border-[#2b1d12]/70 bg-[#fff8e7] px-1 py-2 shadow-sm",
+          "flex w-full flex-col items-center gap-0.5 rounded-2xl border-2 border-b-4 border-[#2b1d12]/70 bg-[#fff8e7] px-1 py-2 text-[#2b1d12] shadow-sm",
           tone === "loss" && "bg-red-50",
         )}
       >
         {icon}
-        <span className={cn(GAME_TEXT, "text-[15px] leading-none", tone === "loss" && "text-loss")}>
+        <span
+          className={cn(GAME_TEXT, "text-[15px] leading-none", tone === "loss" && "text-[#c0262d]")}
+        >
           {value}
         </span>
-        <span className="text-[10px] font-bold uppercase leading-none text-muted-foreground">
-          {label}
-        </span>
+        <span className="text-[10px] font-bold uppercase leading-none text-[#6b5a45]">{label}</span>
       </button>
       {open && (
         <p
           role="note"
-          className="absolute start-full top-0 z-30 ms-2 w-44 rounded-xl border-2 border-[#2b1d12]/70 bg-white p-2 text-xs font-semibold shadow-lg"
+          className="absolute start-full top-0 z-30 ms-2 w-44 rounded-xl border-2 border-[#2b1d12]/70 bg-white p-2 text-xs font-semibold text-[#2b1d12] shadow-lg"
         >
           {help}
         </p>
@@ -88,7 +93,7 @@ export function SideStats({ state, chapter }: { state: GameState; chapter: Chapt
     ? chapter.ageRange[0] +
       Math.floor((state.turn / state.totalTurns) * (chapter.ageRange[1] - chapter.ageRange[0]))
     : undefined;
-  const built = state.tasks.filter((x) => x.status === "done").length;
+  const built = state.tasks.filter(isBuilt).length;
   return (
     <aside className="flex w-[66px] shrink-0 flex-col gap-2" aria-label={t("statsLabel")}>
       <RailStat
@@ -114,7 +119,7 @@ export function SideStats({ state, chapter }: { state: GameState; chapter: Chapt
       />
       {state.debt > 0 && (
         <RailStat
-          icon={<Landmark className="size-6 text-loss" aria-hidden />}
+          icon={<Landmark className="size-6 text-[#c0262d]" aria-hidden />}
           value={formatShort(state.debt)}
           label={t("debt")}
           help={t("debtHelp")}
@@ -141,7 +146,7 @@ export function InvestRail({ state, onOpenShop }: { state: GameState; onOpenShop
         <span className={cn(GAME_TEXT, "text-[13px] leading-none")}>{t("invest")}</span>
       </button>
       {state.holdings.length === 0 && running.length === 0 && (
-        <p className="rounded-xl bg-white/70 p-1.5 text-center text-[10px] font-semibold text-muted-foreground">
+        <p className="rounded-xl bg-white/80 p-1.5 text-center text-[10px] font-semibold text-[#6b5a45]">
           {t("noInvestments")}
         </p>
       )}
@@ -162,9 +167,9 @@ export function InvestRail({ state, onOpenShop }: { state: GameState; onOpenShop
               value: formatPaise(h.value),
               change: `${up ? "+" : "−"}${Math.abs(Math.round(pct * 100))}%`,
             })}
-            className="flex flex-col items-center gap-0.5 rounded-2xl border-2 border-[#2b1d12]/60 bg-[#fff8e7] px-1 py-1.5 shadow-sm"
+            className="flex flex-col items-center gap-0.5 rounded-2xl border-2 border-[#2b1d12]/60 bg-[#fff8e7] px-1 py-1.5 text-[#2b1d12] shadow-sm"
           >
-            <span className="grid size-8 place-items-center rounded-full bg-accent">
+            <span className="grid size-8 place-items-center rounded-full bg-[#f6e6c3]">
               <ContentIcon name={opt.icon} className="size-4" />
             </span>
             <span className={cn(GAME_TEXT, "text-[13px] leading-none")}>
@@ -173,14 +178,14 @@ export function InvestRail({ state, onOpenShop }: { state: GameState; onOpenShop
             <span
               className={cn(
                 "flex items-center text-[10px] font-extrabold leading-none",
-                up ? "text-gain" : "text-loss",
+                up ? "text-[#1f8a3b]" : "text-[#c0262d]",
               )}
             >
               {up ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
               {Math.abs(Math.round(pct * 100))}%
             </span>
             {sip && (
-              <span className="rounded-full bg-secondary/15 px-1 text-[9px] font-bold text-secondary">
+              <span className="rounded-full bg-[#d7f0ee] px-1 text-[9px] font-bold text-[#0f6e66]">
                 {t("sipTag", { amount: formatShort(sip.amountPerMonth) })}
               </span>
             )}
@@ -283,9 +288,8 @@ export function VillageGround({
 function PlotChip({ task, state, dueNow }: { task: TaskState; state: GameState; dueNow: boolean }) {
   const t = useTranslations("village");
   const base =
-    "mt-0.5 rounded-full border-2 border-[#2b1d12]/60 px-1.5 text-[10px] font-extrabold leading-4";
-  if (task.status === "done")
-    return <span className={cn(base, "bg-[#fff3b0]")}>{t("stage.building")}</span>;
+    "mt-0.5 rounded-full border-2 border-[#2b1d12]/60 px-1.5 text-[10px] font-extrabold leading-4 text-[#2b1d12]";
+  if (isBuilt(task)) return <span className={cn(base, "bg-[#fff3b0]")}>{t("stage.building")}</span>;
   if (task.status === "missed" || task.status === "blocked") {
     return <span className={cn(base, "bg-gray-200")}>{t("stage.ruins")}</span>;
   }
@@ -293,7 +297,7 @@ function PlotChip({ task, state, dueNow }: { task: TaskState; state: GameState; 
     <span
       className={cn(
         base,
-        task.status === "late" ? "bg-red-500 text-white" : dueNow ? "bg-[#ffd84d]" : "bg-white",
+        task.status === "late" ? "bg-[#dc2626] !text-white" : dueNow ? "bg-[#ffd84d]" : "bg-white",
       )}
     >
       {formatShort(task.amount - task.paid)} ·{" "}
@@ -335,7 +339,7 @@ export function TaskSheet({
       aria-label={l(def.title)}
     >
       <div
-        className="w-full max-w-md rounded-3xl border-[3px] border-[#2b1d12]/80 bg-[#fff8e7] p-4 shadow-2xl"
+        className="w-full max-w-md rounded-3xl border-[3px] border-[#2b1d12]/80 bg-[#fff8e7] p-4 text-[#2b1d12] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start gap-3">
@@ -348,9 +352,9 @@ export function TaskSheet({
           <div className="min-w-0 flex-1">
             <h2 className={cn(GAME_TEXT, "text-xl leading-tight")}>{l(def.title)}</h2>
             <div className="mt-1 flex flex-wrap gap-1 text-[11px] font-bold">
-              <span className="rounded-full bg-accent px-2">{tp(`kind.${def.kind}`)}</span>
+              <span className="rounded-full bg-[#f6e6c3] px-2">{tp(`kind.${def.kind}`)}</span>
               {def.required && (
-                <span className="rounded-full bg-primary/15 px-2 text-primary">
+                <span className="rounded-full bg-[#fde3cf] px-2 text-[#b4470c]">
                   {tp("required")}
                 </span>
               )}
@@ -375,20 +379,25 @@ export function TaskSheet({
             <div className="h-full bg-[#7ee04f]" style={{ width: `${pct}%` }} />
           </div>
         </div>
-        {task.status === "done" ? (
-          <p className={cn(GAME_TEXT, "mt-4 text-center text-lg text-gain")}>{t("builtDone")}</p>
-        ) : stage === "ruins" ? (
-          <p className="mt-4 text-center text-sm font-semibold text-muted-foreground">
-            {t("ruinsHelp")}
+        {isBuilt(task) ? (
+          <p className={cn(GAME_TEXT, "mt-4 text-center text-lg text-[#1f8a3b]")}>
+            {t("builtDone")}
           </p>
+        ) : stage === "ruins" ? (
+          <p className="mt-4 text-center text-sm font-semibold text-[#6b5a45]">{t("ruinsHelp")}</p>
         ) : (
           <GameButton
             tone="green"
             className="mt-4 w-full"
-            disabled={!payAction || Boolean(payAction.disabledReason)}
+            disabled={!payAction || state.cash <= 0}
             onClick={onBuild}
           >
-            <Hammer aria-hidden /> {t("buildFor", { amount: formatShort(left) })}
+            <Hammer aria-hidden />
+            {state.cash <= 0
+              ? t("noCash")
+              : state.cash >= left
+                ? t("buildFor", { amount: formatShort(left) })
+                : t("payPart", { amount: formatShort(state.cash) })}
           </GameButton>
         )}
       </div>

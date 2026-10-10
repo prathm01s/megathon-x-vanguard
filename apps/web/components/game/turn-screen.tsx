@@ -2,7 +2,7 @@
 
 import { ArrowRight, Coins, Lightbulb, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { GameButton } from "@/components/ui/game-button";
@@ -49,6 +49,13 @@ function Screen() {
   const [isShopOpen, setIsShopOpen] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [openTaskId, setOpenTaskId] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function showToast(text: string) {
+    setToast(text);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 1800);
+  }
   const tv = useTranslations("village");
 
   if (!state) {
@@ -91,6 +98,7 @@ function Screen() {
       setErrorMsg(t("error", { code: err }));
     } else {
       setSelectedAction(null);
+      showToast(tv("toastDone"));
     }
   }
 
@@ -169,6 +177,18 @@ function Screen() {
         <InvestRail state={state} onOpenShop={() => setIsShopOpen(true)} />
       </div>
 
+      {toast && (
+        <div
+          role="status"
+          className={cn(
+            GAME_TEXT,
+            "pointer-events-none fixed inset-x-0 top-[38%] z-40 mx-auto w-fit rounded-full border-2 border-[#2b1d12]/70 bg-[#fff3b0] px-5 py-2 text-lg text-[#2b1d12] shadow-lg",
+          )}
+        >
+          {toast}
+        </div>
+      )}
+
       {/* One big button: move time forward, or see the results */}
       <div className="sticky bottom-3 z-20 pt-1">
         {state.status === "chapter_complete" ? (
@@ -191,9 +211,13 @@ function Screen() {
           payAction={openPayAction}
           onClose={() => setOpenTaskId(null)}
           onBuild={() => {
-            if (!openPayAction) return;
+            const left = openTask.amount - openTask.paid;
+            const amount = Math.min(left, state.cash);
+            if (amount <= 0) return;
+            const err = act({ type: "pay_task", taskId: openTask.taskId, amount });
             setOpenTaskId(null);
-            setSelectedAction(openPayAction);
+            if (err) setErrorMsg(t("error", { code: err }));
+            else showToast(amount >= left ? tv("toastBuilt") : tv("toastPart"));
           }}
         />
       )}
@@ -204,6 +228,7 @@ function Screen() {
           option={selectedAction}
           availableCash={state.cash}
           currentRealValueIndex={state.inflationIndex}
+          incomePerMonth={state.incomePerMonth}
           onConfirm={handleActionConfirm}
           onClose={() => setSelectedAction(null)}
         />
