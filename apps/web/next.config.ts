@@ -1,5 +1,12 @@
+import { resolve } from "node:path";
+import { loadEnvConfig } from "@next/env";
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+
+// The repo keeps one `.env.local` at the root (§3.4); Next.js only reads env files from
+// apps/web, so load the root ones too. Values already set (shell, CI, Vercel) win.
+// forceReload: Next has already loaded (and cached) apps/web's env files by now.
+loadEnvConfig(resolve(__dirname, "../.."), process.env.NODE_ENV !== "production", console, true);
 
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 

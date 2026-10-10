@@ -30,7 +30,9 @@
     "functions:serve": "pnpm functions:build && supabase functions serve room-action",
     "functions:deploy": "pnpm functions:build && supabase functions deploy room-action",
     "functions:smoke": "pnpm functions:build && tsx supabase/tests/deno-smoke.ts",
-    "bench": "tsx scripts/bench.ts"
+    "bench": "tsx scripts/bench.ts",
+    "db:env": "tsx scripts/supabase-env.ts",
+    "db:env:mock": "tsx scripts/supabase-env.ts --mock"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.8",

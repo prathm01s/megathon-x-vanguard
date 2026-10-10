@@ -66,6 +66,28 @@ describe("demo seed", () => {
     expect(detail.rows).toHaveLength(35);
   });
 
+  it("stats views report the true numbers (no join fan-out)", async () => {
+    const seats = await t.asUser(ADMIN_ID, (tx) =>
+      tx.query<Record<string, number | string>>(`select * from org_seats_v`),
+    );
+    expect(seats.rows[0]).toMatchObject({
+      total_codes_generated: 40,
+      pending_codes: 3,
+      active_codes: 35,
+      expired_codes: 2,
+      total_students: 35,
+      linked_personal_learners: 0,
+    });
+    const engagement = await t.asUser(ADMIN_ID, (tx) =>
+      tx.query<Record<string, number>>(`select total_students, total_playthroughs from org_engagement_v`),
+    );
+    expect(engagement.rows[0]).toMatchObject({ total_students: 35, total_playthroughs: 35 });
+    const chapters = await t.asUser(ADMIN_ID, (tx) =>
+      tx.query<Record<string, number>>(`select attempts_count from org_chapter_stats_v`),
+    );
+    expect(chapters.rows[0]).toMatchObject({ attempts_count: 35 });
+  });
+
   it("stats views return nothing to students (they run with the owner's rights, so they must filter)", async () => {
     const student = "00000000-0000-0000-0001-000000000002";
     for (const view of VIEWS) {

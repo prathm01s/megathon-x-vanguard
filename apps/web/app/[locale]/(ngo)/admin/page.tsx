@@ -13,6 +13,7 @@ import {
   signUpNgo,
   loginUser,
 } from "@/lib/auth/actions";
+import { content } from "@/lib/content";
 import { createClient } from "@/lib/supabase/client";
 import {
   Users,
@@ -154,27 +155,79 @@ export default function AdminPage() {
           );
         }
 
-        // Query students
+        // Students with their real persona, chapter, score and badges (org_student_detail_v).
         const { data: students } = await supabase
-          .from("profiles")
-          .select("user_id, nickname, player_id, role")
-          .eq("role", "student")
-          .limit(50);
+          .from("org_student_detail_v")
+          .select("user_id, nickname, player_id, persona_id, latest_chapter_id, avg_health_score, badges_count")
+          .order("nickname")
+          .limit(200);
 
-        if (students && students.length > 0) {
+        const personaName = (id: string | null) =>
+          content.personas.personas.find((p) => p.id === id)?.name.en ?? "Not assessed";
+        const chapterLabel = (id: string | null) => {
+          const ch = content.chapters.find((c) => c.id === id);
+          return ch ? `Ch ${ch.order}` : "—";
+        };
+
+        if (students) {
           setStudentsList(
             students.map((s) => ({
-              id: s.user_id,
-              nickname: s.nickname,
-              playerId: s.player_id,
-              persona: "Smart Planner",
-              chapter: "Ch 2",
-              score: 75,
-              badges: 2,
+              id: s.user_id ?? "",
+              nickname: s.nickname ?? "",
+              playerId: s.player_id ?? "",
+              persona: personaName(s.persona_id),
+              chapter: chapterLabel(s.latest_chapter_id),
+              score: Math.round(Number(s.avg_health_score ?? 0)),
+              badges: Number(s.badges_count ?? 0),
             })),
           );
-          setStats((prev) => ({ ...prev, totalStudents: students.length }));
         }
+
+        // Class statistics from the dashboard views (§4.7). The initial numbers above are only
+        // sample data for running without Supabase.
+        const [engagement, chapters, scams, gain, personas] = await Promise.all([
+          supabase.from("org_engagement_v").select("*").maybeSingle(),
+          supabase.from("org_chapter_stats_v").select("*"),
+          supabase.from("org_scam_stats_v").select("*").maybeSingle(),
+          supabase.from("org_learning_gain_v").select("*").maybeSingle(),
+          supabase.from("org_persona_distribution_v").select("*"),
+        ]);
+
+        const chapterRows = chapters.data ?? [];
+        const attempts = chapterRows.reduce((n, r) => n + Number(r.attempts_count ?? 0), 0);
+        const weightedScore = chapterRows.reduce(
+          (n, r) => n + Number(r.avg_health_score ?? 0) * Number(r.attempts_count ?? 0),
+          0,
+        );
+        const PERSONA_COLORS: Record<string, string> = {
+          "safe-keeper": "bg-blue-500",
+          "smart-planner": "bg-emerald-500",
+          "moment-maker": "bg-amber-500",
+          "thrill-seeker": "bg-rose-500",
+        };
+        const round1 = (x: unknown) => Math.round(Number(x ?? 0) * 10) / 10;
+
+        setStats((prev) => ({
+          ...prev,
+          totalStudents: Number(engagement.data?.total_students ?? students?.length ?? 0),
+          active7d: Number(engagement.data?.active_students_7d ?? 0),
+          chaptersCompleted: Number(engagement.data?.completed_chapters ?? 0),
+          avgHealthScore: attempts ? Math.round(weightedScore / attempts) : 0,
+          scamFallRate: round1(scams.data?.fall_rate),
+          preVsPost: {
+            plan: { pre: round1(gain.data?.pre_avg_plan), post: round1(gain.data?.post_avg_plan) },
+            risk: { pre: round1(gain.data?.pre_avg_risk), post: round1(gain.data?.post_avg_risk) },
+            know: { pre: round1(gain.data?.pre_avg_know), post: round1(gain.data?.post_avg_know) },
+          },
+          personas: (personas.data ?? [])
+            .filter((p) => p.persona_id !== "unassigned")
+            .sort((a, b) => Number(b.student_count ?? 0) - Number(a.student_count ?? 0))
+            .map((p) => ({
+              name: personaName(p.persona_id),
+              count: Number(p.student_count ?? 0),
+              color: PERSONA_COLORS[p.persona_id ?? ""] ?? "bg-slate-500",
+            })),
+        }));
       } catch (err) {
         console.warn("Could not fetch remote admin stats:", err);
       }

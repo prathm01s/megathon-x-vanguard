@@ -12,12 +12,13 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@next/env": "16.4.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.3",
     "@tanstack/react-query": "^5.104.1",
     "@toss/content": "workspace:*",
-    "@toss/engine": "workspace:*",
     "@toss/db-types": "workspace:*",
+    "@toss/engine": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.54.0",

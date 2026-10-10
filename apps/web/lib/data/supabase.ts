@@ -16,6 +16,9 @@ import type {
   MindsetResult,
 } from "@toss/engine";
 
+// The generated types require a non-null value for NOT NULL jsonb columns.
+type JsonValue = NonNullable<Json>;
+
 const LOCAL_STORAGE_PREFIX = "toss-life:offline:";
 
 // Helper to save to local cache
@@ -70,7 +73,7 @@ async function flushDecisionQueueUnsafe(id: PlaythroughId) {
     chapter_id: r.chapterId,
     turn: r.turn,
     type: r.type,
-    payload: r.payload as unknown as Json,
+    payload: r.payload as unknown as JsonValue,
   }));
 
   const { error } = await supabase.from("decisions").insert(rows);
@@ -99,8 +102,8 @@ export const supabasePersistence: PersistenceApi = {
       await supabase.from("mindset_responses").insert({
         user_id: user.id,
         phase,
-        answers: answers as unknown as Json,
-        scores: result.scores as unknown as Json,
+        answers: answers as unknown as JsonValue,
+        scores: result.scores as unknown as JsonValue,
         persona_id: result.personaId,
         content_version: content.contentVersion,
       });
@@ -147,7 +150,7 @@ export const supabasePersistence: PersistenceApi = {
             content_version: state.contentVersion,
             current_chapter_id: state.chapterId,
             status: "active",
-            state: state as unknown as Json,
+            state: state as unknown as JsonValue,
           })
           .select("id")
           .single();
@@ -214,7 +217,7 @@ export const supabasePersistence: PersistenceApi = {
         await supabase
           .from("playthroughs")
           .update({
-            state: state as unknown as Json,
+            state: state as unknown as JsonValue,
             current_chapter_id: state.chapterId,
             updated_at: new Date().toISOString(),
           })
@@ -248,8 +251,8 @@ export const supabasePersistence: PersistenceApi = {
           chapter_id: result.chapterId,
           attempt: result.attempt,
           health_score: result.healthScore,
-          score_breakdown: result.breakdown as unknown as Json,
-          report: result.report as unknown as Json,
+          score_breakdown: result.breakdown as unknown as JsonValue,
+          report: result.report as unknown as JsonValue,
           passed: result.passed,
         });
 
