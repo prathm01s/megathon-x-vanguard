@@ -16,8 +16,8 @@
       "trustScore": 55,
       "ready": false,
       "state": {
-        "schemaVersion": 1,
-        "contentVersion": "7dc6cc0b3fb6",
+        "schemaVersion": 2,
+        "contentVersion": "1abb793e0abf",
         "seed": "fixture-seed-ch2",
         "personaId": "safe-keeper",
         "chapterId": "ch2-first-job",
@@ -25,20 +25,36 @@
         "totalTurns": 5,
         "turnUnit": "year",
         "status": "playing",
-        "cash": 15528000,
+        "cash": 14790508,
+        "debt": 0,
         "incomePerMonth": 3674160,
         "incomeModifiers": [],
-        "inflationIndex": 1.1236000000000002,
+        "inflationIndex": 1.1236000000000006,
+        "navs": {
+          "cash": 1,
+          "savings": 1.060900000000002,
+          "rd": 1.134224999999998,
+          "fd": 1.1395562500000027,
+          "gold": 1.156399999999998,
+          "equity-fund": 1.2544000000000022,
+          "debt-fund": 1.1663999999999992,
+          "index-fund": 1.243225000000002,
+          "asset-mix": 1.2041062499999997
+        },
         "holdings": [
           {
             "optionId": "savings",
             "invested": 5900000,
-            "value": 6107900
+            "investedReal": 5622642,
+            "value": 6107900,
+            "units": 5757281.553398054
           },
           {
             "optionId": "equity-fund",
             "invested": 4800000,
-            "value": 5088000
+            "investedReal": 4519874,
+            "value": 5362115,
+            "units": 4274645.338920395
           }
         ],
         "sips": [
@@ -84,7 +100,7 @@
           {
             "taskId": "ch2-two-wheeler",
             "amount": 7865200,
-            "paid": 3600000,
+            "paid": 2904249,
             "dueTurn": 5,
             "status": "open"
           }
@@ -94,9 +110,17 @@
           "bonus": 1
         },
         "scamsFallenIds": [],
+        "carriedIn": {
+          "blockNextChapterGoal": false,
+          "blockedTaskIds": [],
+          "salaryBonusRate": 0,
+          "shiftStreaks": {}
+        },
         "carryOver": {
           "blockNextChapterGoal": false,
-          "salaryBonusRate": 0
+          "blockedTaskIds": [],
+          "salaryBonusRate": 0.05,
+          "shiftStreaks": {}
         },
         "trustScore": 50,
         "stats": {
@@ -107,6 +131,8 @@
           "badEventsCoveredByFund": [],
           "windfallReceived": 3000000,
           "windfallSaved": 0,
+          "cashLost": 0,
+          "sipInstalmentsMissed": 0,
           "loansTaken": 0,
           "loansRepaidOnTime": 0,
           "loansDefaulted": 0,
@@ -114,8 +140,7 @@
           "interestPaid": 0,
           "auctionsWon": 0,
           "overbidPct": 0,
-          "poolBidsJoined": 0,
-          "shiftStreaks": {}
+          "poolBidsJoined": 0
         },
         "history": [
           {
@@ -126,15 +151,15 @@
           },
           {
             "turn": 1,
-            "amount": 18430000,
-            "realValue": 17386792,
-            "inflationIndex": 1.06
+            "amount": 17863549,
+            "realValue": 16852405,
+            "inflationIndex": 1.0600000000000003
           },
           {
             "turn": 2,
-            "amount": 26723900,
-            "realValue": 23784176,
-            "inflationIndex": 1.1236000000000002
+            "amount": 26260523,
+            "realValue": 23371772,
+            "inflationIndex": 1.1236000000000006
           }
         ],
         "actionLog": [
@@ -199,7 +224,7 @@
             "action": {
               "type": "pay_task",
               "taskId": "ch2-two-wheeler",
-              "amount": 3600000
+              "amount": 2904249
             }
           }
         ],
@@ -211,7 +236,8 @@
               "gold-toss": "down"
             },
             "inflation": 0.06,
-            "lifeEventId": "bonus"
+            "lifeEventId": "bonus",
+            "lifeEventMonth": 5
           },
           {
             "turn": 2,
@@ -235,8 +261,8 @@
       "trustScore": 50,
       "ready": true,
       "state": {
-        "schemaVersion": 1,
-        "contentVersion": "7dc6cc0b3fb6",
+        "schemaVersion": 2,
+        "contentVersion": "1abb793e0abf",
         "seed": "fixture-seed-ch2",
         "personaId": "safe-keeper",
         "chapterId": "ch2-first-job",
@@ -244,20 +270,36 @@
         "totalTurns": 5,
         "turnUnit": "year",
         "status": "playing",
-        "cash": 15528000,
+        "cash": 14790508,
+        "debt": 0,
         "incomePerMonth": 3674160,
         "incomeModifiers": [],
-        "inflationIndex": 1.1236000000000002,
+        "inflationIndex": 1.1236000000000006,
+        "navs": {
+          "cash": 1,
+          "savings": 1.060900000000002,
+          "rd": 1.134224999999998,
+          "fd": 1.1395562500000027,
+          "gold": 1.156399999999998,
+          "equity-fund": 1.2544000000000022,
+          "debt-fund": 1.1663999999999992,
+          "index-fund": 1.243225000000002,
+          "asset-mix": 1.2041062499999997
+        },
         "holdings": [
           {
             "optionId": "savings",
             "invested": 5900000,
-            "value": 6107900
+            "investedReal": 5622642,
+            "value": 6107900,
+            "units": 5757281.553398054
           },
           {
             "optionId": "equity-fund",
             "invested": 4800000,
-            "value": 5088000
+            "investedReal": 4519874,
+            "value": 5362115,
+            "units": 4274645.338920395
           }
         ],
         "sips": [
@@ -303,7 +345,7 @@
           {
             "taskId": "ch2-two-wheeler",
             "amount": 7865200,
-            "paid": 3600000,
+            "paid": 2904249,
             "dueTurn": 5,
             "status": "open"
           }
@@ -313,9 +355,17 @@
           "bonus": 1
         },
         "scamsFallenIds": [],
+        "carriedIn": {
+          "blockNextChapterGoal": false,
+          "blockedTaskIds": [],
+          "salaryBonusRate": 0,
+          "shiftStreaks": {}
+        },
         "carryOver": {
           "blockNextChapterGoal": false,
-          "salaryBonusRate": 0
+          "blockedTaskIds": [],
+          "salaryBonusRate": 0.05,
+          "shiftStreaks": {}
         },
         "trustScore": 50,
         "stats": {
@@ -326,6 +376,8 @@
           "badEventsCoveredByFund": [],
           "windfallReceived": 3000000,
           "windfallSaved": 0,
+          "cashLost": 0,
+          "sipInstalmentsMissed": 0,
           "loansTaken": 0,
           "loansRepaidOnTime": 0,
           "loansDefaulted": 0,
@@ -333,8 +385,7 @@
           "interestPaid": 0,
           "auctionsWon": 0,
           "overbidPct": 0,
-          "poolBidsJoined": 0,
-          "shiftStreaks": {}
+          "poolBidsJoined": 0
         },
         "history": [
           {
@@ -345,15 +396,15 @@
           },
           {
             "turn": 1,
-            "amount": 18430000,
-            "realValue": 17386792,
-            "inflationIndex": 1.06
+            "amount": 17863549,
+            "realValue": 16852405,
+            "inflationIndex": 1.0600000000000003
           },
           {
             "turn": 2,
-            "amount": 26723900,
-            "realValue": 23784176,
-            "inflationIndex": 1.1236000000000002
+            "amount": 26260523,
+            "realValue": 23371772,
+            "inflationIndex": 1.1236000000000006
           }
         ],
         "actionLog": [
@@ -418,7 +469,7 @@
             "action": {
               "type": "pay_task",
               "taskId": "ch2-two-wheeler",
-              "amount": 3600000
+              "amount": 2904249
             }
           }
         ],
@@ -430,7 +481,8 @@
               "gold-toss": "down"
             },
             "inflation": 0.06,
-            "lifeEventId": "bonus"
+            "lifeEventId": "bonus",
+            "lifeEventMonth": 5
           },
           {
             "turn": 2,
@@ -454,8 +506,8 @@
       "trustScore": 50,
       "ready": true,
       "state": {
-        "schemaVersion": 1,
-        "contentVersion": "7dc6cc0b3fb6",
+        "schemaVersion": 2,
+        "contentVersion": "1abb793e0abf",
         "seed": "fixture-seed-ch2",
         "personaId": "safe-keeper",
         "chapterId": "ch2-first-job",
@@ -463,20 +515,36 @@
         "totalTurns": 5,
         "turnUnit": "year",
         "status": "playing",
-        "cash": 15528000,
+        "cash": 14790508,
+        "debt": 0,
         "incomePerMonth": 3674160,
         "incomeModifiers": [],
-        "inflationIndex": 1.1236000000000002,
+        "inflationIndex": 1.1236000000000006,
+        "navs": {
+          "cash": 1,
+          "savings": 1.060900000000002,
+          "rd": 1.134224999999998,
+          "fd": 1.1395562500000027,
+          "gold": 1.156399999999998,
+          "equity-fund": 1.2544000000000022,
+          "debt-fund": 1.1663999999999992,
+          "index-fund": 1.243225000000002,
+          "asset-mix": 1.2041062499999997
+        },
         "holdings": [
           {
             "optionId": "savings",
             "invested": 5900000,
-            "value": 6107900
+            "investedReal": 5622642,
+            "value": 6107900,
+            "units": 5757281.553398054
           },
           {
             "optionId": "equity-fund",
             "invested": 4800000,
-            "value": 5088000
+            "investedReal": 4519874,
+            "value": 5362115,
+            "units": 4274645.338920395
           }
         ],
         "sips": [
@@ -522,7 +590,7 @@
           {
             "taskId": "ch2-two-wheeler",
             "amount": 7865200,
-            "paid": 3600000,
+            "paid": 2904249,
             "dueTurn": 5,
             "status": "open"
           }
@@ -532,9 +600,17 @@
           "bonus": 1
         },
         "scamsFallenIds": [],
+        "carriedIn": {
+          "blockNextChapterGoal": false,
+          "blockedTaskIds": [],
+          "salaryBonusRate": 0,
+          "shiftStreaks": {}
+        },
         "carryOver": {
           "blockNextChapterGoal": false,
-          "salaryBonusRate": 0
+          "blockedTaskIds": [],
+          "salaryBonusRate": 0.05,
+          "shiftStreaks": {}
         },
         "trustScore": 50,
         "stats": {
@@ -545,6 +621,8 @@
           "badEventsCoveredByFund": [],
           "windfallReceived": 3000000,
           "windfallSaved": 0,
+          "cashLost": 0,
+          "sipInstalmentsMissed": 0,
           "loansTaken": 0,
           "loansRepaidOnTime": 0,
           "loansDefaulted": 0,
@@ -552,8 +630,7 @@
           "interestPaid": 0,
           "auctionsWon": 0,
           "overbidPct": 0,
-          "poolBidsJoined": 0,
-          "shiftStreaks": {}
+          "poolBidsJoined": 0
         },
         "history": [
           {
@@ -564,15 +641,15 @@
           },
           {
             "turn": 1,
-            "amount": 18430000,
-            "realValue": 17386792,
-            "inflationIndex": 1.06
+            "amount": 17863549,
+            "realValue": 16852405,
+            "inflationIndex": 1.0600000000000003
           },
           {
             "turn": 2,
-            "amount": 26723900,
-            "realValue": 23784176,
-            "inflationIndex": 1.1236000000000002
+            "amount": 26260523,
+            "realValue": 23371772,
+            "inflationIndex": 1.1236000000000006
           }
         ],
         "actionLog": [
@@ -637,7 +714,7 @@
             "action": {
               "type": "pay_task",
               "taskId": "ch2-two-wheeler",
-              "amount": 3600000
+              "amount": 2904249
             }
           }
         ],
@@ -649,7 +726,8 @@
               "gold-toss": "down"
             },
             "inflation": 0.06,
-            "lifeEventId": "bonus"
+            "lifeEventId": "bonus",
+            "lifeEventMonth": 5
           },
           {
             "turn": 2,
@@ -671,6 +749,7 @@
       "principal": 1000000,
       "ratePerTurn": 0.03,
       "interestType": "simple",
+      "startTurn": 2,
       "dueTurn": 4,
       "status": "active",
       "repaidAmount": 0
@@ -685,7 +764,8 @@
         "gold-toss": "down"
       },
       "inflation": 0.06,
-      "lifeEventId": "bonus"
+      "lifeEventId": "bonus",
+      "lifeEventMonth": 5
     },
     {
       "turn": 2,

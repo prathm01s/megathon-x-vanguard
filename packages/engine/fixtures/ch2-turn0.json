@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "contentVersion": "7dc6cc0b3fb6",
+  "schemaVersion": 2,
+  "contentVersion": "1abb793e0abf",
   "seed": "fixture-seed-ch2",
   "personaId": "safe-keeper",
   "chapterId": "ch2-first-job",
@@ -9,9 +9,21 @@
   "turnUnit": "year",
   "status": "playing",
   "cash": 1500000,
+  "debt": 0,
   "incomePerMonth": 3000000,
   "incomeModifiers": [],
   "inflationIndex": 1,
+  "navs": {
+    "cash": 1,
+    "savings": 1,
+    "rd": 1,
+    "fd": 1,
+    "gold": 1,
+    "equity-fund": 1,
+    "debt-fund": 1,
+    "index-fund": 1,
+    "asset-mix": 1
+  },
   "holdings": [],
   "sips": [],
   "tasks": [
@@ -54,9 +66,17 @@
   "pendingScams": [],
   "eventCooldowns": {},
   "scamsFallenIds": [],
+  "carriedIn": {
+    "blockNextChapterGoal": false,
+    "blockedTaskIds": [],
+    "salaryBonusRate": 0,
+    "shiftStreaks": {}
+  },
   "carryOver": {
     "blockNextChapterGoal": false,
-    "salaryBonusRate": 0
+    "blockedTaskIds": [],
+    "salaryBonusRate": 0,
+    "shiftStreaks": {}
   },
   "trustScore": 50,
   "stats": {
@@ -67,6 +87,8 @@
     "badEventsCoveredByFund": [],
     "windfallReceived": 0,
     "windfallSaved": 0,
+    "cashLost": 0,
+    "sipInstalmentsMissed": 0,
     "loansTaken": 0,
     "loansRepaidOnTime": 0,
     "loansDefaulted": 0,
@@ -74,8 +96,7 @@
     "interestPaid": 0,
     "auctionsWon": 0,
     "overbidPct": 0,
-    "poolBidsJoined": 0,
-    "shiftStreaks": {}
+    "poolBidsJoined": 0
   },
   "history": [
     {

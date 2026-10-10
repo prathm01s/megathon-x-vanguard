@@ -58,14 +58,14 @@
         "params": {
           "tasksOnTimeRate": 1,
           "requiredTasksMissed": 0,
-          "emergencyFundMonths": 33.327523677705884,
+          "emergencyFundMonths": 32.41097124467475,
           "emergencyFundCovered": "true",
           "badEventCoveredByFund": "false",
-          "realValueGrowthPct": -0.22852966480446923,
-          "cashShareOfWealth": 0.7993165811473663,
+          "realValueGrowthPct": -0.12323569187466199,
+          "cashShareOfWealth": 0.7917297268244002,
           "cashRealValueLossPct": 25,
           "fdShareOfWealth": 0,
-          "equityShareOfWealth": 0.1282042045905807,
+          "equityShareOfWealth": 0.13425903414140267,
           "diversificationCount": 2,
           "sipActiveTurns": 5,
           "sipStartedTurn": 1,
@@ -85,7 +85,8 @@
           "poolBidsJoined": 0,
           "healthScore": 71,
           "chapterTurns": 5,
-          "persona": "safe-keeper"
+          "persona": "safe-keeper",
+          "interestPaid": 0
         },
         "pillar": "understand-investing",
         "techniqueId": "sip-rupee-cost-averaging"
@@ -98,14 +99,14 @@
         "params": {
           "tasksOnTimeRate": 1,
           "requiredTasksMissed": 0,
-          "emergencyFundMonths": 33.327523677705884,
+          "emergencyFundMonths": 32.41097124467475,
           "emergencyFundCovered": "true",
           "badEventCoveredByFund": "false",
-          "realValueGrowthPct": -0.22852966480446923,
-          "cashShareOfWealth": 0.7993165811473663,
+          "realValueGrowthPct": -0.12323569187466199,
+          "cashShareOfWealth": 0.7917297268244002,
           "cashRealValueLossPct": 25,
           "fdShareOfWealth": 0,
-          "equityShareOfWealth": 0.1282042045905807,
+          "equityShareOfWealth": 0.13425903414140267,
           "diversificationCount": 2,
           "sipActiveTurns": 5,
           "sipStartedTurn": 1,
@@ -125,7 +126,8 @@
           "poolBidsJoined": 0,
           "healthScore": 71,
           "chapterTurns": 5,
-          "persona": "safe-keeper"
+          "persona": "safe-keeper",
+          "interestPaid": 0
         },
         "pillar": "stay-safe"
       },
@@ -137,14 +139,14 @@
         "params": {
           "tasksOnTimeRate": 1,
           "requiredTasksMissed": 0,
-          "emergencyFundMonths": 33.327523677705884,
+          "emergencyFundMonths": 32.41097124467475,
           "emergencyFundCovered": "true",
           "badEventCoveredByFund": "false",
-          "realValueGrowthPct": -0.22852966480446923,
-          "cashShareOfWealth": 0.7993165811473663,
+          "realValueGrowthPct": -0.12323569187466199,
+          "cashShareOfWealth": 0.7917297268244002,
           "cashRealValueLossPct": 25,
           "fdShareOfWealth": 0,
-          "equityShareOfWealth": 0.1282042045905807,
+          "equityShareOfWealth": 0.13425903414140267,
           "diversificationCount": 2,
           "sipActiveTurns": 5,
           "sipStartedTurn": 1,
@@ -164,7 +166,8 @@
           "poolBidsJoined": 0,
           "healthScore": 71,
           "chapterTurns": 5,
-          "persona": "safe-keeper"
+          "persona": "safe-keeper",
+          "interestPaid": 0
         },
         "pillar": "plan-budget"
       }
@@ -178,14 +181,14 @@
         "params": {
           "tasksOnTimeRate": 1,
           "requiredTasksMissed": 0,
-          "emergencyFundMonths": 33.327523677705884,
+          "emergencyFundMonths": 32.41097124467475,
           "emergencyFundCovered": "true",
           "badEventCoveredByFund": "false",
-          "realValueGrowthPct": -0.22852966480446923,
-          "cashShareOfWealth": 0.7993165811473663,
+          "realValueGrowthPct": -0.12323569187466199,
+          "cashShareOfWealth": 0.7917297268244002,
           "cashRealValueLossPct": 25,
           "fdShareOfWealth": 0,
-          "equityShareOfWealth": 0.1282042045905807,
+          "equityShareOfWealth": 0.13425903414140267,
           "diversificationCount": 2,
           "sipActiveTurns": 5,
           "sipStartedTurn": 1,
@@ -205,53 +208,14 @@
           "poolBidsJoined": 0,
           "healthScore": 71,
           "chapterTurns": 5,
-          "persona": "safe-keeper"
+          "persona": "safe-keeper",
+          "interestPaid": 0
         },
         "pillar": "understand-investing",
         "techniqueId": "real-value"
       }
     ],
-    "whatIf": {
-      "candidateId": "idle-cash",
-      "changeText": {
-        "en": "started a ₹2,000 monthly SIP in Sunrise Equity Fund from year 1"
-      },
-      "baselineRealValue": 68811460,
-      "alternativeRealValue": 68811460,
-      "difference": 0,
-      "series": [
-        {
-          "turn": 0,
-          "baseline": 1500000,
-          "alternative": 1500000
-        },
-        {
-          "turn": 1,
-          "baseline": 17386792,
-          "alternative": 17386792
-        },
-        {
-          "turn": 2,
-          "baseline": 23784176,
-          "alternative": 23784176
-        },
-        {
-          "turn": 3,
-          "baseline": 39249529,
-          "alternative": 39249529
-        },
-        {
-          "turn": 4,
-          "baseline": 55286986,
-          "alternative": 55286986
-        },
-        {
-          "turn": 5,
-          "baseline": 68811460,
-          "alternative": 68811460
-        }
-      ]
-    },
+    "whatIf": null,
     "gyaanQuestionIds": [
       "ch2-gyaan-real-value",
       "ch2-gyaan-sip-storm",
@@ -267,14 +231,14 @@
   "metrics": {
     "tasksOnTimeRate": 1,
     "requiredTasksMissed": 0,
-    "emergencyFundMonths": 33.327523677705884,
+    "emergencyFundMonths": 32.41097124467475,
     "emergencyFundCovered": true,
     "badEventCoveredByFund": false,
-    "realValueGrowthPct": -0.22852966480446923,
-    "cashShareOfWealth": 0.7993165811473663,
+    "realValueGrowthPct": -0.12323569187466199,
+    "cashShareOfWealth": 0.7917297268244002,
     "cashRealValueLossPct": 25,
     "fdShareOfWealth": 0,
-    "equityShareOfWealth": 0.1282042045905807,
+    "equityShareOfWealth": 0.13425903414140267,
     "diversificationCount": 2,
     "sipActiveTurns": 5,
     "sipStartedTurn": 1,
@@ -295,6 +259,14 @@
     "healthScore": 71,
     "chapterTurns": 5,
     "persona": "safe-keeper"
+  },
+  "carryOver": {
+    "blockNextChapterGoal": false,
+    "blockedTaskIds": [],
+    "salaryBonusRate": 0.05,
+    "shiftStreaks": {
+      "safe-keeper-to-smart-planner": 0
+    }
   },
   "next": [
     "ch3a-salaried",

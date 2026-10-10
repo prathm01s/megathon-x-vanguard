@@ -104,12 +104,20 @@ export const multiplayerSchema = z.strictObject({
     maxLoanMultipleOfIncome: z.number().positive(),
     loanAppRatePerTurn: rateSchema,
     lateFine: rupeesSchema,
+    /** A loan still unpaid this many turns after its due turn becomes a default. */
+    defaultAfterTurnsLate: z.number().int().positive(),
+    /**
+     * Bank interest by Trust Score. Also used when a single player is forced to borrow
+     * (a bad toss with no safety net).
+     * DECISION: bank rates are per YEAR so they mean the same in month- and year-turn
+     * chapters; friend-loan rates (`maxRatePerTurn`) stay per turn as in §8.14.
+     */
     bankRateByTrust: z
       .array(
         z.strictObject({
           minTrust: z.number().min(0).max(100),
-          /** `null` means the bank refuses to lend. */
-          ratePerTurn: rateSchema.nullable(),
+          /** `null` means the bank refuses to lend (the loan app is then the only option). */
+          ratePerYear: rateSchema.nullable(),
         }),
       )
       .min(1),

@@ -105,6 +105,7 @@ export function sampleRoom(content: ContentBundle, me: GameState): RoomState {
         principal: 1_000_000,
         ratePerTurn: 0.03,
         interestType: "simple",
+        startTurn: me.turn,
         dueTurn: me.turn + 2,
         status: "active",
         repaidAmount: 0,

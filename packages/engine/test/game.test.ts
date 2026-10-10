@@ -33,8 +33,14 @@ describe("chapter 2 setup", () => {
     const invest = getAvailableActions(ch2(), content())
       .filter((a) => a.type === "invest")
       .map((a) => a.targetId);
-    expect(invest).toEqual(expect.arrayContaining(["savings", "rd", "fd", "gold", "equity-fund"]));
+    expect(invest).toEqual(expect.arrayContaining(["savings", "fd", "gold", "equity-fund"]));
     expect(invest).not.toContain("index-fund");
+    // The recurring deposit is monthly-only: offered as a monthly plan, not a lump sum.
+    expect(invest).not.toContain("rd");
+    const monthly = getAvailableActions(ch2(), content())
+      .filter((a) => a.type === "sip_start")
+      .map((a) => a.targetId);
+    expect(monthly).toEqual(expect.arrayContaining(["rd", "equity-fund"]));
   });
 });
 

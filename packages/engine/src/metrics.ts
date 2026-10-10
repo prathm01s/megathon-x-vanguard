@@ -2,7 +2,8 @@
 // `Record<MetricId, …>` makes TypeScript fail if a metric id declared in
 // packages/content/src/schemas/conditions.ts has no compute function here.
 import type { Chapter, ContentBundle, InvestmentOption, MetricId } from "@toss/content";
-import { monthsPerTurn, realValue } from "./money";
+import { monthlyExpensesFor } from "./economy";
+import { realValue } from "./money";
 import type { GameState, MetricValues, Paise } from "./types";
 
 export interface MetricContext {
@@ -17,7 +18,7 @@ export interface MetricDef {
   compute(ctx: MetricContext): number | boolean | string;
 }
 
-/** Cash in the wallet plus the current value of every holding. */
+/** Cash in the wallet plus the current value of every holding (gross: debt not subtracted). */
 export function totalWealth(state: GameState): Paise {
   return state.cash + state.holdings.reduce((s, h) => s + h.value, 0);
 }
@@ -34,11 +35,7 @@ export function liquidSavings(ctx: MetricContext): Paise {
 
 /** Current monthly fixed expenses (inflation-adjusted where configured), in paise. */
 export function monthlyExpenses(ctx: MetricContext): Paise {
-  return ctx.chapter.fixedExpenses.reduce(
-    (s, e) =>
-      s + Math.round(e.amountPerMonth * 100 * (e.inflationAdjusted ? ctx.state.inflationIndex : 1)),
-    0,
-  );
+  return monthlyExpensesFor(ctx.chapter, ctx.state.inflationIndex);
 }
 
 function shareOf(
@@ -104,23 +101,25 @@ export const METRICS: Record<MetricId, MetricDef> = {
     compute: (ctx) => ctx.state.stats.badEventsCoveredByFund.length > 0,
   },
   realValueGrowthPct: {
-    // DECISION: growth measures what invested money did after inflation, not salary piling up.
-    // TODO(samarth): refine to a time-weighted real return once portfolio.ts tracks cash flows.
-    description: "Real (inflation-adjusted) gain on invested money as a fraction, e.g. 0.12 = 12%.",
+    // DECISION: growth measures what saved and invested money did AFTER inflation, not salary
+    // piling up. Each contribution is valued in chapter-start prices when it is made
+    // (`investedReal`), so money invested late isn't penalised for inflation it never saw.
+    description:
+      "Real (inflation-adjusted) gain on saved and invested money as a fraction, e.g. 0.12 = 12%.",
     compute: (ctx) => {
-      const invested = ctx.state.holdings.reduce((s, h) => s + h.invested, 0);
-      if (invested <= 0) return 0;
+      const investedReal = ctx.state.holdings.reduce((s, h) => s + h.investedReal, 0);
+      if (investedReal <= 0) return 0;
       const value = ctx.state.holdings.reduce((s, h) => s + h.value, 0);
-      return realValue(value, ctx.state.inflationIndex) / invested - 1;
+      return realValue(value, ctx.state.inflationIndex) / investedReal - 1;
     },
   },
   cashShareOfWealth: {
-    description: "Wallet cash (plus the `cash` option) as a share of total wealth.",
+    description: "Wallet cash (plus any cash-category option) as a share of total wealth.",
     compute: (ctx) => {
       const wealth = totalWealth(ctx.state);
       if (wealth <= 0) return 0;
       const cashHolding = ctx.state.holdings
-        .filter((h) => h.optionId === "cash")
+        .filter((h) => ctx.optionById.get(h.optionId)?.category === "cash")
         .reduce((s, h) => s + h.value, 0);
       return (ctx.state.cash + cashHolding) / wealth;
     },
@@ -183,7 +182,7 @@ export const METRICS: Record<MetricId, MetricDef> = {
     compute: (ctx) => ctx.state.stats.repeatScamSpotted,
   },
   loansTaken: {
-    description: "Loans taken (any lender).",
+    description: "Loans taken (any lender, including forced bank borrowing after a bad toss).",
     compute: (ctx) => ctx.state.stats.loansTaken,
   },
   loansRepaidOnTime: {
@@ -203,6 +202,8 @@ export const METRICS: Record<MetricId, MetricDef> = {
     compute: (ctx) => ctx.state.stats.highInterestDebt,
   },
   windfallSavedPct: {
+    // TODO(samarth): `windfallSaved` isn't tracked yet (needs attributing next-turn spending to
+    // the windfall), so this is 0 and the `saved-windfall` report rule never fires.
     description: "Share of good-event money (bonus, scholarship) that was saved rather than spent.",
     compute: (ctx) =>
       ctx.state.stats.windfallReceived > 0
@@ -244,9 +245,4 @@ export function computeMetrics(state: GameState, content: ContentBundle): Metric
   const out = {} as MetricValues;
   for (const id of Object.keys(METRICS) as MetricId[]) out[id] = METRICS[id].compute(ctx);
   return out;
-}
-
-/** Months in one turn of the given state (12 for year-long turns). */
-export function stateMonthsPerTurn(state: GameState): number {
-  return monthsPerTurn(state.turnUnit);
 }
