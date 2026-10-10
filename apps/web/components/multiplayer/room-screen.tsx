@@ -156,6 +156,15 @@ export function RoomScreen({ code }: RoomScreenProps) {
     }
   }
 
+  async function handleOfferLoan(loanId: string, ratePerTurn: number) {
+    try {
+      await roomHook.actions.offerLoan({ loanId, ratePerTurn });
+      playSuccessChime();
+    } catch (err) {
+      console.error("Failed to offer loan:", err);
+    }
+  }
+
   if (!room || roomHook.status === "loading") {
     return (
       <div className="flex min-h-[60vh] items-center justify-center p-4">
@@ -411,6 +420,7 @@ export function RoomScreen({ code }: RoomScreenProps) {
           members={room.members}
           currentTurn={currentTurn}
           onRequestLoan={handleRequestLoan}
+          onOfferLoan={handleOfferLoan}
           onAcceptLoan={handleAcceptLoan}
           onRepayLoan={handleRepayLoan}
           onClose={() => setShowLoanModal(false)}
