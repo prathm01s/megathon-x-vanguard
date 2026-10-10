@@ -12,7 +12,11 @@ const envPath = resolve(root, ".env.local");
 const mock = process.argv.includes("--mock");
 
 function localSupabase(): Record<string, string> {
-  const bin = resolve(root, "node_modules/.bin", process.platform === "win32" ? "supabase.cmd" : "supabase");
+  const bin = resolve(
+    root,
+    "node_modules/.bin",
+    process.platform === "win32" ? "supabase.cmd" : "supabase",
+  );
   // `supabase status` exits non-zero when optional services (imgproxy, pooler) are stopped,
   // so read stdout regardless of the exit code.
   // Quote the path for the Windows shell: the repo may live in a folder with spaces.

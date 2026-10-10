@@ -18,6 +18,7 @@ import { formatPaise } from "@/lib/format";
 import { playCoinTossSound, playSuccessChime } from "@/lib/sound";
 import { content } from "@/lib/content";
 import { useGameStore } from "@/components/game/store";
+import { useLocalize } from "@/components/game/use-localize";
 import { cn } from "@/lib/utils";
 
 export interface RoomScreenProps {
@@ -26,6 +27,7 @@ export interface RoomScreenProps {
 
 export function RoomScreen({ code }: RoomScreenProps) {
   const t = useTranslations("room");
+  const l = useLocalize();
   const tc = useTranslations("common");
 
   const roomHook = useRoom(code);
@@ -40,7 +42,7 @@ export function RoomScreen({ code }: RoomScreenProps) {
     }
   }, [room, me, roomHook.actions, personaId]);
 
-  const currentTurn = room?.turn ?? 2;
+  const currentTurn = room?.turn ?? 0;
   const totalTurns = me?.state.totalTurns ?? 5;
 
   // Modals
@@ -223,7 +225,12 @@ export function RoomScreen({ code }: RoomScreenProps) {
         <div className="space-y-1.5 pt-1 border-t border-border/60">
           <div className="flex items-center justify-between text-xs">
             <span className="font-extrabold text-foreground">
-              {t("turnSync", { unit: "year", turn: currentTurn, total: totalTurns })}
+              {t("turnSync", {
+                unit: me?.state.turnUnit ?? "year",
+                // `turn` counts tosses so far (0 before the first); players see a 1-based year.
+                turn: Math.min(currentTurn + 1, totalTurns),
+                total: totalTurns,
+              })}
             </span>
             <span className="text-[11px] font-medium text-muted-foreground">
               Lockstep Synchronized
@@ -267,13 +274,21 @@ export function RoomScreen({ code }: RoomScreenProps) {
             </span>
           </div>
           <p className="text-[11px] text-muted-foreground leading-snug">
-            Market: <strong className="capitalize">{currentToss.marketState}</strong> · Inflation:{" "}
-            <strong>+{Math.round(currentToss.inflation * 100)}%</strong>
+            Market:{" "}
+            <strong>
+              {l(content.market.states.find((m) => m.id === currentToss.marketState)?.label) ||
+                currentToss.marketState}
+            </strong>{" "}
+            · Inflation: <strong>+{Math.round(currentToss.inflation * 100)}%</strong>
             {currentToss.lifeEventId && (
               <>
                 {" "}
                 · Life Event:{" "}
-                <strong className="capitalize">{currentToss.lifeEventId.replace(/-/g, " ")}</strong>
+                <strong>
+                  {l(
+                    content.lifeEvents.events.find((e) => e.id === currentToss.lifeEventId)?.title,
+                  ) || currentToss.lifeEventId}
+                </strong>
               </>
             )}
           </p>
@@ -348,7 +363,7 @@ export function RoomScreen({ code }: RoomScreenProps) {
           ) : (
             myTasks.map((task, idx) => {
               const isDone = task.status === "done";
-              const isDue = task.dueTurn === currentTurn;
+              const isDue = task.dueTurn === currentTurn + 1; // dueTurn is 1-based
               return (
                 <div
                   key={task.taskId}
@@ -362,8 +377,12 @@ export function RoomScreen({ code }: RoomScreenProps) {
                       className={cn("size-4", isDone ? "text-gain" : "text-muted-foreground")}
                     />
                     <div>
-                      <p className="font-bold capitalize">
-                        {task.taskId.replace(/^ch\d+-/, "").replace(/-/g, " ")}
+                      <p className="font-bold">
+                        {l(
+                          content.chapters
+                            .find((c) => c.id === me?.state.chapterId)
+                            ?.tasks.find((ct) => ct.id === task.taskId)?.title,
+                        ) || task.taskId}
                       </p>
                       <p className="text-[10px] text-muted-foreground">
                         {formatPaise(task.paid)} / {formatPaise(task.amount)}

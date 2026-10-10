@@ -6,13 +6,20 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AppShell } from "@/components/ui/app-shell";
+import { useGameStore } from "@/components/game/store";
 import { useRouter } from "@/i18n/navigation";
+import { isRealRoomBackend, RoomError, useCreateRoom } from "@/lib/room";
 
 export default function RoomJoinPage() {
   const t = useTranslations("room");
   const router = useRouter();
 
-  const [code, setCode] = useState("TOSS42");
+  const createRoom = useCreateRoom();
+  const personaId = useGameStore((s) => s.personaId);
+  // The mock backend has a ready-made demo room; on the real server you create or join one.
+  const [code, setCode] = useState(isRealRoomBackend ? "" : "TOSS42");
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   function handleJoin(e: React.FormEvent) {
     e.preventDefault();
@@ -21,8 +28,16 @@ export default function RoomJoinPage() {
     }
   }
 
-  function handleCreate() {
-    router.push("/room/TOSS42");
+  async function handleCreate() {
+    setCreating(true);
+    setError(null);
+    try {
+      const { code: newCode } = await createRoom("ch2-first-job", personaId ?? undefined);
+      router.push(`/room/${newCode}`);
+    } catch (err) {
+      setError(err instanceof RoomError ? err.code : "network");
+      setCreating(false);
+    }
   }
 
   return (
@@ -67,15 +82,22 @@ export default function RoomJoinPage() {
             </span>
           </div>
 
+          {error && (
+            <p role="alert" className="text-center text-xs font-semibold text-destructive">
+              {t("createError", { code: error })}
+            </p>
+          )}
+
           <Button
             type="button"
             variant="outline"
             size="lg"
+            disabled={creating}
             onClick={handleCreate}
             className="w-full font-bold border-2 border-border"
           >
             <Plus className="size-4 mr-1.5 text-primary" />
-            {t("create")} (Chapter 2)
+            {creating ? t("creating") : t("create")}
           </Button>
         </Card>
 

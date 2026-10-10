@@ -81,4 +81,3 @@
 - `pnpm typecheck`: PASS (0 errors across monorepo, web, scripts, and supabase tests)
 - `pnpm test`: PASS (24/24 test files, 155/155 unit & integration tests passing)
 - `pnpm test:e2e`: PASS (4/4 Playwright tests passing on mobile Pixel 5 emulator)
-

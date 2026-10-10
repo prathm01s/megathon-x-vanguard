@@ -453,7 +453,8 @@ function Screen() {
       )}
 
       {/* Scam card trigger if pending */}
-      {pendingScam && (
+      {/* A scam arrives during the year: show it once the toss summary has been read. */}
+      {pendingScam && !lastTurn && (
         <ScamModal pendingScam={pendingScam} state={state} onRespond={handleScamResponse} />
       )}
 

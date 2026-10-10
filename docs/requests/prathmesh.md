@@ -110,4 +110,3 @@ Open for you — all resolved in session 2 & 3:
 22. ~~**Your progress note mentions IndexedDB.**~~ **Done:** Upgraded decision logging in
     `apps/web/lib/data/supabase.ts` to real IndexedDB (`toss-life:persistence` / `offline_queue`) with
     localStorage fallback.
-

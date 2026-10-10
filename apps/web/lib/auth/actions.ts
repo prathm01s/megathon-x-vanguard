@@ -80,18 +80,18 @@ export async function redeemStudentCode(formData: {
     const admin = createAdminClient();
 
     // 1. Atomically claim code using SECURITY DEFINER stored procedure
-    const { data: claimData, error: claimErr } = await admin.rpc(
-      "redeem_student_code_claim",
-      {
-        p_code_hash: codeHash,
-        p_ip: clientIp,
-      },
-    );
+    const { data: claimData, error: claimErr } = await admin.rpc("redeem_student_code_claim", {
+      p_code_hash: codeHash,
+      p_ip: clientIp,
+    });
 
     if (claimErr) {
       const msg = claimErr.message || "";
       if (msg.includes("rate_limit_exceeded")) {
-        return { success: false, error: "Too many attempts. Please wait 60 seconds and try again." };
+        return {
+          success: false,
+          error: "Too many attempts. Please wait 60 seconds and try again.",
+        };
       }
       if (msg.includes("code_expired")) {
         return { success: false, error: "This student code has expired." };
@@ -105,7 +105,8 @@ export async function redeemStudentCode(formData: {
       return { success: false, error: "Student code not found or invalid." };
     }
 
-    const claimRows = (claimData as Array<{ code_id: string; org_id: string; group_id: string | null }>) || [];
+    const claimRows =
+      (claimData as Array<{ code_id: string; org_id: string; group_id: string | null }>) || [];
     if (!claimRows || claimRows.length === 0) {
       return { success: false, error: "Student code not found or invalid." };
     }
@@ -597,12 +598,14 @@ export async function getStudentPendingJoinRequests(): Promise<
 
     if (error) return { success: false, error: error.message };
 
-    const formatted = ((data as unknown) as Array<{
-      id: string;
-      org_id: string;
-      created_at: string;
-      organizations: { name: string } | null;
-    }>).map((r) => ({
+    const formatted = (
+      data as unknown as Array<{
+        id: string;
+        org_id: string;
+        created_at: string;
+        organizations: { name: string } | null;
+      }>
+    ).map((r) => ({
       id: r.id,
       orgId: r.org_id,
       orgName: r.organizations?.name || "Unknown NGO",
@@ -757,9 +760,7 @@ export async function createOrgGroup(
 /**
  * Admin: List all groups for the NGO (§4.6)
  */
-export async function getOrgGroups(): Promise<
-  ActionResult<Array<{ id: string; name: string }>>
-> {
+export async function getOrgGroups(): Promise<ActionResult<Array<{ id: string; name: string }>>> {
   try {
     const client = await createClient();
     const { data: user } = await client.auth.getUser();

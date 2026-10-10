@@ -1,4 +1,10 @@
+import { resolve } from "node:path";
+import { loadEnvConfig } from "@next/env";
 import { expect, test } from "@playwright/test";
+
+// Same env as the app (root .env.local), to know which room backend is running.
+loadEnvConfig(resolve(__dirname, "../../.."), true, { info: () => {}, error: console.error });
+const mockRooms = process.env.NEXT_PUBLIC_ROOM_BACKEND !== "supabase";
 
 test.describe("Full Hackathon Demo Path (§13)", () => {
   test("Complete student journey: Mindset Check -> Persona -> Ladder -> Chapter 2 Gameplay", async ({
@@ -32,7 +38,9 @@ test.describe("Full Hackathon Demo Path (§13)", () => {
 
     // 4. Persona Reveal Screen
     await expect(page).toHaveURL(/\/en\/persona$/, { timeout: 10_000 });
-    await expect(page.getByText(/Your money style|Your strength|Watch out for/i).first()).toBeVisible();
+    await expect(
+      page.getByText(/Your money style|Your strength|Watch out for/i).first(),
+    ).toBeVisible();
 
     // 5. Navigate to Life Ladder
     const ladderLink = page.getByRole("link", { name: /See my Life Ladder|Life Ladder/i });
@@ -58,15 +66,17 @@ test.describe("Full Hackathon Demo Path (§13)", () => {
     await expect(tossBtn).toBeVisible();
     await tossBtn.click({ force: true });
 
-    // 8. Multiplayer Classroom
+    // 8. Multiplayer Classroom. The ready-made room TOSS42 exists only in the mock room backend;
+    // the real server is covered by demo-supabase.spec.ts.
     await page.goto("/en/room");
     await expect(page.getByText("Multiplayer Classroom")).toBeVisible();
     await expect(page.getByText("Peer Lending & Trust Score")).toBeVisible();
-
-    const joinRoomBtn = page.getByRole("button", { name: /join/i });
-    await joinRoomBtn.click();
-    await expect(page).toHaveURL(/\/en\/room\/TOSS42$/);
-    await expect(page.getByText(/TOSS42/i).first()).toBeVisible();
+    if (mockRooms) {
+      const joinRoomBtn = page.getByRole("button", { name: /join/i });
+      await joinRoomBtn.click();
+      await expect(page).toHaveURL(/\/en\/room\/TOSS42$/);
+      await expect(page.getByText(/TOSS42/i).first()).toBeVisible();
+    }
 
     // 9. Student Profile
     await page.goto("/en/profile");

@@ -261,7 +261,7 @@
     "code": "Room Code",
     "shareCode": "Share this code with friends in class",
     "join": "Join Room",
-    "create": "Create Room",
+    "create": "Create a Chapter 2 room",
     "enterCode": "Enter 6-letter room code",
     "players": "Players ({count}/{max})",
     "ready": "Ready",
@@ -293,7 +293,9 @@
     "contribute": "Contribute to Pool",
     "mutualFundRevealTitle": "💡 How Mutual Funds Work",
     "mutualFundRevealBody": "This is how a mutual fund works: many people pool money, it is invested together, and returns are shared by how much each person put in.",
-    "reactions": "Send reaction"
+    "reactions": "Send reaction",
+    "creating": "Creating your room…",
+    "createError": "Could not create the room ({code}). Check your connection and try again."
   },
   "dev": {
     "contentTitle": "Content preview",

@@ -194,7 +194,9 @@ export default function AdminPage() {
         // Students with their real persona, chapter, score and badges (org_student_detail_v).
         const { data: students } = await supabase
           .from("org_student_detail_v")
-          .select("user_id, nickname, player_id, persona_id, latest_chapter_id, avg_health_score, badges_count")
+          .select(
+            "user_id, nickname, player_id, persona_id, latest_chapter_id, avg_health_score, badges_count",
+          )
           .order("nickname")
           .limit(200);
 
@@ -959,7 +961,8 @@ export default function AdminPage() {
                   </div>
                   <p className="text-xs text-muted-foreground mb-3">
                     Students who registered on their own can share their Player ID (e.g. TL-8M29R).
-                    Sending an invitation links them to your NGO cohort once accepted in their Profile.
+                    Sending an invitation links them to your NGO cohort once accepted in their
+                    Profile.
                   </p>
                   <form onSubmit={handleSendJoinRequest} className="flex gap-2">
                     <input
@@ -1027,7 +1030,9 @@ export default function AdminPage() {
                               >
                                 {req.status}
                               </span>
-                              <span className="text-[10px] text-muted-foreground">{req.createdAt}</span>
+                              <span className="text-[10px] text-muted-foreground">
+                                {req.createdAt}
+                              </span>
                             </div>
                           </div>
                         ))}
@@ -1269,9 +1274,7 @@ export default function AdminPage() {
                         </p>
                         <p>
                           1. Open your browser and go to{" "}
-                          <strong className="text-primary font-mono print:text-black">
-                            /join
-                          </strong>
+                          <strong className="text-primary font-mono print:text-black">/join</strong>
                         </p>
                         <p>2. Enter your 8-digit access code above</p>
                         <p>3. Choose your secret username and password</p>

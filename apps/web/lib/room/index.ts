@@ -14,7 +14,7 @@
 // (e.g. "insufficient_cash", "scam_pending") — translate it via messages/<locale>.json.
 import type { Action, Loan, PublicMember, RoomMember, RoomRequest, RoomView } from "@toss/engine";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { useMemo, useSyncExternalStore } from "react";
+import { useCallback, useMemo, useSyncExternalStore } from "react";
 import { useSession } from "@/lib/data";
 import { mockSession } from "@/lib/data/mock";
 import { createClient } from "@/lib/supabase/client";
@@ -156,7 +156,25 @@ export function useRoom(code: string): UseRoomResult {
  * `createRoom(chapterId)`). `host` overrides the player info, e.g. in tests.
  */
 export async function createRoom(chapterId: string, host?: HostInfo): Promise<{ code: string }> {
-  // TODO(samarth): read the host from the real session once lib/data is wired to Supabase.
   const info = host ?? hostInfo(mockSession.user?.id ?? "anonymous", mockSession.profile);
   return getBackend().create(chapterId, info);
+}
+
+/** True when rooms run on the real server (`NEXT_PUBLIC_ROOM_BACKEND=supabase`), not the mock. */
+export const isRealRoomBackend = process.env.NEXT_PUBLIC_ROOM_BACKEND === "supabase";
+
+/**
+ * `createRoom` hosted by the signed-in player: use this from screens. The new room's view is
+ * stored under the same user that `useRoom` reads, so the lobby shows up straight away.
+ */
+export function useCreateRoom(): (
+  chapterId: string,
+  personaId?: string,
+) => Promise<{ code: string }> {
+  const { user, profile } = useSession();
+  return useCallback(
+    (chapterId: string, personaId?: string) =>
+      createRoom(chapterId, user ? hostInfo(user.id, profile, personaId) : undefined),
+    [user, profile],
+  );
 }

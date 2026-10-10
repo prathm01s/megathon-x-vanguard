@@ -50,9 +50,9 @@ function ProfileView() {
 
   const router = useRouter();
 
-  const [pendingRequests, setPendingRequests] = useState<
-    Array<{ id: string; orgName: string }>
-  >([]);
+  const [pendingRequests, setPendingRequests] = useState<Array<{ id: string; orgName: string }>>(
+    [],
+  );
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
@@ -146,7 +146,8 @@ function ProfileView() {
               Invitation from {pendingRequests[0]!.orgName}
             </p>
             <p className="text-[11px] text-muted-foreground">
-              This organization has invited you to join their cohort. You will keep all your progress and badges.
+              This organization has invited you to join their cohort. You will keep all your
+              progress and badges.
             </p>
             <div className="flex gap-2 pt-1">
               <Button
