@@ -15,8 +15,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "pnpm --filter web test:e2e",
-    "lint": "pnpm -r --parallel lint && eslint scripts",
-    "typecheck": "pnpm -r --parallel typecheck && tsc -p scripts",
+    "lint": "pnpm -r --parallel lint && eslint scripts supabase/tests supabase/functions/room-action",
+    "typecheck": "pnpm -r --parallel typecheck && tsc -p scripts && tsc -p supabase/tests",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "sim": "tsx scripts/sim.ts",
@@ -25,10 +25,15 @@
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:migrate": "supabase migration up",
-    "db:types": "supabase gen types typescript --local > packages/db-types/src/database.ts"
+    "db:types": "supabase gen types typescript --local > packages/db-types/src/database.ts",
+    "functions:build": "pnpm content:build && tsx supabase/functions/room-action/build.ts",
+    "functions:serve": "pnpm functions:build && supabase functions serve room-action",
+    "functions:deploy": "pnpm functions:build && supabase functions deploy room-action",
+    "functions:smoke": "pnpm functions:build && tsx supabase/tests/deno-smoke.ts"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.8",
+    "@electric-sql/pglite-socket": "^0.2.11",
     "@eslint/js": "^9",
     "@toss/content": "workspace:*",
     "@toss/engine": "workspace:*",

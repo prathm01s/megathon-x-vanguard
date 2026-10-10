@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "allowImportingTsExtensions": true
+  },
+  "include": [
+    ".",
+    "../functions/room-action/handler.ts",
+    "../functions/room-action/sql-repo.ts",
+    "../functions/room-action/bundle-entry.ts",
+    "../functions/room-action/build.ts"
+  ]
+}

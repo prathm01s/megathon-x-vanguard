@@ -723,7 +723,8 @@ function auctionFor(auction: AuctionState | null, memberId: string | null): Auct
  * info (nickname, avatar, Trust Score, ready). The server sends exactly this to each player.
  */
 export function viewRoomFor(room: RoomState, userId: string | null): RoomView {
-  const me = room.members.find((m) => m.userId !== null && m.userId === userId) ?? null;
+  const found = room.members.find((m) => m.userId !== null && m.userId === userId);
+  const me = found ? { ...found, state: redactSeeds(found.state) } : null;
   return {
     code: room.code,
     chapterId: room.chapterId,
@@ -737,6 +738,15 @@ export function viewRoomFor(room: RoomState, userId: string | null): RoomView {
     tosses: room.tosses,
     reactions: room.reactions,
   };
+}
+
+/**
+ * Removes the seeds from a player's state before it leaves the server. In a room the server is
+ * authoritative: with the seeds a player could precompute every future market toss and life
+ * event. (Single-player runs on the device, so its seed is necessarily local.)
+ */
+export function redactSeeds(state: GameState): GameState {
+  return { ...state, seed: "", marketSeed: "" };
 }
 
 /** Takes the queued decision records out of the room (the server persists them). */

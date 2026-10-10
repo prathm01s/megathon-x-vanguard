@@ -68,6 +68,7 @@ export {
   loansOwedBy,
   viewRoomFor,
   drainOutbox,
+  redactSeeds,
   type PlayerInfo,
 } from "./room";
 export {
