@@ -67,12 +67,15 @@ export function AmountModal({
 
         {/* Amount & Real value preview */}
         <div className="rounded-xl bg-accent/40 p-3 text-center">
-          <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">{t("label")}</p>
+          <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">
+            {t("label")}
+          </p>
           <p className="text-3xl font-extrabold tabular-nums text-foreground">
             {formatPaise(amountPaise)}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Real Value: <span className="font-bold text-secondary">{formatPaise(realValuePaise)}</span>
+            Real Value:{" "}
+            <span className="font-bold text-secondary">{formatPaise(realValuePaise)}</span>
           </p>
         </div>
 
@@ -138,9 +141,7 @@ export function AmountModal({
         </div>
 
         {option.type === "sip_start" && (
-          <p className="text-xs text-muted-foreground italic text-center">
-            {t("sipHint")}
-          </p>
+          <p className="text-xs text-muted-foreground italic text-center">{t("sipHint")}</p>
         )}
 
         <div className="flex gap-2 pt-2">

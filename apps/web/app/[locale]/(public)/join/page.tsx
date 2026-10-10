@@ -7,11 +7,7 @@ import { useRouter } from "@/i18n/navigation";
 import { AppShell } from "@/components/ui/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  redeemStudentCode,
-  signUpPersonal,
-  loginUser,
-} from "@/lib/auth/actions";
+import { redeemStudentCode, signUpPersonal, loginUser } from "@/lib/auth/actions";
 import { GraduationCap, User, LogIn, CheckCircle2, AlertCircle } from "lucide-react";
 
 const AVATARS = [
@@ -140,7 +136,9 @@ export default function JoinPage() {
               setError(null);
             }}
             className={`flex flex-1 items-center justify-center gap-1.5 rounded-md py-2 transition-all ${
-              tab === "personal" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
+              tab === "personal"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground"
             }`}
           >
             <User className="size-4" />
@@ -190,11 +188,15 @@ export default function JoinPage() {
                   onChange={(e) => setCode(e.target.value.toUpperCase())}
                   className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-center text-lg font-mono font-bold uppercase tracking-wider focus:border-primary focus:outline-none"
                 />
-                <p className="mt-1 text-[11px] text-muted-foreground">8-character code given by your NGO facilitator</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  8-character code given by your NGO facilitator
+                </p>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-muted-foreground">CHOOSE AN AVATAR</label>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  CHOOSE AN AVATAR
+                </label>
                 <div className="mt-1 flex justify-between gap-1">
                   {AVATARS.map((av) => (
                     <button
@@ -224,7 +226,9 @@ export default function JoinPage() {
                   onChange={(e) => setNickname(e.target.value)}
                   className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
                 />
-                <p className="mt-0.5 text-[11px] text-muted-foreground">Avoid full names to protect your privacy (§6)</p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  Avoid full names to protect your privacy (§6)
+                </p>
               </div>
 
               <div>
@@ -261,7 +265,9 @@ export default function JoinPage() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-muted-foreground">CHOOSE AN AVATAR</label>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  CHOOSE AN AVATAR
+                </label>
                 <div className="mt-1 flex justify-between gap-1">
                   {AVATARS.map((av) => (
                     <button
@@ -305,7 +311,9 @@ export default function JoinPage() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-muted-foreground">EMAIL (OPTIONAL FOR RECOVERY)</label>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  EMAIL (OPTIONAL FOR RECOVERY)
+                </label>
                 <input
                   type="email"
                   placeholder="your.email@example.com"
@@ -324,7 +332,9 @@ export default function JoinPage() {
           {tab === "login" && (
             <form onSubmit={handleLoginSubmit} className="flex flex-col gap-4">
               <div>
-                <label className="text-xs font-semibold text-muted-foreground">USERNAME OR EMAIL</label>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  USERNAME OR EMAIL
+                </label>
                 <input
                   required
                   type="text"

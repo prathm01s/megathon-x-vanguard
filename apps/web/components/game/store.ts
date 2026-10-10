@@ -128,7 +128,10 @@ export const useGameStore = create<GameStore>()(
         try {
           const next = applyAction(state, action, content);
           set({ state: next });
-          const record = toDecisionLog(action, { chapterId: state.chapterId, turn: state.turn + 1 });
+          const record = toDecisionLog(action, {
+            chapterId: state.chapterId,
+            turn: state.turn + 1,
+          });
           persistTurn(playthroughId, next, record ? [record] : []);
           return null;
         } catch (err) {

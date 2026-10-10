@@ -80,12 +80,52 @@ export default function AdminPage() {
   ]);
 
   const [studentsList, setStudentsList] = useState<
-    { id: string; nickname: string; playerId: string; persona: string; chapter: string; score: number; badges: number }[]
+    {
+      id: string;
+      nickname: string;
+      playerId: string;
+      persona: string;
+      chapter: string;
+      score: number;
+      badges: number;
+    }[]
   >([
-    { id: "s1", nickname: "Aarav", playerId: "TL-7K92M", persona: "Safe Keeper", chapter: "Ch 2", score: 82, badges: 3 },
-    { id: "s2", nickname: "Fatima", playerId: "TL-3P49X", persona: "Smart Planner", chapter: "Ch 2", score: 88, badges: 4 },
-    { id: "s3", nickname: "Rohan", playerId: "TL-8Q11W", persona: "Moment Maker", chapter: "Ch 2", score: 65, badges: 2 },
-    { id: "s4", nickname: "Sneha", playerId: "TL-9B54Z", persona: "Thrill Seeker", chapter: "Ch 1", score: 58, badges: 1 },
+    {
+      id: "s1",
+      nickname: "Aarav",
+      playerId: "TL-7K92M",
+      persona: "Safe Keeper",
+      chapter: "Ch 2",
+      score: 82,
+      badges: 3,
+    },
+    {
+      id: "s2",
+      nickname: "Fatima",
+      playerId: "TL-3P49X",
+      persona: "Smart Planner",
+      chapter: "Ch 2",
+      score: 88,
+      badges: 4,
+    },
+    {
+      id: "s3",
+      nickname: "Rohan",
+      playerId: "TL-8Q11W",
+      persona: "Moment Maker",
+      chapter: "Ch 2",
+      score: 65,
+      badges: 2,
+    },
+    {
+      id: "s4",
+      nickname: "Sneha",
+      playerId: "TL-9B54Z",
+      persona: "Thrill Seeker",
+      chapter: "Ch 1",
+      score: 58,
+      badges: 1,
+    },
   ]);
 
   // Load live data from Supabase if admin is logged in
@@ -201,9 +241,7 @@ export default function AdminPage() {
   // Handle Revoke
   const handleRevoke = async (id: string) => {
     await revokeStudentCode(id);
-    setCodesList((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, status: "revoked" } : c)),
-    );
+    setCodesList((prev) => prev.map((c) => (c.id === id ? { ...c, status: "revoked" } : c)));
   };
 
   // Handle Password Reset
@@ -250,7 +288,8 @@ export default function AdminPage() {
             <div className="text-center">
               <h1 className="text-2xl font-bold">NGO Facilitator Portal</h1>
               <p className="text-sm text-muted-foreground">
-                Manage student cohorts, generate single-use codes, and view learning impact analytics (§4.7).
+                Manage student cohorts, generate single-use codes, and view learning impact
+                analytics (§4.7).
               </p>
             </div>
 
@@ -274,7 +313,9 @@ export default function AdminPage() {
                   type="button"
                   onClick={() => setIsRegistering(false)}
                   className={`flex-1 pb-2 text-center text-sm font-semibold transition-colors ${
-                    !isRegistering ? "border-b-2 border-primary text-primary" : "text-muted-foreground"
+                    !isRegistering
+                      ? "border-b-2 border-primary text-primary"
+                      : "text-muted-foreground"
                   }`}
                 >
                   Admin Log In
@@ -283,7 +324,9 @@ export default function AdminPage() {
                   type="button"
                   onClick={() => setIsRegistering(true)}
                   className={`flex-1 pb-2 text-center text-sm font-semibold transition-colors ${
-                    isRegistering ? "border-b-2 border-primary text-primary" : "text-muted-foreground"
+                    isRegistering
+                      ? "border-b-2 border-primary text-primary"
+                      : "text-muted-foreground"
                   }`}
                 >
                   Register New NGO
@@ -293,7 +336,9 @@ export default function AdminPage() {
               {!isRegistering ? (
                 <form onSubmit={handleNgoLogin} className="flex flex-col gap-3">
                   <div>
-                    <label className="text-xs font-semibold text-muted-foreground">ADMIN EMAIL</label>
+                    <label className="text-xs font-semibold text-muted-foreground">
+                      ADMIN EMAIL
+                    </label>
                     <input
                       required
                       type="email"
@@ -321,7 +366,9 @@ export default function AdminPage() {
               ) : (
                 <form onSubmit={handleNgoRegister} className="flex flex-col gap-3">
                   <div>
-                    <label className="text-xs font-semibold text-muted-foreground">ORGANISATION NAME</label>
+                    <label className="text-xs font-semibold text-muted-foreground">
+                      ORGANISATION NAME
+                    </label>
                     <input
                       required
                       type="text"
@@ -332,7 +379,9 @@ export default function AdminPage() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-muted-foreground">ADMIN EMAIL</label>
+                    <label className="text-xs font-semibold text-muted-foreground">
+                      ADMIN EMAIL
+                    </label>
                     <input
                       required
                       type="email"
@@ -344,7 +393,9 @@ export default function AdminPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-xs font-semibold text-muted-foreground">USERNAME</label>
+                      <label className="text-xs font-semibold text-muted-foreground">
+                        USERNAME
+                      </label>
                       <input
                         required
                         type="text"
@@ -355,7 +406,9 @@ export default function AdminPage() {
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-muted-foreground">NICKNAME</label>
+                      <label className="text-xs font-semibold text-muted-foreground">
+                        NICKNAME
+                      </label>
                       <input
                         required
                         type="text"
@@ -393,7 +446,9 @@ export default function AdminPage() {
                 type="button"
                 onClick={() => setTab("overview")}
                 className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 whitespace-nowrap transition-all ${
-                  tab === "overview" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
+                  tab === "overview"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground"
                 }`}
               >
                 <BarChart3 className="size-3.5" />
@@ -403,7 +458,9 @@ export default function AdminPage() {
                 type="button"
                 onClick={() => setTab("codes")}
                 className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 whitespace-nowrap transition-all ${
-                  tab === "codes" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
+                  tab === "codes"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground"
                 }`}
               >
                 <KeyRound className="size-3.5" />
@@ -413,7 +470,9 @@ export default function AdminPage() {
                 type="button"
                 onClick={() => setTab("students")}
                 className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 whitespace-nowrap transition-all ${
-                  tab === "students" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
+                  tab === "students"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground"
                 }`}
               >
                 <Users className="size-3.5" />
@@ -423,7 +482,9 @@ export default function AdminPage() {
                 type="button"
                 onClick={() => setTab("prompts")}
                 className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 whitespace-nowrap transition-all ${
-                  tab === "prompts" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
+                  tab === "prompts"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground"
                 }`}
               >
                 <BookOpen className="size-3.5" />
@@ -439,12 +500,18 @@ export default function AdminPage() {
                   <Card className="p-3 text-center">
                     <p className="text-xs text-muted-foreground font-medium">ENROLLED</p>
                     <p className="text-2xl font-black mt-1">{stats.totalStudents}</p>
-                    <p className="text-[10px] text-emerald-600 font-semibold mt-0.5">{stats.active7d} active this week</p>
+                    <p className="text-[10px] text-emerald-600 font-semibold mt-0.5">
+                      {stats.active7d} active this week
+                    </p>
                   </Card>
                   <Card className="p-3 text-center">
                     <p className="text-xs text-muted-foreground font-medium">AVG HEALTH</p>
-                    <p className="text-2xl font-black mt-1 text-primary">{stats.avgHealthScore}/100</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{stats.chaptersCompleted} chapters passed</p>
+                    <p className="text-2xl font-black mt-1 text-primary">
+                      {stats.avgHealthScore}/100
+                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      {stats.chaptersCompleted} chapters passed
+                    </p>
                   </Card>
                   <Card className="p-3 text-center">
                     <p className="text-xs text-muted-foreground font-medium">SCAM SAFETY</p>
@@ -469,32 +536,68 @@ export default function AdminPage() {
                   <div className="flex flex-col gap-2.5 text-xs">
                     <div>
                       <div className="flex justify-between mb-1">
-                        <span className="font-medium text-muted-foreground">Planning & Budgeting</span>
-                        <span className="font-bold">{stats.preVsPost.plan.pre} → {stats.preVsPost.plan.post} / 4.0</span>
+                        <span className="font-medium text-muted-foreground">
+                          Planning & Budgeting
+                        </span>
+                        <span className="font-bold">
+                          {stats.preVsPost.plan.pre} → {stats.preVsPost.plan.post} / 4.0
+                        </span>
                       </div>
                       <div className="h-2 w-full rounded-full bg-muted overflow-hidden flex">
-                        <div className="bg-primary/40 h-full" style={{ width: `${(stats.preVsPost.plan.pre / 4) * 100}%` }} />
-                        <div className="bg-primary h-full" style={{ width: `${((stats.preVsPost.plan.post - stats.preVsPost.plan.pre) / 4) * 100}%` }} />
+                        <div
+                          className="bg-primary/40 h-full"
+                          style={{ width: `${(stats.preVsPost.plan.pre / 4) * 100}%` }}
+                        />
+                        <div
+                          className="bg-primary h-full"
+                          style={{
+                            width: `${((stats.preVsPost.plan.post - stats.preVsPost.plan.pre) / 4) * 100}%`,
+                          }}
+                        />
                       </div>
                     </div>
                     <div>
                       <div className="flex justify-between mb-1">
-                        <span className="font-medium text-muted-foreground">Risk Understanding</span>
-                        <span className="font-bold">{stats.preVsPost.risk.pre} → {stats.preVsPost.risk.post} / 2.0</span>
+                        <span className="font-medium text-muted-foreground">
+                          Risk Understanding
+                        </span>
+                        <span className="font-bold">
+                          {stats.preVsPost.risk.pre} → {stats.preVsPost.risk.post} / 2.0
+                        </span>
                       </div>
                       <div className="h-2 w-full rounded-full bg-muted overflow-hidden flex">
-                        <div className="bg-primary/40 h-full" style={{ width: `${(stats.preVsPost.risk.pre / 2) * 100}%` }} />
-                        <div className="bg-primary h-full" style={{ width: `${((stats.preVsPost.risk.post - stats.preVsPost.risk.pre) / 2) * 100}%` }} />
+                        <div
+                          className="bg-primary/40 h-full"
+                          style={{ width: `${(stats.preVsPost.risk.pre / 2) * 100}%` }}
+                        />
+                        <div
+                          className="bg-primary h-full"
+                          style={{
+                            width: `${((stats.preVsPost.risk.post - stats.preVsPost.risk.pre) / 2) * 100}%`,
+                          }}
+                        />
                       </div>
                     </div>
                     <div>
                       <div className="flex justify-between mb-1">
-                        <span className="font-medium text-muted-foreground">Investing & Safety Knowledge</span>
-                        <span className="font-bold">{stats.preVsPost.know.pre} → {stats.preVsPost.know.post} / 6.0</span>
+                        <span className="font-medium text-muted-foreground">
+                          Investing & Safety Knowledge
+                        </span>
+                        <span className="font-bold">
+                          {stats.preVsPost.know.pre} → {stats.preVsPost.know.post} / 6.0
+                        </span>
                       </div>
                       <div className="h-2 w-full rounded-full bg-muted overflow-hidden flex">
-                        <div className="bg-primary/40 h-full" style={{ width: `${(stats.preVsPost.know.pre / 6) * 100}%` }} />
-                        <div className="bg-primary h-full" style={{ width: `${((stats.preVsPost.know.post - stats.preVsPost.know.pre) / 6) * 100}%` }} />
+                        <div
+                          className="bg-primary/40 h-full"
+                          style={{ width: `${(stats.preVsPost.know.pre / 6) * 100}%` }}
+                        />
+                        <div
+                          className="bg-primary h-full"
+                          style={{
+                            width: `${((stats.preVsPost.know.post - stats.preVsPost.know.pre) / 6) * 100}%`,
+                          }}
+                        />
                       </div>
                     </div>
                   </div>
@@ -510,7 +613,9 @@ export default function AdminPage() {
                           <span className={`size-2.5 rounded-full ${p.color}`} />
                           <span className="font-medium">{p.name}</span>
                         </div>
-                        <span className="font-bold">{p.count} students ({Math.round((p.count / stats.totalStudents) * 100)}%)</span>
+                        <span className="font-bold">
+                          {p.count} students ({Math.round((p.count / stats.totalStudents) * 100)}%)
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -529,7 +634,9 @@ export default function AdminPage() {
                   <form onSubmit={handleGenerateCodes} className="flex flex-col gap-3">
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="text-xs font-semibold text-muted-foreground">QUANTITY</label>
+                        <label className="text-xs font-semibold text-muted-foreground">
+                          QUANTITY
+                        </label>
                         <input
                           type="number"
                           min={1}
@@ -540,7 +647,9 @@ export default function AdminPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-muted-foreground">BATCH / LABEL</label>
+                        <label className="text-xs font-semibold text-muted-foreground">
+                          BATCH / LABEL
+                        </label>
                         <input
                           type="text"
                           placeholder="e.g. Batch A"
@@ -561,7 +670,10 @@ export default function AdminPage() {
                       <p className="text-xs font-bold text-primary mb-2">New Codes Generated:</p>
                       <div className="grid grid-cols-2 gap-1.5 font-mono text-xs font-bold">
                         {newlyGeneratedCodes.map((c) => (
-                          <span key={c} className="rounded bg-background px-2 py-1 border text-center">
+                          <span
+                            key={c}
+                            className="rounded bg-background px-2 py-1 border text-center"
+                          >
                             {c}
                           </span>
                         ))}
@@ -573,7 +685,12 @@ export default function AdminPage() {
                 {/* Codes list */}
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-sm">Issued Codes ({codesList.length})</h3>
-                  <Button size="default" variant="outline" onClick={exportCodesCsv} className="h-8 text-xs gap-1">
+                  <Button
+                    size="default"
+                    variant="outline"
+                    onClick={exportCodesCsv}
+                    className="h-8 text-xs gap-1"
+                  >
                     <Download className="size-3.5" />
                     Export CSV
                   </Button>
@@ -584,7 +701,9 @@ export default function AdminPage() {
                     <Card key={c.id} className="p-3 flex items-center justify-between text-xs">
                       <div>
                         <p className="font-mono font-bold text-sm">{c.code}</p>
-                        <p className="text-muted-foreground text-[11px]">{c.label || "No label"} • {c.date}</p>
+                        <p className="text-muted-foreground text-[11px]">
+                          {c.label || "No label"} • {c.date}
+                        </p>
                       </div>
                       <div className="flex items-center gap-2">
                         <span
@@ -592,8 +711,8 @@ export default function AdminPage() {
                             c.status === "active"
                               ? "bg-emerald-100 text-emerald-700"
                               : c.status === "pending"
-                              ? "bg-amber-100 text-amber-700"
-                              : "bg-muted text-muted-foreground"
+                                ? "bg-amber-100 text-amber-700"
+                                : "bg-muted text-muted-foreground"
                           }`}
                         >
                           {c.status}
@@ -619,7 +738,9 @@ export default function AdminPage() {
               <div className="flex flex-col gap-3">
                 <div className="flex justify-between items-center">
                   <h3 className="font-bold text-sm">Students Cohort</h3>
-                  <span className="text-xs text-muted-foreground">{studentsList.length} learners</span>
+                  <span className="text-xs text-muted-foreground">
+                    {studentsList.length} learners
+                  </span>
                 </div>
 
                 <div className="flex flex-col gap-2">
@@ -628,11 +749,15 @@ export default function AdminPage() {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="font-bold text-sm">{s.nickname}</p>
-                          <p className="text-[11px] font-mono text-muted-foreground">{s.playerId} • {s.persona}</p>
+                          <p className="text-[11px] font-mono text-muted-foreground">
+                            {s.playerId} • {s.persona}
+                          </p>
                         </div>
                         <div className="text-right">
                           <p className="font-bold text-primary text-sm">{s.score} pts</p>
-                          <p className="text-[11px] text-muted-foreground">{s.badges} badges earned</p>
+                          <p className="text-[11px] text-muted-foreground">
+                            {s.badges} badges earned
+                          </p>
                         </div>
                       </div>
                       <div className="flex justify-end pt-1 border-t border-border">
@@ -675,7 +800,9 @@ export default function AdminPage() {
                           Cancel
                         </Button>
                       </div>
-                      {resetMessage && <p className="text-xs text-primary font-semibold mt-1">{resetMessage}</p>}
+                      {resetMessage && (
+                        <p className="text-xs text-primary font-semibold mt-1">{resetMessage}</p>
+                      )}
                     </form>
                   </Card>
                 )}
@@ -686,7 +813,9 @@ export default function AdminPage() {
             {tab === "prompts" && (
               <div className="flex flex-col gap-3">
                 <Card className="p-4 bg-primary/5 border-primary/20">
-                  <h3 className="font-bold text-sm text-primary mb-1">Chapter 2 Discussion Guide</h3>
+                  <h3 className="font-bold text-sm text-primary mb-1">
+                    Chapter 2 Discussion Guide
+                  </h3>
                   <p className="text-xs text-muted-foreground">
                     Use these prompts during NGO classroom reflection after students play Chapter 2.
                   </p>
@@ -694,20 +823,34 @@ export default function AdminPage() {
 
                 <Card className="p-4 flex flex-col gap-1.5">
                   <p className="font-bold text-xs text-primary">1. Investment Trade-offs</p>
-                  <p className="text-sm">&quot;Who chose an FD and who chose a SIP? How did the market storm feel when it hit?&quot;</p>
-                  <p className="text-[11px] text-muted-foreground mt-1">Goal: Highlight patience during market dips vs. cash loss to inflation.</p>
+                  <p className="text-sm">
+                    &quot;Who chose an FD and who chose a SIP? How did the market storm feel when it
+                    hit?&quot;
+                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    Goal: Highlight patience during market dips vs. cash loss to inflation.
+                  </p>
                 </Card>
 
                 <Card className="p-4 flex flex-col gap-1.5">
                   <p className="font-bold text-xs text-primary">2. Peer Loans</p>
-                  <p className="text-sm">&quot;Did anyone lend money to a peer? Was the interest rate fair, or did anyone face a default?&quot;</p>
-                  <p className="text-[11px] text-muted-foreground mt-1">Goal: Discuss trust scores and lending obligations.</p>
+                  <p className="text-sm">
+                    &quot;Did anyone lend money to a peer? Was the interest rate fair, or did anyone
+                    face a default?&quot;
+                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    Goal: Discuss trust scores and lending obligations.
+                  </p>
                 </Card>
 
                 <Card className="p-4 flex flex-col gap-1.5">
                   <p className="font-bold text-xs text-primary">3. Scam Safety</p>
-                  <p className="text-sm">&quot;Which scam almost fooled you, and what red flags gave it away?&quot;</p>
-                  <p className="text-[11px] text-muted-foreground mt-1">Goal: Reinforce that banks never ask for OTPs or upfront processing fees.</p>
+                  <p className="text-sm">
+                    &quot;Which scam almost fooled you, and what red flags gave it away?&quot;
+                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    Goal: Reinforce that banks never ask for OTPs or upfront processing fees.
+                  </p>
                 </Card>
               </div>
             )}

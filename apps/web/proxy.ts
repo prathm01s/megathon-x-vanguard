@@ -11,7 +11,7 @@ export default async function middleware(request: NextRequest) {
   const response = intlMiddleware(request);
 
   const supabase = createProxyClient(request, response);
-  
+
   await supabase.auth.getUser();
 
   return response;

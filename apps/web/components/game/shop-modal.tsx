@@ -213,14 +213,19 @@ export function ShopModal({ state, availableActions, onSelectAction, onClose }: 
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="font-extrabold text-base">{l(activeTechnique.title)}</h3>
-                  <p className="text-xs text-muted-foreground">{l(activeTechnique.shortExplanation)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {l(activeTechnique.shortExplanation)}
+                  </p>
                 </div>
                 <Button variant="ghost" size="icon" onClick={() => setActiveTechniqueId(null)}>
                   <X className="size-4" />
                 </Button>
               </div>
               <TechniqueVisual visualId={activeTechnique.visual} />
-              <Button className="w-full text-xs font-bold" onClick={() => setActiveTechniqueId(null)}>
+              <Button
+                className="w-full text-xs font-bold"
+                onClick={() => setActiveTechniqueId(null)}
+              >
                 Got it
               </Button>
             </Card>

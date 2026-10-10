@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Award,
-  Building2,
-  Check,
-  Copy,
-  RotateCcw,
-  Sparkles,
-  User,
-} from "lucide-react";
+import { Award, Building2, Check, Copy, RotateCcw, Sparkles, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -80,7 +72,9 @@ function ProfileView() {
           )}
           <div>
             <h2 className="text-xl font-extrabold">{session.profile?.nickname ?? "Student"}</h2>
-            <p className="text-xs text-muted-foreground">@{session.profile?.username ?? "player"}</p>
+            <p className="text-xs text-muted-foreground">
+              @{session.profile?.username ?? "player"}
+            </p>
           </div>
         </div>
 

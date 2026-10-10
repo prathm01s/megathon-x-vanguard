@@ -98,7 +98,10 @@ export async function redeemStudentCode(formData: {
     });
 
     if (authErr || !authUser.user) {
-      return { success: false, error: authErr?.message || "Could not create user account. Username may be taken." };
+      return {
+        success: false,
+        error: authErr?.message || "Could not create user account. Username may be taken.",
+      };
     }
 
     const userId = authUser.user.id;
@@ -221,7 +224,10 @@ export async function signUpPersonal(formData: {
     });
 
     if (authErr || !authUser.user) {
-      return { success: false, error: authErr?.message || "Registration failed. Username may exist." };
+      return {
+        success: false,
+        error: authErr?.message || "Registration failed. Username may exist.",
+      };
     }
 
     const userId = authUser.user.id;
@@ -358,7 +364,10 @@ export async function generateStudentCodes(params: {
     revalidatePath("/[locale]/admin");
     return { success: true, data: { codes: generatedCodes } };
   } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : "Failed to generate codes." };
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to generate codes.",
+    };
   }
 }
 

@@ -26,14 +26,46 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const STUDENT_NAMES = [
-  "Aarav Sharma", "Fatima Begum", "Rohan Verma", "Sneha Reddy", "Vikram Das",
-  "Priya Nair", "Mohammed Zaid", "Ananya Rao", "Karthik Iyer", "Divya Patel",
-  "Arjun Singh", "Zoya Khan", "Sai Teja", "Meera Joshi", "Aditya Kulkarni",
-  "Sana Mirza", "Rahul Gupta", "Pooja Hegde", "Suresh Kumar", "Bhavna Shah",
-  "Imran Ali", "Swati Deshmukh", "Nikhil Pillai", "Kavya Menon", "Harish Varma",
-  "Ritu Chawla", "Deepak Nambiar", "Ayesha Siddiqui", "Manoj Tiwari", "Shreya Sen",
-  "Tanmay Bhat", "Alia Shaikh", "Gautam Gambhir", "Neha Dhupia", "Kunal Kamra",
-  "Varun Tej", "Shruti Haasan", "Pranav Anand", "Anushka Shetty", "Vijay Devar"
+  "Aarav Sharma",
+  "Fatima Begum",
+  "Rohan Verma",
+  "Sneha Reddy",
+  "Vikram Das",
+  "Priya Nair",
+  "Mohammed Zaid",
+  "Ananya Rao",
+  "Karthik Iyer",
+  "Divya Patel",
+  "Arjun Singh",
+  "Zoya Khan",
+  "Sai Teja",
+  "Meera Joshi",
+  "Aditya Kulkarni",
+  "Sana Mirza",
+  "Rahul Gupta",
+  "Pooja Hegde",
+  "Suresh Kumar",
+  "Bhavna Shah",
+  "Imran Ali",
+  "Swati Deshmukh",
+  "Nikhil Pillai",
+  "Kavya Menon",
+  "Harish Varma",
+  "Ritu Chawla",
+  "Deepak Nambiar",
+  "Ayesha Siddiqui",
+  "Manoj Tiwari",
+  "Shreya Sen",
+  "Tanmay Bhat",
+  "Alia Shaikh",
+  "Gautam Gambhir",
+  "Neha Dhupia",
+  "Kunal Kamra",
+  "Varun Tej",
+  "Shruti Haasan",
+  "Pranav Anand",
+  "Anushka Shetty",
+  "Vijay Devar",
 ];
 
 const BOT_STRATEGIES = ["balanced", "all-cash", "all-equity"] as const;
@@ -41,7 +73,7 @@ const BOT_STRATEGIES = ["balanced", "all-cash", "all-equity"] as const;
 function simulateChapter2(
   personaId: string,
   seed: string,
-  strategy: typeof BOT_STRATEGIES[number],
+  strategy: (typeof BOT_STRATEGIES)[number],
   content: ContentBundle,
 ) {
   let s: GameState = createPlaythrough({ content, personaId, seed, chapterId: "ch2-first-job" });
@@ -57,7 +89,11 @@ function simulateChapter2(
       const fallAction = scam?.actions.find((a) => a.falls)?.id ?? "pay";
       const chosen = (isVictim ? fallAction : safeAction) as ScamAction;
 
-      s = applyAction(s, { type: "scam_response", instanceId: pending.instanceId, response: chosen }, content);
+      s = applyAction(
+        s,
+        { type: "scam_response", instanceId: pending.instanceId, response: chosen },
+        content,
+      );
       decisions.push({
         turn,
         type: isVictim ? "scam_fallen" : "scam_spotted",
@@ -71,7 +107,11 @@ function simulateChapter2(
         const toPay = Math.min(task.amount - task.paid, s.cash);
         if (toPay > 0) {
           s = applyAction(s, { type: "pay_task", taskId: task.taskId, amount: toPay }, content);
-          decisions.push({ turn, type: "task_paid", payload: { taskId: task.taskId, amount: toPay } });
+          decisions.push({
+            turn,
+            type: "task_paid",
+            payload: { taskId: task.taskId, amount: toPay },
+          });
         }
       }
     }
@@ -79,19 +119,39 @@ function simulateChapter2(
     // 2. Strategy allocations
     if (strategy === "balanced") {
       if (turn === 0 && s.cash >= 3000_00) {
-        s = applyAction(s, { type: "sip_start", optionId: "equity-fund", amountPerMonth: 3000_00 }, content);
-        decisions.push({ turn, type: "sip_start", payload: { optionId: "equity-fund", amountPerMonth: 3000_00 } });
+        s = applyAction(
+          s,
+          { type: "sip_start", optionId: "equity-fund", amountPerMonth: 3000_00 },
+          content,
+        );
+        decisions.push({
+          turn,
+          type: "sip_start",
+          payload: { optionId: "equity-fund", amountPerMonth: 3000_00 },
+        });
       }
       if (s.cash > 25000_00) {
         const investAmount = 10000_00;
         s = applyAction(s, { type: "invest", optionId: "gold", amount: investAmount }, content);
-        decisions.push({ turn, type: "invest", payload: { optionId: "gold", amount: investAmount } });
+        decisions.push({
+          turn,
+          type: "invest",
+          payload: { optionId: "gold", amount: investAmount },
+        });
       }
     } else if (strategy === "all-equity") {
       if (s.cash > 5000_00) {
         const investAmount = s.cash - 2000_00;
-        s = applyAction(s, { type: "invest", optionId: "equity-fund", amount: investAmount }, content);
-        decisions.push({ turn, type: "invest", payload: { optionId: "equity-fund", amount: investAmount } });
+        s = applyAction(
+          s,
+          { type: "invest", optionId: "equity-fund", amount: investAmount },
+          content,
+        );
+        decisions.push({
+          turn,
+          type: "invest",
+          payload: { optionId: "equity-fund", amount: investAmount },
+        });
       }
     }
 
@@ -115,7 +175,11 @@ function simulateChapter2(
       const fallAction = scam?.actions.find((a) => a.falls)?.id ?? "pay";
       const chosen = (isVictim ? fallAction : safeAction) as ScamAction;
 
-      s = applyAction(s, { type: "scam_response", instanceId: pending.instanceId, response: chosen }, content);
+      s = applyAction(
+        s,
+        { type: "scam_response", instanceId: pending.instanceId, response: chosen },
+        content,
+      );
       decisions.push({
         turn,
         type: isVictim ? "scam_fallen" : "scam_spotted",
@@ -125,7 +189,11 @@ function simulateChapter2(
   }
 
   const result = endChapter(s, content);
-  decisions.push({ turn: 5, type: "chapter_end", payload: { healthScore: result.healthScore, passed: result.passed } });
+  decisions.push({
+    turn: 5,
+    type: "chapter_end",
+    payload: { healthScore: result.healthScore, passed: result.passed },
+  });
 
   return { state: s, result, decisions };
 }

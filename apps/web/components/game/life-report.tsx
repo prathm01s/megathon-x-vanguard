@@ -147,7 +147,10 @@ function ReportContent() {
           </div>
           <ul className="space-y-2 text-xs">
             {result.report.didWell.map((item, i) => (
-              <li key={i} className="rounded-lg bg-gain/5 border border-gain/20 p-2.5 font-medium leading-relaxed">
+              <li
+                key={i}
+                className="rounded-lg bg-gain/5 border border-gain/20 p-2.5 font-medium leading-relaxed"
+              >
                 {l(item.text, item.params)}
               </li>
             ))}
@@ -164,7 +167,10 @@ function ReportContent() {
           </div>
           <ul className="space-y-2 text-xs">
             {result.report.couldBeBetter.map((item, i) => (
-              <li key={i} className="rounded-lg bg-primary/5 border border-primary/20 p-2.5 font-medium leading-relaxed">
+              <li
+                key={i}
+                className="rounded-lg bg-primary/5 border border-primary/20 p-2.5 font-medium leading-relaxed"
+              >
                 {l(item.text, item.params)}
               </li>
             ))}
@@ -193,12 +199,20 @@ function ReportContent() {
 
           <div className="grid grid-cols-2 gap-2 text-center text-xs">
             <div className="rounded-lg bg-card p-2 shadow-sm border border-border">
-              <span className="text-[10px] text-muted-foreground uppercase font-semibold">Your choice</span>
-              <p className="text-sm font-bold mt-0.5">{formatPaise(result.report.whatIf.baselineRealValue)}</p>
+              <span className="text-[10px] text-muted-foreground uppercase font-semibold">
+                Your choice
+              </span>
+              <p className="text-sm font-bold mt-0.5">
+                {formatPaise(result.report.whatIf.baselineRealValue)}
+              </p>
             </div>
             <div className="rounded-lg bg-card p-2 shadow-sm border border-secondary/40">
-              <span className="text-[10px] text-secondary uppercase font-semibold">Alternative path</span>
-              <p className="text-sm font-bold text-secondary mt-0.5">{formatPaise(result.report.whatIf.alternativeRealValue)}</p>
+              <span className="text-[10px] text-secondary uppercase font-semibold">
+                Alternative path
+              </span>
+              <p className="text-sm font-bold text-secondary mt-0.5">
+                {formatPaise(result.report.whatIf.alternativeRealValue)}
+              </p>
             </div>
           </div>
         </Card>
@@ -216,13 +230,18 @@ function ReportContent() {
               const b = content.badges.badges.find((x) => x.id === badgeId);
               if (!b) return null;
               return (
-                <div key={b.id} className="rounded-xl border border-border p-2.5 flex items-center gap-2.5 text-xs bg-accent/20">
+                <div
+                  key={b.id}
+                  className="rounded-xl border border-border p-2.5 flex items-center gap-2.5 text-xs bg-accent/20"
+                >
                   <span className="grid size-8 place-items-center rounded-lg bg-coin text-foreground shrink-0 shadow-sm">
                     <ContentIcon name={b.icon} className="size-4" />
                   </span>
                   <div>
                     <p className="font-bold leading-tight">{l(b.title)}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">{l(b.description)}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">
+                      {l(b.description)}
+                    </p>
                   </div>
                 </div>
               );
@@ -245,7 +264,10 @@ function ReportContent() {
               const isCorrect = chosen === q.correctOptionId;
 
               return (
-                <div key={q.id} className="space-y-2 border-b border-border/60 pb-3 last:border-0 last:pb-0">
+                <div
+                  key={q.id}
+                  className="space-y-2 border-b border-border/60 pb-3 last:border-0 last:pb-0"
+                >
                   <p className="text-xs font-bold leading-snug">
                     {idx + 1}. {l(q.prompt)}
                   </p>
@@ -256,8 +278,10 @@ function ReportContent() {
 
                       let btnStyle = "border-border bg-card";
                       if (isAnswered) {
-                        if (isOptionCorrect) btnStyle = "border-gain bg-gain/10 text-gain font-bold";
-                        else if (isOptionSelected) btnStyle = "border-loss bg-loss/10 text-loss font-bold";
+                        if (isOptionCorrect)
+                          btnStyle = "border-gain bg-gain/10 text-gain font-bold";
+                        else if (isOptionSelected)
+                          btnStyle = "border-loss bg-loss/10 text-loss font-bold";
                       }
 
                       return (

@@ -73,7 +73,11 @@ async function flushDecisionQueue(id: PlaythroughId) {
 }
 
 export const supabasePersistence: PersistenceApi = {
-  async saveMindset(phase: "pre" | "post", answers: MindsetAnswers, result: MindsetResult): Promise<void> {
+  async saveMindset(
+    phase: "pre" | "post",
+    answers: MindsetAnswers,
+    result: MindsetResult,
+  ): Promise<void> {
     cacheLocal(`mindset:${phase}`, { answers, result, at: new Date().toISOString() });
 
     try {
@@ -156,7 +160,9 @@ export const supabasePersistence: PersistenceApi = {
     return localId;
   },
 
-  async loadPlaythrough(id: PlaythroughId): Promise<{ state: GameState; contentVersion: string } | null> {
+  async loadPlaythrough(
+    id: PlaythroughId,
+  ): Promise<{ state: GameState; contentVersion: string } | null> {
     // Check local first for immediate response
     const cached = getLocal<{ state: GameState; contentVersion: string }>(`playthrough:${id}`);
 

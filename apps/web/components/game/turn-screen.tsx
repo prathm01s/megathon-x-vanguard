@@ -17,11 +17,7 @@ import { Card } from "@/components/ui/card";
 import { useRouter } from "@/i18n/navigation";
 import { content } from "@/lib/content";
 import { formatPaise } from "@/lib/format";
-import {
-  getAvailableActions,
-  totalWealth,
-  type ActionOption,
-} from "@toss/engine";
+import { getAvailableActions, totalWealth, type ActionOption } from "@toss/engine";
 import { AmountModal } from "./amount-modal";
 import { GameGate } from "./game-gate";
 import { ContentIcon } from "./icon";
@@ -83,10 +79,7 @@ function Screen() {
       Math.floor((state.turn / state.totalTurns) * (chapter.ageRange[1] - chapter.ageRange[0]))
     : 22;
 
-  const showGuide =
-    Boolean(persona?.guidedFirstTurn) &&
-    state.turn === 0 &&
-    !dismissedGuide;
+  const showGuide = Boolean(persona?.guidedFirstTurn) && state.turn === 0 && !dismissedGuide;
 
   const pendingScam = state.pendingScams[0];
 
@@ -178,7 +171,12 @@ function Screen() {
             <li>2. {t("guideStep2")}</li>
             <li>3. {t("guideStep3")}</li>
           </ul>
-          <Button size="default" variant="outline" className="h-7 text-xs font-bold" onClick={dismissGuide}>
+          <Button
+            size="default"
+            variant="outline"
+            className="h-7 text-xs font-bold"
+            onClick={dismissGuide}
+          >
             {t("gotIt")}
           </Button>
         </Card>
@@ -218,11 +216,13 @@ function Screen() {
 
         {/* Monthly cash flow */}
         <div className="grid grid-cols-2 gap-2 border-t border-border/60 pt-2 text-[11px]">
-          <div className="text-gain font-semibold">
-            +{formatPaise(state.incomePerMonth)} / mo
-          </div>
+          <div className="text-gain font-semibold">+{formatPaise(state.incomePerMonth)} / mo</div>
           <div className="text-loss font-semibold text-end">
-            −{formatPaise(chapter?.fixedExpenses.reduce((s, e) => s + e.amountPerMonth * 100, 0) ?? 0)} / mo
+            −
+            {formatPaise(
+              chapter?.fixedExpenses.reduce((s, e) => s + e.amountPerMonth * 100, 0) ?? 0,
+            )}{" "}
+            / mo
           </div>
         </div>
       </Card>
@@ -336,7 +336,12 @@ function Screen() {
         {state.holdings.length === 0 && state.sips.length === 0 ? (
           <Card className="p-4 text-center space-y-2 border-dashed">
             <p className="text-xs text-muted-foreground">{t("noInvestments")}</p>
-            <Button size="default" variant="secondary" className="text-xs font-bold" onClick={() => setIsShopOpen(true)}>
+            <Button
+              size="default"
+              variant="secondary"
+              className="text-xs font-bold"
+              onClick={() => setIsShopOpen(true)}
+            >
               <ShoppingBag className="size-3.5" /> Open Investment Shop
             </Button>
           </Card>
@@ -354,38 +359,46 @@ function Screen() {
                     </span>
                     <div>
                       <p className="font-bold">{l(opt.name)}</p>
-                      <p className="text-muted-foreground">{t("invested", { amount: formatPaise(h.invested) })}</p>
+                      <p className="text-muted-foreground">
+                        {t("invested", { amount: formatPaise(h.invested) })}
+                      </p>
                     </div>
                   </div>
                   <div className="text-end">
                     <p className="font-bold text-sm tabular-nums">{formatPaise(h.value)}</p>
                     <p className={`font-semibold ${diff >= 0 ? "text-gain" : "text-loss"}`}>
-                      {diff >= 0 ? "+" : ""}{formatPaise(diff)}
+                      {diff >= 0 ? "+" : ""}
+                      {formatPaise(diff)}
                     </p>
                   </div>
                 </Card>
               );
             })}
 
-            {state.sips.filter((s) => s.stoppedTurn === undefined).map((s) => {
-              const opt = content.options.options.find((o) => o.id === s.optionId);
-              if (!opt) return null;
-              return (
-                <div key={s.optionId} className="flex items-center justify-between rounded-lg bg-secondary/10 p-2.5 text-xs">
-                  <span className="font-semibold text-secondary">
-                    SIP: {l(opt.name)} ({formatPaise(s.amountPerMonth)}/mo)
-                  </span>
-                  <Button
-                    size="default"
-                    variant="ghost"
-                    className="h-6 text-xs text-loss hover:text-loss"
-                    onClick={() => act({ type: "sip_stop", optionId: s.optionId })}
+            {state.sips
+              .filter((s) => s.stoppedTurn === undefined)
+              .map((s) => {
+                const opt = content.options.options.find((o) => o.id === s.optionId);
+                if (!opt) return null;
+                return (
+                  <div
+                    key={s.optionId}
+                    className="flex items-center justify-between rounded-lg bg-secondary/10 p-2.5 text-xs"
                   >
-                    Stop
-                  </Button>
-                </div>
-              );
-            })}
+                    <span className="font-semibold text-secondary">
+                      SIP: {l(opt.name)} ({formatPaise(s.amountPerMonth)}/mo)
+                    </span>
+                    <Button
+                      size="default"
+                      variant="ghost"
+                      className="h-6 text-xs text-loss hover:text-loss"
+                      onClick={() => act({ type: "sip_stop", optionId: s.optionId })}
+                    >
+                      Stop
+                    </Button>
+                  </div>
+                );
+              })}
           </div>
         )}
       </div>
@@ -393,7 +406,11 @@ function Screen() {
       {/* Primary Action Button (Toss Coin or Finish Chapter) */}
       <div className="sticky bottom-3 pt-2">
         {state.status === "chapter_complete" ? (
-          <Button size="lg" className="w-full text-base font-extrabold shadow-xl" onClick={handleFinishChapter}>
+          <Button
+            size="lg"
+            className="w-full text-base font-extrabold shadow-xl"
+            onClick={handleFinishChapter}
+          >
             {t("seeResults")} <ArrowRight className="size-5" />
           </Button>
         ) : (
@@ -437,21 +454,11 @@ function Screen() {
 
       {/* Scam card trigger if pending */}
       {pendingScam && (
-        <ScamModal
-          pendingScam={pendingScam}
-          state={state}
-          onRespond={handleScamResponse}
-        />
+        <ScamModal pendingScam={pendingScam} state={state} onRespond={handleScamResponse} />
       )}
 
       {/* Toss outcome modal */}
-      {lastTurn && (
-        <TossModal
-          outcome={lastTurn}
-          state={state}
-          onContinue={clearLastTurn}
-        />
-      )}
+      {lastTurn && <TossModal outcome={lastTurn} state={state} onContinue={clearLastTurn} />}
     </div>
   );
 }

@@ -62,7 +62,9 @@ export function GrowthTreeVisual() {
 export function UnitsBoughtChartVisual() {
   return (
     <Card className="space-y-3 bg-accent/20 p-4">
-      <p className="text-xs font-semibold text-muted-foreground">Monthly ₹2,000 SIP during market swings:</p>
+      <p className="text-xs font-semibold text-muted-foreground">
+        Monthly ₹2,000 SIP during market swings:
+      </p>
       <div className="grid grid-cols-3 gap-2 text-center text-xs">
         <div className="rounded-lg bg-card p-2 shadow-sm border-t-2 border-primary">
           <p className="font-bold text-primary">Normal year</p>
@@ -94,11 +96,41 @@ export function SplitPieVisual() {
       <div className="flex items-center justify-center gap-6">
         <svg viewBox="0 0 36 36" className="size-24 -rotate-90">
           {/* Equity 50% */}
-          <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" strokeWidth="6" strokeDasharray="44 44" strokeDashoffset="0" className="text-secondary" />
+          <circle
+            cx="18"
+            cy="18"
+            r="14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="6"
+            strokeDasharray="44 44"
+            strokeDashoffset="0"
+            className="text-secondary"
+          />
           {/* Debt 30% */}
-          <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" strokeWidth="6" strokeDasharray="26.4 61.6" strokeDashoffset="-44" className="text-primary" />
+          <circle
+            cx="18"
+            cy="18"
+            r="14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="6"
+            strokeDasharray="26.4 61.6"
+            strokeDashoffset="-44"
+            className="text-primary"
+          />
           {/* Gold 20% */}
-          <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" strokeWidth="6" strokeDasharray="17.6 70.4" strokeDashoffset="-70.4" className="text-coin" />
+          <circle
+            cx="18"
+            cy="18"
+            r="14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="6"
+            strokeDasharray="17.6 70.4"
+            strokeDashoffset="-70.4"
+            className="text-coin"
+          />
         </svg>
         <ul className="space-y-1.5 text-xs font-semibold">
           <li className="flex items-center gap-1.5">
@@ -113,7 +145,8 @@ export function SplitPieVisual() {
         </ul>
       </div>
       <p className="text-xs text-muted-foreground text-center">
-        When one asset faces a bad toss, the others cushion the fall. Don&apos;t put all eggs in one basket.
+        When one asset faces a bad toss, the others cushion the fall. Don&apos;t put all eggs in one
+        basket.
       </p>
     </Card>
   );
@@ -151,7 +184,8 @@ export function RealValueBadgeVisual() {
         </div>
       </div>
       <p className="text-xs text-muted-foreground text-center">
-        Inflation quietly erodes idle cash. ₹1,00,000 today buys what ₹{Math.round(realVal / 100)} buys later.
+        Inflation quietly erodes idle cash. ₹1,00,000 today buys what ₹{Math.round(realVal / 100)}{" "}
+        buys later.
       </p>
     </Card>
   );
@@ -166,7 +200,8 @@ export function StormTimelineVisual() {
           <span className="text-gain">🌱 Patient Investor</span>
         </div>
         <p className="text-muted-foreground text-[11px]">
-          During a crash, the panic seller exits at -20% and misses the recovery. The patient investor stays invested through the cycle.
+          During a crash, the panic seller exits at -20% and misses the recovery. The patient
+          investor stays invested through the cycle.
         </p>
       </div>
       <p className="text-xs text-muted-foreground text-center">
@@ -205,7 +240,9 @@ export function HorizonSliderVisual() {
   return (
     <Card className="space-y-3 bg-accent/20 p-4">
       <div className="flex items-center justify-between text-xs font-semibold">
-        <span>Goal horizon: {horizon} {horizon === 1 ? "year" : "years"}</span>
+        <span>
+          Goal horizon: {horizon} {horizon === 1 ? "year" : "years"}
+        </span>
         <input
           type="range"
           min="1"
@@ -219,17 +256,23 @@ export function HorizonSliderVisual() {
         {horizon <= 2 ? (
           <div>
             <p className="font-bold text-primary">Low risk: Bank FD / RD</p>
-            <p className="text-muted-foreground text-[11px]">When you need money soon, safety beats growth.</p>
+            <p className="text-muted-foreground text-[11px]">
+              When you need money soon, safety beats growth.
+            </p>
           </div>
         ) : horizon <= 5 ? (
           <div>
             <p className="font-bold text-secondary">Balanced: Mix of Debt & Equity</p>
-            <p className="text-muted-foreground text-[11px]">Moderate horizon can absorb minor market bumps.</p>
+            <p className="text-muted-foreground text-[11px]">
+              Moderate horizon can absorb minor market bumps.
+            </p>
           </div>
         ) : (
           <div>
             <p className="font-bold text-gain">Growth: Equity SIP</p>
-            <p className="text-muted-foreground text-[11px]">Over long periods, equity has historically beaten inflation.</p>
+            <p className="text-muted-foreground text-[11px]">
+              Over long periods, equity has historically beaten inflation.
+            </p>
           </div>
         )}
       </div>

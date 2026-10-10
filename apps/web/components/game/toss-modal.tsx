@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  CloudRain,
-  Coins,
-  Sun,
-  Volume2,
-  VolumeX,
-} from "lucide-react";
+import { CloudRain, Coins, Sun, Volume2, VolumeX } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -14,7 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { content } from "@/lib/content";
 import { formatPaise, formatRate } from "@/lib/format";
-import { getMuted, playCoinTossSound, playSuccessChime, playAlertSound, setMuted } from "@/lib/sound";
+import {
+  getMuted,
+  playCoinTossSound,
+  playSuccessChime,
+  playAlertSound,
+  setMuted,
+} from "@/lib/sound";
 import type { GameEvent, GameState, TossResult } from "@toss/engine";
 import { ContentIcon } from "./icon";
 import { useLocalize } from "./use-localize";
@@ -43,14 +43,17 @@ export function TossModal({ outcome, state, onContinue }: TossModalProps) {
   // Trigger toss sound and flip on mount
   useEffect(() => {
     playCoinTossSound();
-    const timer = setTimeout(() => {
-      setFlipped(true);
-      if (outcome.toss.marketState === "crash") {
-        playAlertSound();
-      } else {
-        playSuccessChime();
-      }
-    }, reduceMotion ? 100 : 800);
+    const timer = setTimeout(
+      () => {
+        setFlipped(true);
+        if (outcome.toss.marketState === "crash") {
+          playAlertSound();
+        } else {
+          playSuccessChime();
+        }
+      },
+      reduceMotion ? 100 : 800,
+    );
 
     return () => clearTimeout(timer);
   }, [outcome.toss.marketState, reduceMotion]);
@@ -92,7 +95,13 @@ export function TossModal({ outcome, state, onContinue }: TossModalProps) {
                   : "bg-coin text-foreground ring-coin/30"
             }`}
           >
-            {isCrash ? <CloudRain className="size-10 text-loss" /> : isBoom ? <Sun className="size-10 text-gain" /> : <Coins className="size-10 text-coin-foreground" />}
+            {isCrash ? (
+              <CloudRain className="size-10 text-loss" />
+            ) : isBoom ? (
+              <Sun className="size-10 text-gain" />
+            ) : (
+              <Coins className="size-10 text-coin-foreground" />
+            )}
           </motion.div>
         </div>
 
@@ -109,9 +118,7 @@ export function TossModal({ outcome, state, onContinue }: TossModalProps) {
                     : "bg-secondary/10 border-secondary/30 text-secondary"
               }`}
             >
-              <p className="text-xs font-semibold">
-                {t("market", { unit: state.turnUnit })}
-              </p>
+              <p className="text-xs font-semibold">{t("market", { unit: state.turnUnit })}</p>
               <h3 className="text-xl font-extrabold">
                 {marketStateDef ? l(marketStateDef.label) : outcome.toss.marketState}
               </h3>
@@ -127,14 +134,20 @@ export function TossModal({ outcome, state, onContinue }: TossModalProps) {
                   switch (ev.type) {
                     case "income":
                       return (
-                        <li key={i} className="flex justify-between items-center bg-accent/20 rounded-lg p-2">
+                        <li
+                          key={i}
+                          className="flex justify-between items-center bg-accent/20 rounded-lg p-2"
+                        >
                           <span className="font-medium text-foreground">{t("income")}</span>
                           <span className="font-bold text-gain">+{formatPaise(ev.amount)}</span>
                         </li>
                       );
                     case "fixed_expenses":
                       return (
-                        <li key={i} className="flex justify-between items-center bg-accent/20 rounded-lg p-2">
+                        <li
+                          key={i}
+                          className="flex justify-between items-center bg-accent/20 rounded-lg p-2"
+                        >
                           <span className="font-medium text-foreground">{t("expenses")}</span>
                           <span className="font-bold text-loss">−{formatPaise(ev.amount)}</span>
                         </li>
@@ -142,12 +155,18 @@ export function TossModal({ outcome, state, onContinue }: TossModalProps) {
                     case "returns": {
                       const opt = content.options.options.find((o) => o.id === ev.optionId);
                       return (
-                        <li key={i} className="flex justify-between items-center bg-accent/20 rounded-lg p-2">
+                        <li
+                          key={i}
+                          className="flex justify-between items-center bg-accent/20 rounded-lg p-2"
+                        >
                           <span className="font-medium text-foreground">
                             {t("returns", { name: opt ? l(opt.name) : ev.optionId })}
                           </span>
-                          <span className={`font-bold tabular-nums ${ev.change >= 0 ? "text-gain" : "text-loss"}`}>
-                            {ev.change >= 0 ? "+" : ""}{formatPaise(ev.change)} ({formatRate(ev.rate)})
+                          <span
+                            className={`font-bold tabular-nums ${ev.change >= 0 ? "text-gain" : "text-loss"}`}
+                          >
+                            {ev.change >= 0 ? "+" : ""}
+                            {formatPaise(ev.change)} ({formatRate(ev.rate)})
                           </span>
                         </li>
                       );
@@ -155,7 +174,10 @@ export function TossModal({ outcome, state, onContinue }: TossModalProps) {
                     case "life_event": {
                       const lifeDef = content.lifeEvents.events.find((e) => e.id === ev.eventId);
                       return (
-                        <li key={i} className="rounded-lg border border-primary/30 bg-primary/10 p-2 space-y-1">
+                        <li
+                          key={i}
+                          className="rounded-lg border border-primary/30 bg-primary/10 p-2 space-y-1"
+                        >
                           <div className="flex justify-between items-center font-bold">
                             <span className="flex items-center gap-1.5 text-primary">
                               <ContentIcon name={lifeDef?.icon} className="size-4" />
@@ -173,7 +195,10 @@ export function TossModal({ outcome, state, onContinue }: TossModalProps) {
                       const ch = content.chapters.find((c) => c.id === state.chapterId);
                       const tDef = ch?.tasks.find((task) => task.id === ev.taskId);
                       return (
-                        <li key={i} className="flex justify-between items-center bg-loss/10 rounded-lg p-2 text-loss">
+                        <li
+                          key={i}
+                          className="flex justify-between items-center bg-loss/10 rounded-lg p-2 text-loss"
+                        >
                           <span className="font-semibold">
                             {t("taskMissed", { name: tDef ? l(tDef.title) : ev.taskId })}
                           </span>

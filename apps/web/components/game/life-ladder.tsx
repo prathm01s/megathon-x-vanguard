@@ -88,7 +88,10 @@ function Ladder() {
         ))}
       </ol>
 
-      <Link href="/mindset/post" className="text-center text-sm font-semibold text-primary underline underline-offset-4">
+      <Link
+        href="/mindset/post"
+        className="text-center text-sm font-semibold text-primary underline underline-offset-4"
+      >
         {t("retakeMindset")}
       </Link>
     </section>
@@ -128,7 +131,13 @@ function ChapterRung({
                 : "bg-muted text-muted-foreground",
           )}
         >
-          {result?.passed ? <CheckCircle2 className="size-6" /> : playable ? step : <Lock className="size-5" />}
+          {result?.passed ? (
+            <CheckCircle2 className="size-6" />
+          ) : playable ? (
+            step
+          ) : (
+            <Lock className="size-5" />
+          )}
         </span>
       )}
       <Card className={cn("flex-1 space-y-2", !playable && "opacity-70")}>
