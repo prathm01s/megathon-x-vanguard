@@ -18,3 +18,57 @@ Add new requests at the bottom: what you need, why, and the interface you propos
    Telugu / Devanagari / Naskh Arabic, loaded in `app/[locale]/layout.tsx`.
 5. **PWA is not set up yet** (§9.4). `next.config.ts` has a TODO. Check that the PWA tool you
    choose supports Next 16 with Turbopack before you pick it.
+
+## From Samarth's engine session (2026-10-10)
+
+6. **The Friends' Room UI can start now.** `useRoom(code)` from `@/lib/room` runs the real room
+   rules in memory with bots. Room `TOSS42` is preloaded at turn 3, with the bike auction open, an
+   active loan and an open request with offers. `createRoom("ch2-first-job")` makes a fresh room.
+   The actions are in `lib/room/index.ts`. Note `act(action)` for the player's own decisions inside
+   a room, `react(emoteId)` for preset emotes, and that the host's `ready()` starts the game.
+   Show the mutual fund reveal (`content.auctions.mutualFundRevealText`) when
+   `auction.status === "closed"`, `auction.winner.poolId` is set, and the auction's
+   `mutualFundReveal` is true.
+7. **Error codes to translate.** Engine and room actions reject with `EngineError.code`:
+   `insufficient_cash`, `below_min`, `monthly_only`, `already_running`, `scam_pending`,
+   `bad_task`, `bad_withdraw`, `chapter_complete`, `bad_rate`, `bad_amount`, `bad_due_turn`,
+   `bad_loan`, `room_full`, `room_started`, `not_in_room`, `not_playing`, `no_auction`,
+   `auction_closed`, `no_pool`, `pool_short`, `bad_emote`.
+8. **New things to show on the turn-result screen** (`GameEvent`):
+   - `forced_borrowing`: "You had to borrow ₹X at Y% a year": the lesson of having no safety net.
+   - `debt_interest` / `debt_repaid`, `sip_missed`: not enough cash for an instalment.
+   - `cash_lost`: cash kept at home was lost.
+   - `life_event.coveredBy`: `cash` | `savings` | `shortfall`.
+   - `TossResult.lifeEventMonth` says which month the event hit.
+9. **Recurring deposit:** the RD is offered as `sip_start` (a monthly plan), never as `invest`.
+   Label it as a monthly deposit, not a SIP.
+10. **Units for the `units-bought-chart`:** every holding has `units`, and each `sip_buy` event
+    reports the units bought that turn. A unit starts at ₹10. In a storm year the same instalment
+    buys more units.
+11. **Fixtures were regenerated** for the v2 state. Use `@toss/engine/fixtures` as before.
+
+## From Samarth's room-server session (2026-10-10)
+
+12. **`useRoom` now returns YOUR view of the room (`RoomView`)**, exactly what the real server
+    sends:
+    - `room.me` has your full `GameState`;
+    - `members` are `PublicMember`s (nickname, avatar, Trust Score, `ready`, `awaitingScam`,
+      `finished`), with no cash or holdings of other players;
+    - before an auction closes you only see your own bid and your pool's bid.
+
+    Also new: `isHost`, `actions.tick()`, `actions.join(personaId)`, and actions now reject with a
+    `RoomError` (`import { RoomError } from "@/lib/room"`). Fixture: `sampleRoomView` from
+    `@toss/engine/fixtures`.
+
+13. **Join with the player's persona:** call `actions.join(personaIdFromMindsetCheck)`. (The real
+    server ignores it and reads the persona from the player's latest Mindset Check.)
+14. **Turn timer UI:** each turn auto-resolves after `content.multiplayer.turnTimerSeconds` (90 s).
+    Show a countdown and call `actions.tick()` when it reaches 0. Players who haven't answered a
+    scam card get "ignore" by default.
+15. **Friend scam card:** a `PendingScam` with `fromMemberId` was pushed by a friend in the room
+    (the "double your money" scheme). Show that friend's nickname as the sender.
+16. **More error codes to translate:** `not_host`, `room_not_found`, `bad_request`,
+    `no_profile`, `unauthenticated`, `server_error`, `network`.
+17. **Dev tools you can use:** `/en/dev/content` shows every content text in the page's
+    locale, with "en fallback" flags (handy for translation work), and `/en/dev/sim` shows how
+    the game plays out.

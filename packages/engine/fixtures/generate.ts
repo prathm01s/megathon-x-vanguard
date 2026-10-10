@@ -17,5 +17,5 @@ write("ch2-turn0.json", states[0]);
 write("ch2-turn2.json", states[2]);
 write("ch2-turn5.json", states[5]);
 write("ch2-chapter-result.json", result);
-write("room-state.json", sampleRoom(loaded.bundle, states[2]!));
+write("room-state.json", sampleRoom(loaded.bundle));
 console.log("✔ fixtures written");

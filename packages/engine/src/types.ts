@@ -29,18 +29,22 @@ export interface MindsetResult {
 // ── Game state ──────────────────────────────────────────────────────────────
 export interface Holding {
   optionId: OptionId;
-  /** What the player put in (for "you gained / lost" displays). */
+  /** What the player put in, nominal (for "you gained / lost" displays). */
   invested: Paise;
-  /** Current market value. */
+  /** What the player put in, in chapter-start prices (each contribution ÷ the price index
+   *  when it was made). Drives `realValueGrowthPct`. */
+  investedReal: Paise;
+  /** Current value = units × unit price (₹10 × the option's NAV index), rounded to paise. */
   value: Paise;
+  /** Units owned. Every option is unit-priced so SIPs buy more units when prices are low. */
+  units: number;
   /** Locked options: first turn at which it can be withdrawn without penalty. */
   maturesAtTurn?: number;
-  /** Units bought (market options), for the rupee-cost-averaging visual. */
-  units?: number;
 }
 
 export interface Sip {
   optionId: OptionId;
+  /** Monthly instalment. Also used for recurring deposits (`monthlyDepositOnly` options). */
   amountPerMonth: Paise;
   /** 1-based turn being played when the SIP started (`state.turn + 1`). */
   startedTurn: number;
@@ -65,6 +69,8 @@ export interface PendingScam {
   instanceId: string;
   scamId: string;
   turn: number;
+  /** Set when a (bot) friend in a Friends' Room pushed the offer (e.g. a Ponzi scheme). */
+  fromMemberId?: string;
 }
 
 export interface WealthSnapshot {
@@ -83,9 +89,17 @@ export interface ChapterStats {
   fdBrokenEarly: boolean;
   /** Bad life events fully paid from cash/savings without borrowing. */
   badEventsCoveredByFund: string[];
-  /** Total good-event money received and how much of it was still saved at turn end. */
+  /** Good-event money received (bonus, scholarship). */
   windfallReceived: Paise;
+  /** Windfall money the player moved into savings or investments in the decide phase right
+   *  after it arrived (capped at the windfall). Drives `windfallSavedPct`. */
   windfallSaved: Paise;
+  /** Windfall still waiting to be saved; the window closes at the next toss. */
+  windfallUnallocated: Paise;
+  /** Cash lost at home (lost / stolen). */
+  cashLost: Paise;
+  /** SIP instalments skipped because there wasn't enough cash. */
+  sipInstalmentsMissed: number;
   loansTaken: number;
   loansRepaidOnTime: number;
   loansDefaulted: number;
@@ -96,15 +110,31 @@ export interface ChapterStats {
   /** Winning bid ÷ true value − 1, averaged over wins. */
   overbidPct: number;
   poolBidsJoined: number;
-  /** Consecutive chapters each shift rule has held (for `consecutiveChapters`). */
+}
+
+/** Carried from one chapter to the next (set by `endChapter`, read by `createPlaythrough`). */
+export interface CarryOver {
+  /** A required task with `blockNextChapterGoal` was missed. */
+  blockNextChapterGoal: boolean;
+  /** Specific goal tasks blocked by a missed task's `blockGoal:<taskId>` consequence. */
+  blockedTaskIds: string[];
+  /** Salary bonus earned (e.g. the upskilling laptop). */
+  salaryBonusRate: number;
+  /** Consecutive chapters each persona shift rule has held (for `consecutiveChapters`). */
   shiftStreaks: Record<string, number>;
 }
 
+export const STATE_SCHEMA_VERSION = 2;
+
 export interface GameState {
-  /** Engine state schema version (bump on breaking change; loaders migrate). */
-  schemaVersion: 1;
+  /** Engine state schema version. Older saves are upgraded by `migrateState`. */
+  schemaVersion: typeof STATE_SCHEMA_VERSION;
   contentVersion: string;
+  /** Seeds this player's life events, scams and cash luck. */
   seed: string;
+  /** Seeds the market tosses. Defaults to `seed`; in a Friends' Room every member shares
+   *  the room's market seed, so the market is the same for all (§7.6). */
+  marketSeed?: string;
   personaId: PersonaId;
   chapterId: ChapterId;
   /** 0 before the first toss; increments on each `advanceTurn`. */
@@ -112,14 +142,18 @@ export interface GameState {
   totalTurns: number;
   turnUnit: "month" | "year";
   status: "playing" | "awaiting_scam_response" | "chapter_complete";
-  /** Wallet / cash at home. */
+  /** Wallet / cash at home. Never negative: shortfalls become `debt`. */
   cash: Paise;
-  /** Monthly income right now (after promotions, job breaks, bonuses). */
+  /** Money owed to the bank after being forced to borrow (no emergency fund). Accrues interest. */
+  debt: Paise;
+  /** Base monthly income (after promotions and bonuses; temporary changes are in `incomeModifiers`). */
   incomePerMonth: Paise;
-  /** Temporary income changes from events, e.g. job break. */
-  incomeModifiers: { eventId: string; rate: number; untilTurn: number }[];
+  /** Temporary income changes from events, e.g. a 3-month job break (rate −1). */
+  incomeModifiers: { eventId: string; rate: number; monthsLeft: number }[];
   /** Cumulative price index since chapter start (1 = chapter-start prices). */
   inflationIndex: number;
+  /** NAV index per option (starts at 1 = ₹10 a unit). Moves with each month's toss. */
+  navs: Record<OptionId, number>;
   holdings: Holding[];
   sips: Sip[];
   tasks: TaskState[];
@@ -128,8 +162,10 @@ export interface GameState {
   eventCooldowns: Record<string, number>;
   /** Scam ids the player fell for (triggers repeat variants). */
   scamsFallenIds: string[];
-  /** Consequences carried to the next chapter (e.g. blocked goals). */
-  carryOver: { blockNextChapterGoal: boolean; salaryBonusRate: number };
+  /** Consequences carried INTO this chapter from the previous one. */
+  carriedIn: CarryOver;
+  /** Consequences this chapter will carry to the next (filled during play and by endChapter). */
+  carryOver: CarryOver;
   trustScore: number;
   /** Running counters for the metrics registry; updated as actions and events happen. */
   stats: ChapterStats;
@@ -186,8 +222,9 @@ export interface TossResult {
   marketState: string;
   /** Independent toss id → state id (e.g. `{ "gold-toss": "up" }`). */
   independent: Record<string, string>;
-  /** Life event that fired this turn, if any. */
+  /** Life event that fired this turn, if any, and the month (1–12 in year turns) it hit. */
   lifeEventId?: string;
+  lifeEventMonth?: number;
   /** Scam offered this turn, if any. */
   scamId?: string;
   /** Inflation applied this turn (e.g. 0.06). */
@@ -200,12 +237,16 @@ export type GameEvent =
   | { type: "market_toss"; marketState: string; independent: Record<string, string> }
   | { type: "returns"; optionId: OptionId; rate: number; change: Paise }
   | { type: "sip_buy"; optionId: OptionId; amount: Paise; units: number }
+  | { type: "sip_missed"; optionId: OptionId; amount: Paise }
   | {
       type: "life_event";
       eventId: string;
       amount: Paise;
       coveredBy: "cash" | "savings" | "shortfall";
     }
+  | { type: "forced_borrowing"; amount: Paise; ratePerYear: number }
+  | { type: "debt_interest"; amount: Paise }
+  | { type: "debt_repaid"; amount: Paise }
   | { type: "scam_offer"; instanceId: string; scamId: string }
   | { type: "task_due"; taskId: TaskId }
   | { type: "task_missed"; taskId: TaskId; fine: Paise }
@@ -265,6 +306,8 @@ export interface ChapterResult {
   badgesEarned: string[];
   personaShift: { from: PersonaId; to: PersonaId; ruleId: string } | null;
   metrics: MetricValues;
+  /** Pass to `createPlaythrough` for the next chapter. */
+  carryOver: CarryOver;
   /** Next chapter id(s); several ids = career choice. */
   next: ChapterId[] | "end";
 }
@@ -315,11 +358,15 @@ export type LoanStatus =
 
 export interface Loan {
   id: string;
+  /** For offers: the request they answer. Requests and offers are both `Loan` rows. */
+  requestId?: string;
   lenderMemberId: string | "bank" | "loan-app";
   borrowerMemberId: string;
   principal: Paise;
   ratePerTurn: number;
   interestType: "simple" | "compound";
+  /** Turn the money was handed over (interest runs from here). */
+  startTurn: number;
   dueTurn: number;
   status: LoanStatus;
   repaidAmount: Paise;
@@ -360,6 +407,15 @@ export interface AuctionState {
   winner?: { memberId?: string; poolId?: string; amount: Paise };
   /** Revealed after close. */
   trueValue?: Paise;
+  /** Turns of `returnStream` income still to be paid to the winner(s). */
+  payoutTurnsLeft?: number;
+}
+
+/** Preset emote — no free-text chat between students (§6). */
+export interface RoomReaction {
+  memberId: string;
+  emoteId: string;
+  turn: number;
 }
 
 export interface RoomState {
@@ -374,4 +430,49 @@ export interface RoomState {
   auction: AuctionState | null;
   /** Shared market toss per turn. */
   tosses: TossResult[];
+  reactions: RoomReaction[];
+  /**
+   * Decision records produced since the server last saved the room. The server writes them to
+   * the `decisions` table and empties the list; the mock room just discards them.
+   */
+  outbox: MemberDecision[];
+}
+
+export interface MemberDecision {
+  memberId: string;
+  record: DecisionRecord;
+}
+
+/** What other players can see about a member: no cash, holdings or sealed bids (§6). */
+export interface PublicMember {
+  id: string;
+  nickname: string;
+  avatarId: string;
+  isBot: boolean;
+  seat: number;
+  trustScore: number;
+  /** Has submitted this turn. */
+  ready: boolean;
+  /** Still has to answer a scam card before the turn can resolve. */
+  awaitingScam: boolean;
+  finished: boolean;
+}
+
+/**
+ * One player's view of a room (what the server sends to that player). Only `me` carries a
+ * full `GameState`. Before an auction closes, other bidders' sealed bids are hidden; pools
+ * stay visible because pooling is done together.
+ */
+export interface RoomView {
+  code: string;
+  chapterId: ChapterId;
+  status: RoomState["status"];
+  turn: number;
+  hostMemberId: string;
+  me: RoomMember | null;
+  members: PublicMember[];
+  loans: Loan[];
+  auction: AuctionState | null;
+  tosses: TossResult[];
+  reactions: RoomReaction[];
 }

@@ -111,9 +111,12 @@ options:
     category: market
     unlockChapter: ch3a-salaried
     assumedAverageReturn: 0.07
+    # DECISION (Samarth): §8.6 listed +8.5 / +7 / +5.5, which can never lose money and breaks the
+    # §1 guardrail "market options must be able to lose money in a bad year". Re-shaped to keep the
+    # ~7% average (expected 6.9%) with a small loss in a storm. Confirm with Vanguard mentors.
     returns:
       type: market
-      byState: { boom: 0.085, normal: 0.07, crash: 0.055 }
+      byState: { boom: 0.10, normal: 0.08, crash: -0.005 }
     liquidity: market
     minAmount: 500
     sipAllowed: true

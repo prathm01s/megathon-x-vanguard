@@ -5,7 +5,8 @@
 
 /** Stream names. Keeping them separate means a change in one (e.g. a scam answer)
  *  never shifts the market tosses — essential for "What if" replays. */
-export type RngStream = "market" | "independent" | "life" | "scam" | "cash" | "bots" | "auction";
+export type RngStream =
+  "market" | "independent" | "life" | "income" | "scam" | "cash" | "bots" | "auction";
 
 export interface Rng {
   /** Float in [0, 1). */

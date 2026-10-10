@@ -1,121 +1,124 @@
 {
   "code": "TOSS42",
-  "hostMemberId": "m-human",
+  "hostMemberId": "m1",
   "chapterId": "ch2-first-job",
   "status": "playing",
-  "turn": 2,
-  "seed": "fixture-seed-ch2",
+  "turn": 3,
+  "seed": "room-fixture",
   "members": [
     {
-      "id": "m-human",
-      "userId": "00000000-0000-0000-0000-000000000001",
+      "id": "m1",
+      "userId": "mock-user",
       "nickname": "coinflip_kid",
       "avatarId": "avatar-1",
       "isBot": false,
       "seat": 1,
-      "trustScore": 55,
+      "trustScore": 50,
       "ready": false,
       "state": {
-        "schemaVersion": 1,
-        "contentVersion": "7dc6cc0b3fb6",
-        "seed": "fixture-seed-ch2",
+        "schemaVersion": 2,
+        "contentVersion": "1abb793e0abf",
+        "seed": "room-fixture:m1",
         "personaId": "safe-keeper",
         "chapterId": "ch2-first-job",
-        "turn": 2,
+        "turn": 3,
         "totalTurns": 5,
         "turnUnit": "year",
         "status": "playing",
-        "cash": 15528000,
-        "incomePerMonth": 3674160,
+        "cash": 46887225,
+        "debt": 0,
+        "incomePerMonth": 3779136,
         "incomeModifiers": [],
-        "inflationIndex": 1.1236000000000002,
-        "holdings": [
-          {
-            "optionId": "savings",
-            "invested": 5900000,
-            "value": 6107900
-          },
-          {
-            "optionId": "equity-fund",
-            "invested": 4800000,
-            "value": 5088000
-          }
-        ],
-        "sips": [
-          {
-            "optionId": "equity-fund",
-            "amountPerMonth": 200000,
-            "startedTurn": 1
-          }
-        ],
+        "inflationIndex": 1.191016000000001,
+        "navs": {
+          "cash": 1,
+          "savings": 1.0927270000000031,
+          "rd": 1.207949624999997,
+          "fd": 1.2164762968750038,
+          "gold": 0.9411919999999986,
+          "equity-fund": 0.7530880000000003,
+          "debt-fund": 1.069226999999999,
+          "index-fund": 0.740610875,
+          "asset-mix": 0.8766583100000009
+        },
+        "holdings": [],
+        "sips": [],
         "tasks": [
           {
             "taskId": "ch2-friend-wedding",
             "amount": 500000,
-            "paid": 500000,
+            "paid": 0,
             "dueTurn": 1,
-            "status": "done",
-            "completedTurn": 1
+            "status": "missed"
           },
           {
             "taskId": "ch2-emergency-fund",
             "amount": 5400000,
-            "paid": 5400000,
+            "paid": 0,
             "dueTurn": 2,
-            "status": "done",
-            "completedTurn": 2
+            "status": "late"
           },
           {
             "taskId": "ch2-sister-fees",
             "amount": 2500000,
-            "paid": 2500000,
+            "paid": 0,
             "dueTurn": 2,
-            "status": "done",
-            "completedTurn": 2
+            "status": "late"
           },
           {
             "taskId": "ch2-laptop",
             "amount": 4000000,
-            "paid": 4000000,
+            "paid": 0,
             "dueTurn": 3,
-            "status": "done",
-            "completedTurn": 2
+            "status": "missed"
           },
           {
             "taskId": "ch2-two-wheeler",
-            "amount": 7865200,
-            "paid": 3600000,
+            "amount": 8337112,
+            "paid": 0,
             "dueTurn": 5,
             "status": "open"
           }
         ],
         "pendingScams": [],
         "eventCooldowns": {
-          "bonus": 1
+          "family-wedding": 3
         },
         "scamsFallenIds": [],
-        "carryOver": {
+        "carriedIn": {
           "blockNextChapterGoal": false,
-          "salaryBonusRate": 0
+          "blockedTaskIds": [],
+          "salaryBonusRate": 0,
+          "shiftStreaks": {}
+        },
+        "carryOver": {
+          "blockNextChapterGoal": true,
+          "blockedTaskIds": [],
+          "salaryBonusRate": 0,
+          "shiftStreaks": {}
         },
         "trustScore": 50,
         "stats": {
-          "scamsSpotted": 0,
+          "scamsSpotted": 1,
           "repeatScamSpotted": false,
           "soldDuringCrash": false,
           "fdBrokenEarly": false,
-          "badEventsCoveredByFund": [],
-          "windfallReceived": 3000000,
+          "badEventsCoveredByFund": [
+            "family-wedding"
+          ],
+          "windfallReceived": 0,
           "windfallSaved": 0,
-          "loansTaken": 0,
+          "windfallUnallocated": 0,
+          "cashLost": 0,
+          "sipInstalmentsMissed": 0,
+          "loansTaken": 1,
           "loansRepaidOnTime": 0,
           "loansDefaulted": 0,
           "highInterestDebt": false,
           "interestPaid": 0,
           "auctionsWon": 0,
           "overbidPct": 0,
-          "poolBidsJoined": 0,
-          "shiftStreaks": {}
+          "poolBidsJoined": 0
         },
         "history": [
           {
@@ -126,80 +129,30 @@
           },
           {
             "turn": 1,
-            "amount": 18430000,
-            "realValue": 17386792,
-            "inflationIndex": 1.06
+            "amount": 15204249,
+            "realValue": 14343631,
+            "inflationIndex": 1.0600000000000003
           },
           {
             "turn": 2,
-            "amount": 26723900,
-            "realValue": 23784176,
-            "inflationIndex": 1.1236000000000002
+            "amount": 32250757,
+            "realValue": 28703059,
+            "inflationIndex": 1.1236000000000006
+          },
+          {
+            "turn": 3,
+            "amount": 46887225,
+            "realValue": 39367418,
+            "inflationIndex": 1.191016000000001
           }
         ],
         "actionLog": [
           {
-            "turn": 1,
+            "turn": 4,
             "action": {
-              "type": "pay_task",
-              "taskId": "ch2-friend-wedding",
-              "amount": 500000
-            }
-          },
-          {
-            "turn": 1,
-            "action": {
-              "type": "sip_start",
-              "optionId": "equity-fund",
-              "amountPerMonth": 200000
-            }
-          },
-          {
-            "turn": 1,
-            "action": {
-              "type": "invest",
-              "optionId": "savings",
-              "amount": 500000
-            }
-          },
-          {
-            "turn": 1,
-            "action": {
-              "type": "pay_task",
-              "taskId": "ch2-emergency-fund",
-              "amount": 500000
-            }
-          },
-          {
-            "turn": 2,
-            "action": {
-              "type": "pay_task",
-              "taskId": "ch2-emergency-fund",
-              "amount": 4900000
-            }
-          },
-          {
-            "turn": 2,
-            "action": {
-              "type": "pay_task",
-              "taskId": "ch2-sister-fees",
-              "amount": 2500000
-            }
-          },
-          {
-            "turn": 2,
-            "action": {
-              "type": "pay_task",
-              "taskId": "ch2-laptop",
-              "amount": 4000000
-            }
-          },
-          {
-            "turn": 2,
-            "action": {
-              "type": "pay_task",
-              "taskId": "ch2-two-wheeler",
-              "amount": 3600000
+              "type": "scam_response",
+              "instanceId": "instant-loan-app@3",
+              "response": "ignore"
             }
           }
         ],
@@ -210,60 +163,102 @@
             "independent": {
               "gold-toss": "down"
             },
-            "inflation": 0.06,
-            "lifeEventId": "bonus"
+            "inflation": 0.06
           },
           {
             "turn": 2,
-            "marketState": "normal",
+            "marketState": "crash",
             "independent": {
-              "gold-toss": "up"
+              "gold-toss": "down"
             },
             "inflation": 0.06
+          },
+          {
+            "turn": 3,
+            "marketState": "crash",
+            "independent": {
+              "gold-toss": "down"
+            },
+            "inflation": 0.06,
+            "lifeEventId": "family-wedding",
+            "lifeEventMonth": 5,
+            "scamId": "instant-loan-app"
           }
-        ]
+        ],
+        "marketSeed": "room-fixture"
       }
     },
     {
-      "id": "m-bot-1",
+      "id": "m2",
       "userId": null,
-      "nickname": "Careful Kavya",
-      "avatarId": "avatar-2",
+      "nickname": "Balanced Bala",
+      "avatarId": "bot-balanced",
       "isBot": true,
-      "botStrategy": "cautious",
+      "botStrategy": "balanced",
       "seat": 2,
       "trustScore": 50,
       "ready": true,
       "state": {
-        "schemaVersion": 1,
-        "contentVersion": "7dc6cc0b3fb6",
-        "seed": "fixture-seed-ch2",
+        "schemaVersion": 2,
+        "contentVersion": "1abb793e0abf",
+        "seed": "room-fixture:m2",
         "personaId": "safe-keeper",
         "chapterId": "ch2-first-job",
-        "turn": 2,
+        "turn": 3,
         "totalTurns": 5,
         "turnUnit": "year",
         "status": "playing",
-        "cash": 15528000,
-        "incomePerMonth": 3674160,
+        "cash": 22357190,
+        "debt": 0,
+        "incomePerMonth": 3968093,
         "incomeModifiers": [],
-        "inflationIndex": 1.1236000000000002,
+        "inflationIndex": 1.191016000000001,
+        "navs": {
+          "cash": 1,
+          "savings": 1.0927270000000031,
+          "rd": 1.207949624999997,
+          "fd": 1.2164762968750038,
+          "gold": 0.9411919999999986,
+          "equity-fund": 0.7530880000000003,
+          "debt-fund": 1.069226999999999,
+          "index-fund": 0.740610875,
+          "asset-mix": 0.8766583100000009
+        },
         "holdings": [
           {
             "optionId": "savings",
-            "invested": 5900000,
-            "value": 6107900
+            "invested": 5400000,
+            "investedReal": 5179245,
+            "value": 5776601,
+            "units": 5286.407766990288
           },
           {
             "optionId": "equity-fund",
-            "invested": 4800000,
-            "value": 5088000
+            "invested": 12755413,
+            "investedReal": 11625003,
+            "value": 10146595,
+            "units": 13473.318777938242
+          },
+          {
+            "optionId": "fd",
+            "invested": 1466560,
+            "investedReal": 1305233,
+            "value": 1565553,
+            "units": 1286.9570940442793,
+            "maturesAtTurn": 5
+          },
+          {
+            "optionId": "gold",
+            "invested": 1466560,
+            "investedReal": 1305233,
+            "value": 1437229,
+            "units": 1527.0304039983355
           }
         ],
         "sips": [
           {
             "optionId": "equity-fund",
-            "amountPerMonth": 200000,
+            "amountPerMonth": 300000,
             "startedTurn": 1
           }
         ],
@@ -271,10 +266,9 @@
           {
             "taskId": "ch2-friend-wedding",
             "amount": 500000,
-            "paid": 500000,
+            "paid": 0,
             "dueTurn": 1,
-            "status": "done",
-            "completedTurn": 1
+            "status": "missed"
           },
           {
             "taskId": "ch2-emergency-fund",
@@ -298,34 +292,48 @@
             "paid": 4000000,
             "dueTurn": 3,
             "status": "done",
-            "completedTurn": 2
+            "completedTurn": 3
           },
           {
             "taskId": "ch2-two-wheeler",
-            "amount": 7865200,
-            "paid": 3600000,
+            "amount": 8337112,
+            "paid": 0,
             "dueTurn": 5,
             "status": "open"
           }
         ],
         "pendingScams": [],
         "eventCooldowns": {
-          "bonus": 1
+          "phone-broken": 1,
+          "bonus": 3
         },
         "scamsFallenIds": [],
+        "carriedIn": {
+          "blockNextChapterGoal": false,
+          "blockedTaskIds": [],
+          "salaryBonusRate": 0,
+          "shiftStreaks": {}
+        },
         "carryOver": {
           "blockNextChapterGoal": false,
-          "salaryBonusRate": 0
+          "blockedTaskIds": [],
+          "salaryBonusRate": 0.05,
+          "shiftStreaks": {}
         },
         "trustScore": 50,
         "stats": {
-          "scamsSpotted": 0,
+          "scamsSpotted": 1,
           "repeatScamSpotted": false,
           "soldDuringCrash": false,
           "fdBrokenEarly": false,
-          "badEventsCoveredByFund": [],
-          "windfallReceived": 3000000,
+          "badEventsCoveredByFund": [
+            "phone-broken"
+          ],
+          "windfallReceived": 3674160,
           "windfallSaved": 0,
+          "windfallUnallocated": 3674160,
+          "cashLost": 0,
+          "sipInstalmentsMissed": 0,
           "loansTaken": 0,
           "loansRepaidOnTime": 0,
           "loansDefaulted": 0,
@@ -333,8 +341,7 @@
           "interestPaid": 0,
           "auctionsWon": 0,
           "overbidPct": 0,
-          "poolBidsJoined": 0,
-          "shiftStreaks": {}
+          "poolBidsJoined": 0
         },
         "history": [
           {
@@ -345,15 +352,21 @@
           },
           {
             "turn": 1,
-            "amount": 18430000,
-            "realValue": 17386792,
-            "inflationIndex": 1.06
+            "amount": 14225589,
+            "realValue": 13420367,
+            "inflationIndex": 1.0600000000000003
           },
           {
             "turn": 2,
-            "amount": 26723900,
-            "realValue": 23784176,
-            "inflationIndex": 1.1236000000000002
+            "amount": 24144902,
+            "realValue": 21488877,
+            "inflationIndex": 1.1236000000000006
+          },
+          {
+            "turn": 3,
+            "amount": 41283168,
+            "realValue": 34662144,
+            "inflationIndex": 1.191016000000001
           }
         ],
         "actionLog": [
@@ -361,8 +374,8 @@
             "turn": 1,
             "action": {
               "type": "pay_task",
-              "taskId": "ch2-friend-wedding",
-              "amount": 500000
+              "taskId": "ch2-emergency-fund",
+              "amount": 1500000
             }
           },
           {
@@ -370,23 +383,15 @@
             "action": {
               "type": "sip_start",
               "optionId": "equity-fund",
-              "amountPerMonth": 200000
+              "amountPerMonth": 300000
             }
           },
           {
-            "turn": 1,
+            "turn": 2,
             "action": {
-              "type": "invest",
-              "optionId": "savings",
-              "amount": 500000
-            }
-          },
-          {
-            "turn": 1,
-            "action": {
-              "type": "pay_task",
-              "taskId": "ch2-emergency-fund",
-              "amount": 500000
+              "type": "scam_response",
+              "instanceId": "job-fee-offer@1",
+              "response": "ask_friend"
             }
           },
           {
@@ -394,7 +399,7 @@
             "action": {
               "type": "pay_task",
               "taskId": "ch2-emergency-fund",
-              "amount": 4900000
+              "amount": 3900000
             }
           },
           {
@@ -406,7 +411,7 @@
             }
           },
           {
-            "turn": 2,
+            "turn": 3,
             "action": {
               "type": "pay_task",
               "taskId": "ch2-laptop",
@@ -414,11 +419,27 @@
             }
           },
           {
-            "turn": 2,
+            "turn": 3,
             "action": {
-              "type": "pay_task",
-              "taskId": "ch2-two-wheeler",
-              "amount": 3600000
+              "type": "invest",
+              "optionId": "equity-fund",
+              "amount": 1955413
+            }
+          },
+          {
+            "turn": 3,
+            "action": {
+              "type": "invest",
+              "optionId": "fd",
+              "amount": 1466560
+            }
+          },
+          {
+            "turn": 3,
+            "action": {
+              "type": "invest",
+              "optionId": "gold",
+              "amount": 1466560
             }
           }
         ],
@@ -430,59 +451,88 @@
               "gold-toss": "down"
             },
             "inflation": 0.06,
-            "lifeEventId": "bonus"
+            "lifeEventId": "phone-broken",
+            "lifeEventMonth": 3,
+            "scamId": "job-fee-offer"
           },
           {
             "turn": 2,
-            "marketState": "normal",
+            "marketState": "crash",
             "independent": {
-              "gold-toss": "up"
+              "gold-toss": "down"
             },
             "inflation": 0.06
+          },
+          {
+            "turn": 3,
+            "marketState": "crash",
+            "independent": {
+              "gold-toss": "down"
+            },
+            "inflation": 0.06,
+            "lifeEventId": "bonus",
+            "lifeEventMonth": 8
           }
-        ]
+        ],
+        "marketSeed": "room-fixture"
       }
     },
     {
-      "id": "m-bot-2",
+      "id": "m3",
       "userId": null,
-      "nickname": "Spendy Sunny",
-      "avatarId": "avatar-3",
+      "nickname": "Balanced Bala 2",
+      "avatarId": "bot-balanced",
       "isBot": true,
-      "botStrategy": "impulsive",
+      "botStrategy": "balanced",
       "seat": 3,
       "trustScore": 50,
       "ready": true,
       "state": {
-        "schemaVersion": 1,
-        "contentVersion": "7dc6cc0b3fb6",
-        "seed": "fixture-seed-ch2",
-        "personaId": "safe-keeper",
+        "schemaVersion": 2,
+        "contentVersion": "1abb793e0abf",
+        "seed": "room-fixture:m3",
+        "personaId": "thrill-seeker",
         "chapterId": "ch2-first-job",
-        "turn": 2,
+        "turn": 3,
         "totalTurns": 5,
         "turnUnit": "year",
         "status": "playing",
-        "cash": 15528000,
-        "incomePerMonth": 3674160,
+        "cash": 17069172,
+        "debt": 0,
+        "incomePerMonth": 3968093,
         "incomeModifiers": [],
-        "inflationIndex": 1.1236000000000002,
+        "inflationIndex": 1.191016000000001,
+        "navs": {
+          "cash": 1,
+          "savings": 1.0927270000000031,
+          "rd": 1.207949624999997,
+          "fd": 1.2164762968750038,
+          "gold": 0.9411919999999986,
+          "equity-fund": 0.7530880000000003,
+          "debt-fund": 1.069226999999999,
+          "index-fund": 0.740610875,
+          "asset-mix": 0.8766583100000009
+        },
         "holdings": [
           {
             "optionId": "savings",
-            "invested": 5900000,
-            "value": 6107900
+            "invested": 5400000,
+            "investedReal": 5179245,
+            "value": 5776601,
+            "units": 5286.407766990288
           },
           {
             "optionId": "equity-fund",
-            "invested": 4800000,
-            "value": 5088000
+            "invested": 10800000,
+            "investedReal": 9884692,
+            "value": 8543156,
+            "units": 11344.166992223958
           }
         ],
         "sips": [
           {
             "optionId": "equity-fund",
-            "amountPerMonth": 200000,
+            "amountPerMonth": 300000,
             "startedTurn": 1
           }
         ],
@@ -490,10 +540,9 @@
           {
             "taskId": "ch2-friend-wedding",
             "amount": 500000,
-            "paid": 500000,
+            "paid": 0,
             "dueTurn": 1,
-            "status": "done",
-            "completedTurn": 1
+            "status": "missed"
           },
           {
             "taskId": "ch2-emergency-fund",
@@ -517,34 +566,45 @@
             "paid": 4000000,
             "dueTurn": 3,
             "status": "done",
-            "completedTurn": 2
+            "completedTurn": 3
           },
           {
             "taskId": "ch2-two-wheeler",
-            "amount": 7865200,
-            "paid": 3600000,
+            "amount": 8337112,
+            "paid": 0,
             "dueTurn": 5,
             "status": "open"
           }
         ],
         "pendingScams": [],
         "eventCooldowns": {
-          "bonus": 1
+          "job-break": 2
         },
         "scamsFallenIds": [],
+        "carriedIn": {
+          "blockNextChapterGoal": false,
+          "blockedTaskIds": [],
+          "salaryBonusRate": 0,
+          "shiftStreaks": {}
+        },
         "carryOver": {
           "blockNextChapterGoal": false,
-          "salaryBonusRate": 0
+          "blockedTaskIds": [],
+          "salaryBonusRate": 0.05,
+          "shiftStreaks": {}
         },
         "trustScore": 50,
         "stats": {
-          "scamsSpotted": 0,
+          "scamsSpotted": 2,
           "repeatScamSpotted": false,
           "soldDuringCrash": false,
           "fdBrokenEarly": false,
           "badEventsCoveredByFund": [],
-          "windfallReceived": 3000000,
+          "windfallReceived": 0,
           "windfallSaved": 0,
+          "windfallUnallocated": 0,
+          "cashLost": 0,
+          "sipInstalmentsMissed": 0,
           "loansTaken": 0,
           "loansRepaidOnTime": 0,
           "loansDefaulted": 0,
@@ -552,8 +612,7 @@
           "interestPaid": 0,
           "auctionsWon": 0,
           "overbidPct": 0,
-          "poolBidsJoined": 0,
-          "shiftStreaks": {}
+          "poolBidsJoined": 0
         },
         "history": [
           {
@@ -564,15 +623,21 @@
           },
           {
             "turn": 1,
-            "amount": 18430000,
-            "realValue": 17386792,
-            "inflationIndex": 1.06
+            "amount": 15443198,
+            "realValue": 14569055,
+            "inflationIndex": 1.0600000000000003
           },
           {
             "turn": 2,
-            "amount": 26723900,
-            "realValue": 23784176,
-            "inflationIndex": 1.1236000000000002
+            "amount": 17642511,
+            "realValue": 15701772,
+            "inflationIndex": 1.1236000000000006
+          },
+          {
+            "turn": 3,
+            "amount": 31388929,
+            "realValue": 26354750,
+            "inflationIndex": 1.191016000000001
           }
         ],
         "actionLog": [
@@ -580,8 +645,8 @@
             "turn": 1,
             "action": {
               "type": "pay_task",
-              "taskId": "ch2-friend-wedding",
-              "amount": 500000
+              "taskId": "ch2-emergency-fund",
+              "amount": 1500000
             }
           },
           {
@@ -589,23 +654,7 @@
             "action": {
               "type": "sip_start",
               "optionId": "equity-fund",
-              "amountPerMonth": 200000
-            }
-          },
-          {
-            "turn": 1,
-            "action": {
-              "type": "invest",
-              "optionId": "savings",
-              "amount": 500000
-            }
-          },
-          {
-            "turn": 1,
-            "action": {
-              "type": "pay_task",
-              "taskId": "ch2-emergency-fund",
-              "amount": 500000
+              "amountPerMonth": 300000
             }
           },
           {
@@ -613,7 +662,7 @@
             "action": {
               "type": "pay_task",
               "taskId": "ch2-emergency-fund",
-              "amount": 4900000
+              "amount": 3900000
             }
           },
           {
@@ -625,7 +674,15 @@
             }
           },
           {
-            "turn": 2,
+            "turn": 3,
+            "action": {
+              "type": "scam_response",
+              "instanceId": "instant-loan-app@2",
+              "response": "ask_friend"
+            }
+          },
+          {
+            "turn": 3,
             "action": {
               "type": "pay_task",
               "taskId": "ch2-laptop",
@@ -633,11 +690,11 @@
             }
           },
           {
-            "turn": 2,
+            "turn": 4,
             "action": {
-              "type": "pay_task",
-              "taskId": "ch2-two-wheeler",
-              "amount": 3600000
+              "type": "scam_response",
+              "instanceId": "otp-unblock-call@3",
+              "response": "ignore"
             }
           }
         ],
@@ -648,35 +705,173 @@
             "independent": {
               "gold-toss": "down"
             },
-            "inflation": 0.06,
-            "lifeEventId": "bonus"
+            "inflation": 0.06
           },
           {
             "turn": 2,
-            "marketState": "normal",
+            "marketState": "crash",
             "independent": {
-              "gold-toss": "up"
+              "gold-toss": "down"
             },
-            "inflation": 0.06
+            "inflation": 0.06,
+            "lifeEventId": "job-break",
+            "lifeEventMonth": 6,
+            "scamId": "instant-loan-app"
+          },
+          {
+            "turn": 3,
+            "marketState": "crash",
+            "independent": {
+              "gold-toss": "down"
+            },
+            "inflation": 0.06,
+            "scamId": "otp-unblock-call"
           }
-        ]
+        ],
+        "marketSeed": "room-fixture"
       }
     }
   ],
   "loans": [
     {
-      "id": "loan-1",
-      "lenderMemberId": "m-bot-1",
-      "borrowerMemberId": "m-human",
-      "principal": 1000000,
-      "ratePerTurn": 0.03,
+      "borrowerMemberId": "m1",
+      "principal": 2000000,
       "interestType": "simple",
-      "dueTurn": 4,
-      "status": "active",
-      "repaidAmount": 0
+      "startTurn": 1,
+      "dueTurn": 3,
+      "repaidAmount": 0,
+      "id": "loan-2",
+      "requestId": "loan-1",
+      "lenderMemberId": "bank",
+      "ratePerTurn": 0.14,
+      "status": "declined"
+    },
+    {
+      "borrowerMemberId": "m1",
+      "principal": 2000000,
+      "interestType": "simple",
+      "startTurn": 1,
+      "dueTurn": 3,
+      "repaidAmount": 0,
+      "id": "loan-3",
+      "requestId": "loan-1",
+      "lenderMemberId": "loan-app",
+      "ratePerTurn": 0.15,
+      "status": "declined"
+    },
+    {
+      "borrowerMemberId": "m1",
+      "principal": 2000000,
+      "interestType": "simple",
+      "startTurn": 1,
+      "dueTurn": 3,
+      "repaidAmount": 0,
+      "id": "loan-4",
+      "requestId": "loan-1",
+      "lenderMemberId": "m2",
+      "ratePerTurn": 0.03,
+      "status": "active"
+    },
+    {
+      "borrowerMemberId": "m1",
+      "principal": 2000000,
+      "interestType": "simple",
+      "startTurn": 1,
+      "dueTurn": 3,
+      "repaidAmount": 0,
+      "id": "loan-5",
+      "requestId": "loan-1",
+      "lenderMemberId": "m3",
+      "ratePerTurn": 0.03,
+      "status": "declined"
+    },
+    {
+      "borrowerMemberId": "m1",
+      "principal": 1000000,
+      "interestType": "simple",
+      "startTurn": 3,
+      "dueTurn": 5,
+      "repaidAmount": 0,
+      "id": "loan-6",
+      "lenderMemberId": "",
+      "ratePerTurn": 0,
+      "status": "requested"
+    },
+    {
+      "borrowerMemberId": "m1",
+      "principal": 1000000,
+      "interestType": "simple",
+      "startTurn": 3,
+      "dueTurn": 5,
+      "repaidAmount": 0,
+      "id": "loan-7",
+      "requestId": "loan-6",
+      "lenderMemberId": "bank",
+      "ratePerTurn": 0.14,
+      "status": "offered"
+    },
+    {
+      "borrowerMemberId": "m1",
+      "principal": 1000000,
+      "interestType": "simple",
+      "startTurn": 3,
+      "dueTurn": 5,
+      "repaidAmount": 0,
+      "id": "loan-8",
+      "requestId": "loan-6",
+      "lenderMemberId": "loan-app",
+      "ratePerTurn": 0.15,
+      "status": "offered"
+    },
+    {
+      "borrowerMemberId": "m1",
+      "principal": 1000000,
+      "interestType": "simple",
+      "startTurn": 3,
+      "dueTurn": 5,
+      "repaidAmount": 0,
+      "id": "loan-9",
+      "requestId": "loan-6",
+      "lenderMemberId": "m2",
+      "ratePerTurn": 0.03,
+      "status": "offered"
+    },
+    {
+      "borrowerMemberId": "m1",
+      "principal": 1000000,
+      "interestType": "simple",
+      "startTurn": 3,
+      "dueTurn": 5,
+      "repaidAmount": 0,
+      "id": "loan-10",
+      "requestId": "loan-6",
+      "lenderMemberId": "m3",
+      "ratePerTurn": 0.03,
+      "status": "offered"
     }
   ],
-  "auction": null,
+  "auction": {
+    "auctionDefId": "used-bike-auction",
+    "turn": 4,
+    "status": "open",
+    "bids": [
+      {
+        "poolId": "pool-1",
+        "amount": 2500000
+      }
+    ],
+    "pools": [
+      {
+        "id": "pool-1",
+        "members": [
+          {
+            "memberId": "m1",
+            "contribution": 2500000
+          }
+        ]
+      }
+    ]
+  },
   "tosses": [
     {
       "turn": 1,
@@ -684,16 +879,31 @@
       "independent": {
         "gold-toss": "down"
       },
-      "inflation": 0.06,
-      "lifeEventId": "bonus"
+      "inflation": 0.06
     },
     {
       "turn": 2,
-      "marketState": "normal",
+      "marketState": "crash",
       "independent": {
-        "gold-toss": "up"
+        "gold-toss": "down"
+      },
+      "inflation": 0.06
+    },
+    {
+      "turn": 3,
+      "marketState": "crash",
+      "independent": {
+        "gold-toss": "down"
       },
       "inflation": 0.06
     }
-  ]
+  ],
+  "reactions": [
+    {
+      "memberId": "m1",
+      "emoteId": "thumbs-up",
+      "turn": 3
+    }
+  ],
+  "outbox": []
 }

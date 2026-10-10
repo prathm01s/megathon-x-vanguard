@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "contentVersion": "7dc6cc0b3fb6",
+  "schemaVersion": 2,
+  "contentVersion": "1abb793e0abf",
   "seed": "fixture-seed-ch2",
   "personaId": "safe-keeper",
   "chapterId": "ch2-first-job",
@@ -8,20 +8,36 @@
   "totalTurns": 5,
   "turnUnit": "year",
   "status": "chapter_complete",
-  "cash": 73605272,
+  "cash": 71397475,
+  "debt": 0,
   "incomePerMonth": 5091222,
   "incomeModifiers": [],
-  "inflationIndex": 1.3382255776000005,
+  "inflationIndex": 1.3382255776000016,
+  "navs": {
+    "cash": 1,
+    "savings": 1.159274074300006,
+    "rd": 1.3700866634156186,
+    "fd": 1.3862431670807691,
+    "gold": 1.5779679327999927,
+    "equity-fund": 1.2902858752000044,
+    "debt-fund": 1.3536865151999977,
+    "index-fund": 1.2596708465093784,
+    "asset-mix": 1.3657792933342956
+  },
   "holdings": [
     {
       "optionId": "savings",
       "invested": 5900000,
-      "value": 6674267
+      "investedReal": 5622642,
+      "value": 6674267,
+      "units": 5757.281553398054
     },
     {
       "optionId": "equity-fund",
       "invested": 12000000,
-      "value": 11805717
+      "investedReal": 10384766,
+      "value": 12107359,
+      "units": 9383.470121959539
     }
   ],
   "sips": [
@@ -79,9 +95,17 @@
     "promotion": 5
   },
   "scamsFallenIds": [],
+  "carriedIn": {
+    "blockNextChapterGoal": false,
+    "blockedTaskIds": [],
+    "salaryBonusRate": 0,
+    "shiftStreaks": {}
+  },
   "carryOver": {
     "blockNextChapterGoal": false,
-    "salaryBonusRate": 0
+    "blockedTaskIds": [],
+    "salaryBonusRate": 0.05,
+    "shiftStreaks": {}
   },
   "trustScore": 50,
   "stats": {
@@ -91,7 +115,10 @@
     "fdBrokenEarly": false,
     "badEventsCoveredByFund": [],
     "windfallReceived": 6674160,
-    "windfallSaved": 0,
+    "windfallSaved": 3000000,
+    "windfallUnallocated": 0,
+    "cashLost": 0,
+    "sipInstalmentsMissed": 0,
     "loansTaken": 0,
     "loansRepaidOnTime": 0,
     "loansDefaulted": 0,
@@ -99,8 +126,7 @@
     "interestPaid": 0,
     "auctionsWon": 0,
     "overbidPct": 0,
-    "poolBidsJoined": 0,
-    "shiftStreaks": {}
+    "poolBidsJoined": 0
   },
   "history": [
     {
@@ -111,33 +137,33 @@
     },
     {
       "turn": 1,
-      "amount": 18430000,
-      "realValue": 17386792,
-      "inflationIndex": 1.06
+      "amount": 17863549,
+      "realValue": 16852405,
+      "inflationIndex": 1.0600000000000003
     },
     {
       "turn": 2,
-      "amount": 26723900,
-      "realValue": 23784176,
-      "inflationIndex": 1.1236000000000002
+      "amount": 26260523,
+      "realValue": 23371772,
+      "inflationIndex": 1.1236000000000006
     },
     {
       "turn": 3,
-      "amount": 46746817,
-      "realValue": 39249529,
-      "inflationIndex": 1.1910160000000003
+      "amount": 44968138,
+      "realValue": 37756116,
+      "inflationIndex": 1.191016000000001
     },
     {
       "turn": 4,
-      "amount": 69798546,
-      "realValue": 55286986,
-      "inflationIndex": 1.2624769600000003
+      "amount": 67372875,
+      "realValue": 53365627,
+      "inflationIndex": 1.2624769600000012
     },
     {
       "turn": 5,
-      "amount": 92085256,
-      "realValue": 68811460,
-      "inflationIndex": 1.3382255776000005
+      "amount": 90179101,
+      "realValue": 67387070,
+      "inflationIndex": 1.3382255776000016
     }
   ],
   "actionLog": [
@@ -202,7 +228,7 @@
       "action": {
         "type": "pay_task",
         "taskId": "ch2-two-wheeler",
-        "amount": 3600000
+        "amount": 2904249
       }
     },
     {
@@ -210,7 +236,7 @@
       "action": {
         "type": "pay_task",
         "taskId": "ch2-two-wheeler",
-        "amount": 4265200
+        "amount": 4960951
       }
     },
     {
@@ -230,7 +256,8 @@
         "gold-toss": "down"
       },
       "inflation": 0.06,
-      "lifeEventId": "bonus"
+      "lifeEventId": "bonus",
+      "lifeEventMonth": 5
     },
     {
       "turn": 2,
@@ -248,6 +275,7 @@
       },
       "inflation": 0.06,
       "lifeEventId": "bonus",
+      "lifeEventMonth": 9,
       "scamId": "otp-unblock-call"
     },
     {
@@ -265,7 +293,8 @@
         "gold-toss": "up"
       },
       "inflation": 0.06,
-      "lifeEventId": "promotion"
+      "lifeEventId": "promotion",
+      "lifeEventMonth": 8
     }
   ]
 }

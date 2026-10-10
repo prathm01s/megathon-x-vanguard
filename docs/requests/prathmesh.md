@@ -22,3 +22,52 @@ Add new requests at the bottom: what you need, why, and the interface you propos
    create `.github/workflows/` (the credential had no `workflow` scope). Move it back with
    `git mv docs/pending/ci.yml .github/workflows/ci.yml` from a credential that has the scope.
    Then turn on branch protection for `main` (require PR + passing CI).
+
+## From Samarth's engine session (2026-10-10)
+
+7. **Load saved games through `migrateState`.** `GameState` is now schema v2. When you read
+   `playthroughs.state`, call `migrateState(raw, content)` from `@toss/engine` before using it. It
+   upgrades older saves, and it throws `EngineError("save_too_new")` if the save came from a newer
+   app.
+8. **Chapter-to-chapter carry-over.** `ChapterResult.carryOver` (blocked goals, salary bonus,
+   persona-shift streaks) must be saved with the chapter result and passed to
+   `createPlaythrough({ …, carryOver })` for the next chapter. The `chapter_results.report jsonb`
+   column could hold it, or add a column.
+9. **New decision mapping:** forced bank borrowing (bad toss + no safety net) is logged as
+   `loan_taken` with `payload.forced = true`. Room loans and auctions don't emit records yet (my
+   backlog item 7).
+10. **Demo seed:** `scripts/seed.ts` can call `playChapter(strategy, { content, personaId, seed,
+chapterId })` with `SIM_STRATEGIES` from `@toss/engine` to generate varied, realistic
+    playthroughs. It returns the final `GameState` and the `ChapterResult`.
+11. **Where a new player starts:** use `startChapterFor(personaId, content)`, not
+    `persona.startChapter`. ch1 is still disabled, so everyone starts in ch2.
+
+## From Samarth's room-server session (2026-10-10)
+
+12. **Please review small edits I made to root config** (your area), all needed to run and check
+    the room server:
+    - `package.json`: devDeps `@electric-sql/pglite`, `@electric-sql/pglite-socket`, `esbuild`;
+      scripts `functions:build|serve|deploy|smoke`, `bench`; `typecheck`/`lint` now include
+      `supabase/tests` and the Edge Function.
+    - `vitest.config.ts`: new `supabase/tests` project.
+    - `eslint.config.mjs`: ignore `supabase/functions/*/_bundle/`; `Deno` global for functions.
+    - `.gitignore`: `supabase/functions/*/_bundle/`.
+    - `supabase/config.toml`: `[functions.room-action]` block.
+13. **CI** (when you activate it): add `pnpm functions:build` before `pnpm test`. Optionally add
+    `pnpm functions:smoke` (downloads Deno via npx).
+14. **You can test your migrations and RLS without Docker:** `supabase/tests/harness.ts` runs
+    every migration on PGlite with Supabase's `auth.uid()`, roles and `extensions` schema
+    emulated. Use `createTestDb()` and `asUser(userId, tx => …)` / `asService` / `asAnon`.
+    `accounts-smoke.test.ts` already checks your migration: it applies cleanly, and the NGO-signup
+    RPC, the column-protection trigger and student profile isolation all work.
+15. **Room tables for your stats views:** `rooms` (with `org_id` = the host's NGO), `room_members`
+    (`playthrough_id` per human), `loans` (`lender_kind` member/bank/loan_app, status), `auctions`,
+    `bids`, `bid_pools`, `bid_pool_members`. NGO admins can already read their class's rows via
+    RLS. Room games also create a normal `playthroughs` row per human, plus `decisions`,
+    `chapter_results` and `badges_earned`, so your existing stats include multiplayer games
+    automatically. Room playthroughs have `seed = 'room:<code>'`.
+16. **Decision types now emitted:** besides the single-player ones, rooms emit
+    `loan_requested`, `loan_offered`, `loan_taken`, `loan_repaid`, `loan_late`, `loan_defaulted`,
+    `auction_bid`, `auction_won`, `pool_joined`. Use `chapterResultRecords(result, turn)` from
+    `@toss/engine` for `chapter_end` and `persona_shift` in single-player saves.
+    `toDecisionLog` no longer returns a `chapter_end` for the `chapter_complete` event.

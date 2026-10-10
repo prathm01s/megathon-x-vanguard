@@ -15,7 +15,8 @@
     "fixtures": "tsx fixtures/generate.ts"
   },
   "dependencies": {
-    "@toss/content": "workspace:*"
+    "@toss/content": "workspace:*",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "typescript": "~6.0.3",

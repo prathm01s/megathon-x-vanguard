@@ -4,7 +4,21 @@ import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["**/node_modules/**", "**/dist/**", "apps/**", "packages/db-types/src/database.ts"] },
+  {
+    ignores: [
+      "**/node_modules/**",
+      "**/dist/**",
+      "apps/**",
+      "packages/db-types/src/database.ts",
+      // Generated Edge Function bundles (`pnpm functions:build`).
+      "supabase/functions/*/_bundle/**",
+    ],
+  },
+  // Supabase Edge Functions run on Deno.
+  {
+    files: ["supabase/functions/**/*.ts"],
+    languageOptions: { globals: { Deno: "readonly" } },
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {

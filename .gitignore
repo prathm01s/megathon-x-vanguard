@@ -23,6 +23,8 @@ blob-report/
 # supabase
 supabase/.branches
 supabase/.temp
+# Edge Function bundles (built by `pnpm functions:build`)
+supabase/functions/*/_bundle/
 
 # misc
 .DS_Store
