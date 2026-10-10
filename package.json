@@ -1,0 +1,44 @@
+{
+  "name": "toss-life",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.10.1",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm content:build && concurrently -n content,web \"pnpm content:watch\" \"pnpm --filter web dev\"",
+    "build": "pnpm content:build && pnpm --filter web build",
+    "content:build": "pnpm --filter @toss/content build:content",
+    "content:validate": "pnpm --filter @toss/content validate",
+    "content:watch": "pnpm --filter @toss/content watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "pnpm --filter web test:e2e",
+    "lint": "pnpm -r --parallel lint && eslint scripts",
+    "typecheck": "pnpm -r --parallel typecheck && tsc -p scripts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "sim": "tsx scripts/sim.ts",
+    "seed": "tsx scripts/seed.ts",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:migrate": "supabase migration up",
+    "db:types": "supabase gen types typescript --local > packages/db-types/src/database.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9",
+    "@toss/content": "workspace:*",
+    "@toss/engine": "workspace:*",
+    "@types/node": "^24",
+    "concurrently": "^10.0.6",
+    "eslint": "^9",
+    "prettier": "^3.9.9",
+    "supabase": "^2.120.0",
+    "tsx": "^4.23.15",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.1",
+    "vitest": "^5.0.3"
+  }
+}

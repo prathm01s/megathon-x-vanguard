@@ -1,0 +1,271 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "7dc6cc0b3fb6",
+  "seed": "fixture-seed-ch2",
+  "personaId": "safe-keeper",
+  "chapterId": "ch2-first-job",
+  "turn": 5,
+  "totalTurns": 5,
+  "turnUnit": "year",
+  "status": "chapter_complete",
+  "cash": 73605272,
+  "incomePerMonth": 5091222,
+  "incomeModifiers": [],
+  "inflationIndex": 1.3382255776000005,
+  "holdings": [
+    {
+      "optionId": "savings",
+      "invested": 5900000,
+      "value": 6674267
+    },
+    {
+      "optionId": "equity-fund",
+      "invested": 12000000,
+      "value": 11805717
+    }
+  ],
+  "sips": [
+    {
+      "optionId": "equity-fund",
+      "amountPerMonth": 200000,
+      "startedTurn": 1
+    }
+  ],
+  "tasks": [
+    {
+      "taskId": "ch2-friend-wedding",
+      "amount": 500000,
+      "paid": 500000,
+      "dueTurn": 1,
+      "status": "done",
+      "completedTurn": 1
+    },
+    {
+      "taskId": "ch2-emergency-fund",
+      "amount": 5400000,
+      "paid": 5400000,
+      "dueTurn": 2,
+      "status": "done",
+      "completedTurn": 2
+    },
+    {
+      "taskId": "ch2-sister-fees",
+      "amount": 2500000,
+      "paid": 2500000,
+      "dueTurn": 2,
+      "status": "done",
+      "completedTurn": 2
+    },
+    {
+      "taskId": "ch2-laptop",
+      "amount": 4000000,
+      "paid": 4000000,
+      "dueTurn": 3,
+      "status": "done",
+      "completedTurn": 2
+    },
+    {
+      "taskId": "ch2-two-wheeler",
+      "amount": 7865200,
+      "paid": 7865200,
+      "dueTurn": 5,
+      "status": "done",
+      "completedTurn": 3
+    }
+  ],
+  "pendingScams": [],
+  "eventCooldowns": {
+    "bonus": 3,
+    "promotion": 5
+  },
+  "scamsFallenIds": [],
+  "carryOver": {
+    "blockNextChapterGoal": false,
+    "salaryBonusRate": 0
+  },
+  "trustScore": 50,
+  "stats": {
+    "scamsSpotted": 1,
+    "repeatScamSpotted": false,
+    "soldDuringCrash": false,
+    "fdBrokenEarly": false,
+    "badEventsCoveredByFund": [],
+    "windfallReceived": 6674160,
+    "windfallSaved": 0,
+    "loansTaken": 0,
+    "loansRepaidOnTime": 0,
+    "loansDefaulted": 0,
+    "highInterestDebt": false,
+    "interestPaid": 0,
+    "auctionsWon": 0,
+    "overbidPct": 0,
+    "poolBidsJoined": 0,
+    "shiftStreaks": {}
+  },
+  "history": [
+    {
+      "turn": 0,
+      "amount": 1500000,
+      "realValue": 1500000,
+      "inflationIndex": 1
+    },
+    {
+      "turn": 1,
+      "amount": 18430000,
+      "realValue": 17386792,
+      "inflationIndex": 1.06
+    },
+    {
+      "turn": 2,
+      "amount": 26723900,
+      "realValue": 23784176,
+      "inflationIndex": 1.1236000000000002
+    },
+    {
+      "turn": 3,
+      "amount": 46746817,
+      "realValue": 39249529,
+      "inflationIndex": 1.1910160000000003
+    },
+    {
+      "turn": 4,
+      "amount": 69798546,
+      "realValue": 55286986,
+      "inflationIndex": 1.2624769600000003
+    },
+    {
+      "turn": 5,
+      "amount": 92085256,
+      "realValue": 68811460,
+      "inflationIndex": 1.3382255776000005
+    }
+  ],
+  "actionLog": [
+    {
+      "turn": 1,
+      "action": {
+        "type": "pay_task",
+        "taskId": "ch2-friend-wedding",
+        "amount": 500000
+      }
+    },
+    {
+      "turn": 1,
+      "action": {
+        "type": "sip_start",
+        "optionId": "equity-fund",
+        "amountPerMonth": 200000
+      }
+    },
+    {
+      "turn": 1,
+      "action": {
+        "type": "invest",
+        "optionId": "savings",
+        "amount": 500000
+      }
+    },
+    {
+      "turn": 1,
+      "action": {
+        "type": "pay_task",
+        "taskId": "ch2-emergency-fund",
+        "amount": 500000
+      }
+    },
+    {
+      "turn": 2,
+      "action": {
+        "type": "pay_task",
+        "taskId": "ch2-emergency-fund",
+        "amount": 4900000
+      }
+    },
+    {
+      "turn": 2,
+      "action": {
+        "type": "pay_task",
+        "taskId": "ch2-sister-fees",
+        "amount": 2500000
+      }
+    },
+    {
+      "turn": 2,
+      "action": {
+        "type": "pay_task",
+        "taskId": "ch2-laptop",
+        "amount": 4000000
+      }
+    },
+    {
+      "turn": 2,
+      "action": {
+        "type": "pay_task",
+        "taskId": "ch2-two-wheeler",
+        "amount": 3600000
+      }
+    },
+    {
+      "turn": 3,
+      "action": {
+        "type": "pay_task",
+        "taskId": "ch2-two-wheeler",
+        "amount": 4265200
+      }
+    },
+    {
+      "turn": 4,
+      "action": {
+        "type": "scam_response",
+        "instanceId": "otp-unblock-call@3",
+        "response": "ignore"
+      }
+    }
+  ],
+  "tosses": [
+    {
+      "turn": 1,
+      "marketState": "normal",
+      "independent": {
+        "gold-toss": "down"
+      },
+      "inflation": 0.06,
+      "lifeEventId": "bonus"
+    },
+    {
+      "turn": 2,
+      "marketState": "normal",
+      "independent": {
+        "gold-toss": "up"
+      },
+      "inflation": 0.06
+    },
+    {
+      "turn": 3,
+      "marketState": "normal",
+      "independent": {
+        "gold-toss": "up"
+      },
+      "inflation": 0.06,
+      "lifeEventId": "bonus",
+      "scamId": "otp-unblock-call"
+    },
+    {
+      "turn": 4,
+      "marketState": "normal",
+      "independent": {
+        "gold-toss": "down"
+      },
+      "inflation": 0.06
+    },
+    {
+      "turn": 5,
+      "marketState": "crash",
+      "independent": {
+        "gold-toss": "up"
+      },
+      "inflation": 0.06,
+      "lifeEventId": "promotion"
+    }
+  ]
+}

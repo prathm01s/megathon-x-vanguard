@@ -1,0 +1,78 @@
+# yaml-language-server: $schema=../../packages/content/dist/schemas/investments-techniques.schema.json
+# Investing techniques. `visual` is a UI component key rendered by components/game.
+# `triggerTips` show a contextual tip when the condition matches during play.
+version: 1
+techniques:
+  - id: compounding
+    title: { en: "Compounding: returns earn returns" }
+    shortExplanation: { en: "Money that stays invested earns returns, and then those returns earn returns too." }
+    visual: growth-tree
+    unlockChapter: ch2-first-job
+    triggerTips:
+      - id: compounding-early-start
+        when: { metric: sipStartedTurn, op: "==", value: 1 }
+        tip: { en: "Starting early gives your tree the most years to grow." }
+    gyaanQuestionIds: [ch2-gyaan-compounding]
+
+  - id: sip-rupee-cost-averaging
+    title: { en: "SIP and rupee-cost averaging" }
+    shortExplanation: { en: "Investing the same amount every month buys more units when prices are low." }
+    visual: units-bought-chart
+    unlockChapter: ch2-first-job
+    triggerTips:
+      - id: sip-in-storm
+        when:
+          all:
+            - { metric: sipActiveTurns, op: ">=", value: 1 }
+            - { metric: soldDuringCrash, op: "==", value: false }
+        tip: { en: "In a storm your SIP buys more units for the same money." }
+    gyaanQuestionIds: [ch2-gyaan-sip-storm]
+
+  - id: diversification
+    title: { en: "Diversification" }
+    shortExplanation: { en: "Spread money across options so a bad toss hits only part of it." }
+    visual: split-pie
+    unlockChapter: ch2-first-job
+    triggerTips:
+      - id: all-eggs-one-basket
+        when: { metric: diversificationCount, op: "<=", value: 1 }
+        tip: { en: "All your money is in one place. One bad toss could hit all of it." }
+    gyaanQuestionIds: []
+
+  - id: risk-vs-time
+    title: { en: "Risk vs. time" }
+    shortExplanation: { en: "Long goals can take more risk; money needed soon should stay safe." }
+    visual: horizon-slider
+    unlockChapter: ch2-first-job
+    triggerTips: []
+    gyaanQuestionIds: []
+
+  - id: goal-based-investing
+    title: { en: "Goal-based investing" }
+    shortExplanation: { en: "Emergency fund first, then short-term goals in safe options, long-term goals in growth options." }
+    visual: goal-buckets
+    unlockChapter: ch1-first-earnings
+    triggerTips:
+      - id: no-safety-net
+        when: { metric: emergencyFundMonths, op: "<", value: 1 }
+        tip: { en: "Build a safety net before investing for growth." }
+    gyaanQuestionIds: []
+
+  - id: real-value
+    title: { en: "Real Value and inflation" }
+    shortExplanation: { en: "Amount is how much money you have. Real Value is what it can actually buy." }
+    visual: real-value-badge
+    unlockChapter: ch1-first-earnings
+    triggerTips:
+      - id: idle-cash-tip
+        when: { metric: cashShareOfWealth, op: ">", value: 0.4 }
+        tip: { en: "Your cash Amount stays the same, but its Real Value is shrinking." }
+    gyaanQuestionIds: [ch2-gyaan-real-value]
+
+  - id: stay-invested
+    title: { en: "Don't panic-sell in storms" }
+    shortExplanation: { en: "Selling during a crash locks in the loss. Markets have usually recovered over time." }
+    visual: storm-timeline
+    unlockChapter: ch2-first-job
+    triggerTips: []
+    gyaanQuestionIds: []

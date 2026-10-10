@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=../../packages/content/dist/schemas/report-gyaan-check.schema.json
+# Gyaan Check: 3 scenario questions per chapter, shown at the end of the Life Report.
+version: 1
+questionsPerChapter: 3
+questions:
+  - id: ch2-gyaan-real-value
+    chapterId: ch2-first-job
+    prompt: { en: "Your ₹10,000 in cash is still ₹10,000 after a year, but prices rose 6%. What happened?" }
+    options:
+      - { id: same, label: { en: "Nothing, I still have ₹10,000" } }
+      - { id: less, label: { en: "It can buy less than before" } }
+      - { id: more, label: { en: "It can buy more than before" } }
+    correctOptionId: less
+    explanation: { en: "The Amount stayed the same, but its Real Value fell because prices went up." }
+    pillar: understand-investing
+    techniqueId: real-value
+
+  - id: ch2-gyaan-sip-storm
+    chapterId: ch2-first-job
+    prompt: { en: "A market storm hits while your ₹2,000 monthly SIP is running. What does the SIP do?" }
+    options:
+      - { id: buys-more, label: { en: "Buys more units at lower prices" } }
+      - { id: stops, label: { en: "Stops automatically" } }
+      - { id: loses-all, label: { en: "Loses all the money" } }
+    correctOptionId: buys-more
+    explanation: { en: "The same ₹2,000 buys more units when prices are low. When markets recover, those units grow." }
+    pillar: understand-investing
+    techniqueId: sip-rupee-cost-averaging
+
+  - id: ch2-gyaan-compounding
+    chapterId: ch2-first-job
+    prompt: { en: "Asha starts investing at 22, Ravi at 32. Both invest the same monthly amount. Who likely has more at 60?" }
+    options:
+      - { id: asha, label: { en: "Asha" } }
+      - { id: ravi, label: { en: "Ravi" } }
+      - { id: same, label: { en: "Both the same" } }
+    correctOptionId: asha
+    explanation: { en: "Asha's money has 10 more years to compound — returns earning returns." }
+    pillar: understand-investing
+    techniqueId: compounding

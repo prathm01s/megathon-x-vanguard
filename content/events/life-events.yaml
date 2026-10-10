@@ -1,0 +1,100 @@
+# yaml-language-server: $schema=../../packages/content/dist/schemas/events-life-events.schema.json
+# Life events drawn by the life toss. `baseProbabilityPerTurn` is per turn of the chapter
+# (a year in ch2, a month in ch1) and is multiplied by persona `eventMultipliers` by tag.
+version: 1
+events:
+  - id: medical-emergency
+    title: { en: "Medical emergency" }
+    description: { en: "A sudden hospital visit costs {amount}." }
+    type: bad
+    baseProbabilityPerTurn: 0.15
+    effect: { type: fixed, amount: 30000 }
+    tags: [health]
+    chapters: [ch2-first-job, ch3a-salaried, ch3b-business, ch4-legacy]
+    cooldownTurns: 2
+    teaches: [save-manage, goal-based-investing]
+    icon: stethoscope
+
+  - id: phone-broken
+    title: { en: "Phone broken" }
+    description: { en: "Your phone slipped and cracked. A replacement costs {amount}." }
+    type: bad
+    baseProbabilityPerTurn: 0.2
+    effect: { type: fixed, amount: 12000 }
+    tags: [gadgets]
+    chapters: [ch1-first-earnings, ch2-first-job]
+    cooldownTurns: 2
+    teaches: [save-manage]
+    icon: smartphone
+
+  - id: job-break
+    title: { en: "Job break" }
+    description: { en: "Your company is shut for a while. No salary for 3 months." }
+    type: bad
+    baseProbabilityPerTurn: 0.08
+    effect: { type: incomeChange, rate: -1, durationMonths: 3 }
+    tags: [work]
+    chapters: [ch2-first-job, ch3a-salaried]
+    cooldownTurns: 3
+    teaches: [save-manage, goal-based-investing]
+    icon: briefcase
+
+  - id: family-wedding
+    title: { en: "Family wedding" }
+    description: { en: "A cousin is getting married. Your share of the costs is {amount}." }
+    type: bad
+    baseProbabilityPerTurn: 0.15
+    effect: { type: fixed, amount: 20000 }
+    tags: [family, social]
+    chapters: [ch2-first-job, ch3a-salaried, ch4-legacy]
+    cooldownTurns: 2
+    teaches: [plan-budget]
+    icon: party-popper
+
+  - id: bonus
+    title: { en: "Bonus!" }
+    description: { en: "Great work this year. You get a bonus of one month's salary: {amount}." }
+    type: good
+    baseProbabilityPerTurn: 0.2
+    effect: { type: monthsOfIncome, months: 1 }
+    tags: [work]
+    chapters: [ch2-first-job, ch3a-salaried]
+    cooldownTurns: 1
+    teaches: [save-manage]
+    icon: gift
+
+  - id: promotion
+    title: { en: "Promotion" }
+    description: { en: "You've been promoted! Your salary goes up by 10%." }
+    type: good
+    baseProbabilityPerTurn: 0.12
+    effect: { type: incomeChange, rate: 0.1 }
+    tags: [work]
+    chapters: [ch2-first-job, ch3a-salaried]
+    cooldownTurns: 2
+    teaches: [plan-budget]
+    icon: trending-up
+
+  - id: scholarship
+    title: { en: "Scholarship" }
+    description: { en: "Your marks earned you a scholarship of {amount}." }
+    type: good
+    baseProbabilityPerTurn: 0.05
+    effect: { type: fixed, amount: 5000 }
+    tags: [study]
+    chapters: [ch1-first-earnings]
+    cooldownTurns: 6
+    teaches: [save-manage]
+    icon: award
+
+  - id: slow-season
+    title: { en: "Slow season" }
+    description: { en: "Few customers this season. Shop income drops by 40%." }
+    type: bad
+    baseProbabilityPerTurn: 0.2
+    effect: { type: incomeChange, rate: -0.4, durationMonths: 12 }
+    tags: [work, business]
+    chapters: [ch3b-business]
+    cooldownTurns: 2
+    teaches: [save-manage]
+    icon: cloud-rain

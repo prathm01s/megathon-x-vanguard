@@ -1,0 +1,161 @@
+# yaml-language-server: $schema=../../packages/content/dist/schemas/investments-options.schema.json
+# Investment options. FICTIONAL NAMES ONLY — never a real fund, bank, AMC, broker or app.
+# `assumedAverageReturn` is what students see (always with the "assumed" chip).
+# `content:validate` checks it against the probability-weighted `returns` (max 0.5 pp gap).
+# ALL RATES ARE ILLUSTRATIVE AND TO BE CONFIRMED WITH VANGUARD MENTORS.
+version: 1
+options:
+  - id: cash
+    name: { en: "Cash at home" }
+    category: cash
+    unlockChapter: ch1-first-earnings
+    assumedAverageReturn: 0
+    returns: { type: fixed, rate: 0 }
+    liquidity: instant
+    minAmount: 0
+    sipAllowed: false
+    riskLevel: 1
+    canBeLost: true
+    lesson: { en: "Inflation quietly eats idle money." }
+    description: { en: "Money kept at home. Easy to use, but it never grows and can get lost." }
+    techniqueIds: [real-value]
+    icon: wallet
+
+  - id: savings
+    name: { en: "Big Bank Savings Account" }
+    category: bank
+    unlockChapter: ch1-first-earnings
+    assumedAverageReturn: 0.03
+    returns: { type: fixed, rate: 0.03 }
+    liquidity: instant
+    minAmount: 0
+    sipAllowed: false
+    riskLevel: 1
+    lesson: { en: "Good for emergencies, not for growth." }
+    description: { en: "Safe and easy to withdraw any time. Grows a little, slower than prices rise." }
+    techniqueIds: [goal-based-investing]
+    icon: landmark
+
+  - id: rd
+    name: { en: "Big Bank Recurring Deposit" }
+    category: deposit
+    unlockChapter: ch1-first-earnings
+    assumedAverageReturn: 0.065
+    returns: { type: fixed, rate: 0.065 }
+    liquidity: locked_until_maturity
+    monthlyDepositOnly: true
+    lockMonths: 12
+    earlyBreakPenalty: 0.01
+    minAmount: 100
+    sipAllowed: false
+    riskLevel: 1
+    lesson: { en: "Saving as a monthly habit." }
+    description: { en: "Put in the same small amount every month. Fixed growth; 1% penalty if you stop early." }
+    techniqueIds: [goal-based-investing]
+    icon: calendar-check
+
+  - id: fd
+    name: { en: "Big Bank Fixed Deposit" }
+    category: deposit
+    unlockChapter: ch2-first-job
+    assumedAverageReturn: 0.0675
+    returns: { type: fixed, rate: 0.0675 }
+    liquidity: locked_until_maturity
+    lockMonths: 36
+    earlyBreakPenalty: 0.01
+    minAmount: 1000
+    sipAllowed: false
+    riskLevel: 1
+    lesson: { en: "Safe and fixed, but slow after inflation." }
+    description: { en: "Lock money for a fixed time at a fixed rate. 1% penalty if you break it early." }
+    techniqueIds: [real-value, risk-vs-time]
+    icon: lock
+
+  - id: gold
+    name: { en: "Golden Coin Savings" }
+    category: commodity
+    unlockChapter: ch2-first-job
+    assumedAverageReturn: 0.08
+    returns:
+      type: independent
+      toss: gold-toss
+      byState: { up: 0.18, down: -0.02 }
+    liquidity: market
+    minAmount: 500
+    sipAllowed: false
+    riskLevel: 3
+    lesson: { en: "Not as safe as people assume." }
+    description: { en: "Moves with gold prices, which swing up and down on their own." }
+    techniqueIds: [diversification]
+    icon: coins
+
+  - id: equity-fund
+    name: { en: "Sunrise Equity Fund" }
+    category: market
+    unlockChapter: ch2-first-job
+    assumedAverageReturn: 0.11
+    returns:
+      type: market
+      byState: { boom: 0.30, normal: 0.12, crash: -0.18 }
+    liquidity: market
+    minAmount: 500
+    sipAllowed: true
+    riskLevel: 4
+    lesson: { en: "Time and regular investing beat timing." }
+    description: { en: "Owns a slice of many companies. Big ups and downs; usually grows over many years." }
+    techniqueIds: [compounding, sip-rupee-cost-averaging, stay-invested, risk-vs-time]
+    icon: sunrise
+
+  - id: debt-fund
+    name: { en: "Steady Debt Fund" }
+    category: market
+    unlockChapter: ch3a-salaried
+    assumedAverageReturn: 0.07
+    returns:
+      type: market
+      byState: { boom: 0.085, normal: 0.07, crash: 0.055 }
+    liquidity: market
+    minAmount: 500
+    sipAllowed: true
+    riskLevel: 2
+    lesson: { en: "Middle ground between FD and equity." }
+    description: { en: "Lends money to governments and companies. Small swings, steadier growth." }
+    techniqueIds: [goal-based-investing, diversification]
+    icon: scale
+
+  - id: index-fund
+    name: { en: "Whole Market Index Fund" }
+    category: market
+    unlockChapter: ch3a-salaried
+    assumedAverageReturn: 0.109
+    returns:
+      type: market
+      byState: { boom: 0.295, normal: 0.115, crash: -0.185 }
+    liquidity: market
+    minAmount: 500
+    sipAllowed: true
+    riskLevel: 4
+    lesson: { en: "Low cost, broad diversification." }
+    description: { en: "Simply follows the whole market at a very low cost." }
+    techniqueIds: [diversification, compounding, sip-rupee-cost-averaging]
+    icon: globe
+
+  - id: asset-mix
+    name: { en: "Balanced Mix Plan" }
+    category: mix
+    unlockChapter: ch3a-salaried
+    assumedAverageReturn: 0.092
+    returns:
+      type: mix
+      components:
+        - { optionId: index-fund, weight: 0.5 }
+        - { optionId: debt-fund, weight: 0.3 }
+        - { optionId: gold, weight: 0.2 }
+    liquidity: market
+    minAmount: 1000
+    sipAllowed: true
+    riskLevel: 3
+    lesson: { en: "Diversification protects against bad tosses." }
+    description: { en: "A ready-made blend: half index fund, some debt fund, a little gold." }
+    techniqueIds: [diversification, goal-based-investing]
+    icon: pie-chart

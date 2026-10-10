@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=../../packages/content/dist/schemas/config-locales.schema.json
+version: 1
+default: en
+locales:
+  - { id: en, nativeName: "English", dir: ltr, enabled: true }
+  - { id: te, nativeName: "తెలుగు",  dir: ltr, enabled: true }
+  - { id: hi, nativeName: "हिन्दी",   dir: ltr, enabled: false }
+  - { id: ur, nativeName: "اردو",    dir: rtl, enabled: false }

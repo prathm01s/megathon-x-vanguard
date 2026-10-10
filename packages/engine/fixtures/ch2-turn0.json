@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "7dc6cc0b3fb6",
+  "seed": "fixture-seed-ch2",
+  "personaId": "safe-keeper",
+  "chapterId": "ch2-first-job",
+  "turn": 0,
+  "totalTurns": 5,
+  "turnUnit": "year",
+  "status": "playing",
+  "cash": 1500000,
+  "incomePerMonth": 3000000,
+  "incomeModifiers": [],
+  "inflationIndex": 1,
+  "holdings": [],
+  "sips": [],
+  "tasks": [
+    {
+      "taskId": "ch2-friend-wedding",
+      "amount": 500000,
+      "paid": 0,
+      "dueTurn": 1,
+      "status": "open"
+    },
+    {
+      "taskId": "ch2-emergency-fund",
+      "amount": 5400000,
+      "paid": 0,
+      "dueTurn": 2,
+      "status": "open"
+    },
+    {
+      "taskId": "ch2-sister-fees",
+      "amount": 2500000,
+      "paid": 0,
+      "dueTurn": 2,
+      "status": "open"
+    },
+    {
+      "taskId": "ch2-laptop",
+      "amount": 4000000,
+      "paid": 0,
+      "dueTurn": 3,
+      "status": "open"
+    },
+    {
+      "taskId": "ch2-two-wheeler",
+      "amount": 7000000,
+      "paid": 0,
+      "dueTurn": 5,
+      "status": "open"
+    }
+  ],
+  "pendingScams": [],
+  "eventCooldowns": {},
+  "scamsFallenIds": [],
+  "carryOver": {
+    "blockNextChapterGoal": false,
+    "salaryBonusRate": 0
+  },
+  "trustScore": 50,
+  "stats": {
+    "scamsSpotted": 0,
+    "repeatScamSpotted": false,
+    "soldDuringCrash": false,
+    "fdBrokenEarly": false,
+    "badEventsCoveredByFund": [],
+    "windfallReceived": 0,
+    "windfallSaved": 0,
+    "loansTaken": 0,
+    "loansRepaidOnTime": 0,
+    "loansDefaulted": 0,
+    "highInterestDebt": false,
+    "interestPaid": 0,
+    "auctionsWon": 0,
+    "overbidPct": 0,
+    "poolBidsJoined": 0,
+    "shiftStreaks": {}
+  },
+  "history": [
+    {
+      "turn": 0,
+      "amount": 1500000,
+      "realValue": 1500000,
+      "inflationIndex": 1
+    }
+  ],
+  "actionLog": [],
+  "tosses": []
+}

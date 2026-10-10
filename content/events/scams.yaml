@@ -1,0 +1,162 @@
+# yaml-language-server: $schema=../../packages/content/dist/schemas/events-scams.schema.json
+# Scams. FICTIONAL senders and brands only, and clearly in-game.
+# Falling for one: money lost + a Red Flags card + a later repeat in a new disguise.
+# Spotting a repeat (`repeatVariantOf`) earns the Scam Buster badge.
+version: 1
+afterBadTossMultiplier: 2.5 # `after_bad_toss` scams are this much likelier right after a bad life event
+scams:
+  - id: prize-fee-message
+    title: { en: "Prize message" }
+    channel: message
+    chapters: [ch1-first-earnings]
+    trigger: random
+    probability: 0.08
+    sender: { en: "LuckyDraw-Winner" }
+    offerText: { en: "Congratulations! You won ₹10,000 in our lucky draw. Pay a ₹99 processing fee to claim it today!" }
+    actions:
+      - { id: pay, label: { en: "Pay ₹99" }, falls: true }
+      - { id: ask_friend, label: { en: "Ask a friend" }, falls: false }
+      - { id: report, label: { en: "Ignore and report" }, falls: false }
+    lossIfFallen: { type: fixed, amount: 99 }
+    redFlags:
+      - { en: "You had to pay to receive money." }
+      - { en: "You never entered any lucky draw." }
+    pillar: stay-safe
+    icon: message-square
+
+  - id: job-fee-offer
+    title: { en: "Job offer with a fee" }
+    channel: message
+    chapters: [ch1-first-earnings, ch2-first-job]
+    trigger: random
+    probability: 0.12
+    sender: { en: "QuickHire Jobs Desk" }
+    offerText: { en: "Work from home and earn ₹50,000 a month for 2 hours a day! Pay a ₹2,000 registration fee to start." }
+    actions:
+      - { id: pay, label: { en: "Pay the fee" }, falls: true }
+      - { id: ask_friend, label: { en: "Ask a friend" }, falls: false }
+      - { id: ignore, label: { en: "Ignore it" }, falls: false }
+    lossIfFallen: { type: fixed, amount: 2000 }
+    redFlags:
+      - { en: "Real jobs don't charge you to hire you." }
+      - { en: "Very high pay for very little work." }
+    pillar: stay-safe
+    icon: briefcase
+
+  - id: job-fee-offer-repeat
+    title: { en: "Training-kit job offer" }
+    channel: message
+    chapters: [ch2-first-job]
+    trigger: random
+    probability: 0.15
+    repeatVariantOf: job-fee-offer
+    sender: { en: "Global Data Entry Partners" }
+    offerText: { en: "You're selected for a data-entry job! Buy the ₹3,500 training kit to begin earning today." }
+    actions:
+      - { id: pay, label: { en: "Buy the kit" }, falls: true }
+      - { id: ask_friend, label: { en: "Ask a friend" }, falls: false }
+      - { id: report, label: { en: "Ignore and report" }, falls: false }
+    lossIfFallen: { type: fixed, amount: 3500 }
+    redFlags:
+      - { en: "A 'kit' or 'deposit' is just a hiring fee in disguise." }
+      - { en: "You were 'selected' without any interview." }
+    pillar: stay-safe
+    icon: briefcase
+
+  - id: otp-unblock-call
+    title: { en: "Bank account blocked call" }
+    channel: call
+    chapters: [ch2-first-job]
+    trigger: random
+    probability: 0.2
+    sender: { en: "Caller saying 'Big Bank Head Office'" }
+    offerText: { en: "Your bank account will be blocked in 10 minutes! Tell me the OTP you just received to unblock it." }
+    actions:
+      - { id: share_otp, label: { en: "Share the OTP" }, falls: true }
+      - { id: ignore, label: { en: "Hang up" }, falls: false }
+      - { id: report, label: { en: "Hang up and report" }, falls: false }
+    lossIfFallen: { type: pctOfBalance, pct: 0.3 }
+    redFlags:
+      - { en: "Banks never ask for your OTP or PIN." }
+      - { en: "Urgency and threats are pressure tactics." }
+    pillar: stay-safe
+    icon: phone
+
+  - id: instant-loan-app
+    title: { en: "Instant loan app" }
+    channel: app
+    chapters: [ch2-first-job]
+    trigger: after_bad_toss
+    probability: 0.25
+    sender: { en: "RupeeRocket Instant Loans" }
+    offerText: { en: "Need money fast? Get ₹20,000 in 5 minutes. No documents! Just allow access to your contacts and photos." }
+    actions:
+      - { id: install, label: { en: "Install and borrow" }, falls: true }
+      - { id: ask_friend, label: { en: "Ask a friend" }, falls: false }
+      - { id: ignore, label: { en: "Don't install" }, falls: false }
+    lossIfFallen: { type: fixed, amount: 8000 }
+    createsHighInterestDebt: true
+    redFlags:
+      - { en: "Hidden charges far above any bank loan." }
+      - { en: "It asks for your contacts and photos — they can be misused for harassment." }
+    pillar: stay-safe
+    icon: smartphone
+
+  - id: guaranteed-weekly-returns-group
+    title: { en: "'Guaranteed 5% a week' tips group" }
+    channel: investment_listing
+    chapters: [ch3a-salaried, ch3b-business]
+    trigger: random
+    probability: 0.15
+    sender: { en: "ProfitKings VIP Group" }
+    offerText: { en: "Join our VIP tips group. Guaranteed 5% profit every week! Only 3 seats left." }
+    actions:
+      - { id: invest, label: { en: "Join and invest" }, falls: true }
+      - { id: ignore, label: { en: "Ignore it" }, falls: false }
+      - { id: report, label: { en: "Report it" }, falls: false }
+    lossIfFallen: { type: pctOfBalance, pct: 0.25 }
+    redFlags:
+      - { en: "No real investment can guarantee high returns." }
+      - { en: "Not a registered platform." }
+      - { en: "'Only 3 seats left' is pressure to stop you thinking." }
+    pillar: stay-safe
+    icon: trending-up
+
+  - id: fake-trading-app
+    title: { en: "Trading app with amazing profits" }
+    channel: app
+    chapters: [ch3a-salaried]
+    trigger: random
+    probability: 0.1
+    sender: { en: "TradeMax Pro" }
+    offerText: { en: "Your ₹10,000 is now worth ₹31,000 on our app! Deposit more to unlock withdrawals." }
+    actions:
+      - { id: invest, label: { en: "Deposit more" }, falls: true }
+      - { id: ignore, label: { en: "Stop using it" }, falls: false }
+      - { id: report, label: { en: "Report the app" }, falls: false }
+    lossIfFallen: { type: pctOfBalance, pct: 0.2 }
+    redFlags:
+      - { en: "You can't withdraw your own money." }
+      - { en: "The profits shown are fake numbers on a screen." }
+      - { en: "Unknown developer." }
+    pillar: stay-safe
+    icon: candlestick-chart
+
+  - id: friend-ponzi-scheme
+    title: { en: "Friend's 'double your money' scheme" }
+    channel: friend_offer
+    chapters: [ch3b-business, room]
+    trigger: after_bad_toss
+    probability: 0.2
+    sender: { en: "A friend in your room" }
+    offerText: { en: "Put in ₹20,000 and get ₹40,000 in 3 months! Bring 2 friends and earn even more." }
+    actions:
+      - { id: invest, label: { en: "Put money in" }, falls: true }
+      - { id: ask_friend, label: { en: "Ask someone else" }, falls: false }
+      - { id: ignore, label: { en: "Say no" }, falls: false }
+    lossIfFallen: { type: fixed, amount: 20000 }
+    redFlags:
+      - { en: "Returns are paid from new members' money." }
+      - { en: "You're asked to recruit others to earn." }
+    pillar: stay-safe
+    icon: users

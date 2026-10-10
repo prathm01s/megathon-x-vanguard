@@ -1,0 +1,54 @@
+{
+  "app": {
+    "name": "Toss Life",
+    "tagline": "Life tosses the coin. Your choices decide where it lands."
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "te": "తెలుగు",
+    "hi": "हिन्दी",
+    "ur": "اردو"
+  },
+  "welcome": {
+    "student": "I am a student",
+    "ngo": "I am an NGO",
+    "login": "Log in",
+    "haveAccount": "Already have an account?"
+  },
+  "studentPath": {
+    "title": "How are you learning?",
+    "ngo": "I am part of an NGO",
+    "personal": "I am learning personally"
+  },
+  "money": {
+    "amount": "Amount",
+    "realValue": "Real Value",
+    "realValueHelp": "What this money can actually buy after prices rise.",
+    "assumed": "assumed",
+    "assumedTooltip": "This is a guess based on past patterns, not a promise."
+  },
+  "engine": {
+    "warning": {
+      "early_break_penalty": "Breaking this early costs a penalty of {penalty}.",
+      "below_cost": "This is worth less than you put in right now.",
+      "selling_in_storm": "Markets are in a storm. Selling now locks in the loss.",
+      "high_risk": "Big ups and downs. Best for goals many years away."
+    },
+    "disabled": {
+      "insufficient_cash": "Not enough money",
+      "already_running": "Already running",
+      "nothing_to_withdraw": "Nothing to withdraw",
+      "scam_pending": "Answer the message first",
+      "chapter_complete": "This chapter is over"
+    }
+  },
+  "placeholder": {
+    "comingSoon": "Coming soon",
+    "owner": "Being built by {name}"
+  },
+  "dev": {
+    "contentTitle": "Content preview",
+    "devOnly": "Developer tools are only available in development."
+  }
+}

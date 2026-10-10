@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=../../packages/content/dist/schemas/multiplayer-auctions.schema.json
+# Opportunity Auctions in the Friends' Room. Sealed bids by default; overbidding is allowed.
+# `trueValue` is revealed after the auction to teach value vs. price.
+version: 1
+mutualFundRevealText:
+  en: "This is how a mutual fund works: many people pool money, it is invested together, and returns are shared by how much each person put in."
+auctions:
+  - id: used-bike-auction
+    title: { en: "Used bike at a discount" }
+    description: { en: "A neighbour is moving away and selling a good bike. It also earns delivery-job income. Bid alone or pool with friends!" }
+    chapter: ch2-first-job
+    turn: 4
+    bidType: sealed
+    trueValue: 45000
+    minBid: 20000
+    allowPoolBid: true
+    returnStream: { amountPerTurn: 12000, turns: 1 }
+    mutualFundReveal: true
+    icon: bike
+
+  - id: property-pool-auction
+    title: { en: "A small flat to rent out" }
+    description: { en: "Too costly for one person — but a group could buy it together and share the rent." }
+    chapter: ch3a-salaried
+    turn: 4
+    bidType: sealed
+    trueValue: 1500000
+    minBid: 1000000
+    allowPoolBid: true
+    returnStream: { amountPerTurn: 120000, turns: 8 }
+    mutualFundReveal: true
+    icon: building
+
+  - id: shop-space-auction
+    title: { en: "Shop space in the market" }
+    description: { en: "A busy corner shop space. Partner with friends to win it and share the earnings." }
+    chapter: ch3b-business
+    turn: 3
+    bidType: sealed
+    trueValue: 600000
+    minBid: 300000
+    allowPoolBid: true
+    returnStream: { amountPerTurn: 90000, turns: 9 }
+    mutualFundReveal: true
+    icon: store

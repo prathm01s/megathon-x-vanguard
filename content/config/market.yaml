@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../packages/content/dist/schemas/config-market.schema.json
+# One shared market state is tossed every turn. All equity-linked options follow it.
+# Probabilities in each list must add up to 1.
+version: 1
+states:
+  - { id: boom,   probability: 0.30, label: { en: "Boom year" } }
+  - { id: normal, probability: 0.50, label: { en: "Normal year" } }
+  - { id: crash,  probability: 0.20, label: { en: "Market storm" } }
+independentTosses:
+  - id: gold-toss
+    label: { en: "Gold price" }
+    states:
+      - { id: up,   probability: 0.5, label: { en: "Gold up" } }
+      - { id: down, probability: 0.5, label: { en: "Gold down" } }

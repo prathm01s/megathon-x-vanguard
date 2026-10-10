@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../packages/content/dist/schemas/chapter.schema.json
+# Chapter 3B — Path: Business. OUTLINE ONLY (enabled: false). Shown as locked on the Life Ladder.
+# TODO(content): good/bad months, inventory, business loan, reinvest-vs-invest, separate shop and personal money.
+version: 1
+id: ch3b-business
+enabled: false
+order: 4
+title: { en: "Path: Business" }
+ageRange: [28, 40]
+stage: { en: "Building a life" }
+turnUnit: year
+turns: 12
+startingBalance: 0
+income:
+  label: { en: "Shop earnings" }
+  amountPerMonth: 45000
+  growthPerYear: 0.06
+  variability: 0.3
+fixedExpenses: []
+tasks: []
+unlockOptions: [debt-fund, index-fund, asset-mix]
+lifeEventPool:
+  - { eventId: slow-season }
+  - { eventId: medical-emergency }
+scamPool: [friend-ponzi-scheme, guaranteed-weekly-returns-group]
+auctionIds: [shop-space-auction]
+next: ch4-legacy
+intro: { en: "You run your own shop. Some months are great, some are slow." }
+outro: { en: "Twelve years of business life are done." }
+discussionPromptIds: []
+outline: "Variable income, inventory, business loan, reinvest vs. invest. Auction: shop space with partners (pool bid)."

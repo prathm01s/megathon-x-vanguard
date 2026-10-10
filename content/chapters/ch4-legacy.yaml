@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../packages/content/dist/schemas/chapter.schema.json
+# Chapter 4 — Legacy. OUTLINE ONLY (enabled: false). Shown as locked on the Life Ladder.
+# TODO(content): children's education goal, retirement goal, shift toward safer options as goals near, lending.
+version: 1
+id: ch4-legacy
+enabled: false
+order: 5
+title: { en: "Legacy" }
+ageRange: [41, 60]
+stage: { en: "Looking ahead" }
+turnUnit: year
+turns: 20
+startingBalance: 0
+income:
+  label: { en: "Income" }
+  amountPerMonth: 80000
+  growthPerYear: 0.05
+fixedExpenses: []
+tasks: []
+unlockOptions: [cash, savings, rd, fd, gold, equity-fund, debt-fund, index-fund, asset-mix]
+lifeEventPool:
+  - { eventId: medical-emergency }
+  - { eventId: family-wedding }
+scamPool: []
+auctionIds: []
+next: end
+intro: { en: "Your children are growing and retirement is on the horizon." }
+outro: { en: "A whole financial life, lived. Look how far your choices carried you." }
+discussionPromptIds: []
+outline: "Children's education goal, retirement goal, gradually shifting toward safer options, helping others via lending. All options unlocked."

@@ -1,0 +1,57 @@
+# yaml-language-server: $schema=../../packages/content/dist/schemas/config-health-score.schema.json
+# Financial Health Score (out of 100). Weights must add up to 100.
+# If a component doesn't apply (e.g. trust without multiplayer) its weight is shared out proportionally.
+version: 1
+passThreshold: 60
+redistributeMissingComponents: true
+components:
+  - id: tasks-on-time
+    weight: 25
+    metric: tasksOnTimeRate
+    scale: linear
+    min: 0
+    max: 1
+    label: { en: "Tasks on time" }
+    tip: { en: "Pay needs and required tasks before their due date." }
+  - id: safety-net
+    weight: 20
+    metric: emergencyFundMonths
+    scale: linear
+    min: 0
+    max: 3
+    label: { en: "Safety net" }
+    tip: { en: "Keep about 3 months of expenses somewhere you can reach quickly." }
+  - id: growth
+    weight: 20
+    metric: realValueGrowthPct
+    scale: linear
+    min: 0
+    max: 0.3
+    label: { en: "Growth" }
+    tip: { en: "Money that only sits as cash loses buying power. Let long-term money grow." }
+  - id: diversification
+    weight: 15
+    metric: diversificationCount
+    scale: steps
+    steps:
+      - { gte: 1, pts: 0.2 }
+      - { gte: 2, pts: 0.6 }
+      - { gte: 3, pts: 1 }
+    label: { en: "Diversification" }
+    tip: { en: "Spread money across more than one option so one bad toss can't hit all of it." }
+  - id: trust
+    weight: 10
+    metric: trustScore
+    scale: linear
+    min: 0
+    max: 100
+    multiplayerOnly: true
+    label: { en: "Trust Score" }
+    tip: { en: "Repay friends' loans on time to build trust." }
+  - id: scam-safety
+    weight: 10
+    metric: scamsFallen
+    scale: inverse
+    max: 2
+    label: { en: "Scam safety" }
+    tip: { en: "Look for red flags: paying to receive money, urgency, requests for OTPs." }

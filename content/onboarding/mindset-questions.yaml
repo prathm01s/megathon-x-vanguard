@@ -1,0 +1,132 @@
+# yaml-language-server: $schema=../../packages/content/dist/schemas/onboarding-mindset-questions.schema.json
+# Money Mindset Check: 6 indirect, everyday questions. NONE may ask about income, family,
+# caste, location or any personal detail. Asked before play (phase: pre) and again at the end (post).
+# Points: plan 0–4 (Q1–Q2), risk 0–2 (Q3), know 0–6 (Q4–Q6).
+# `insight` is shown ONLY in the post-game comparison, so the pre-check doesn't teach the answers.
+version: 1
+traitMax: { plan: 4, risk: 2, know: 6 }
+questions:
+  - id: q-gift
+    prompt: { en: "Your friend's birthday is next week. Would you spend ₹500 on a gift?" }
+    reveals: { en: "Spending style: impulsive or planned" }
+    options:
+      - id: yes-gifts-matter
+        label: { en: "Yes, gifts matter" }
+        icon: gift
+        points: { plan: 0 }
+        insight: { en: "Generous! Planning ahead lets you give without hurting other goals." }
+      - id: spend-less
+        label: { en: "I'd spend less or make something" }
+        icon: scissors
+        points: { plan: 1 }
+        insight: { en: "Finding a cheaper way to show you care is smart budgeting." }
+      - id: only-if-saved
+        label: { en: "Only if I had saved for it" }
+        icon: piggy-bank
+        points: { plan: 2 }
+        insight: { en: "Saving first, then spending, is the habit behind every good budget." }
+
+  - id: q-prize-wait
+    prompt: { en: "You win ₹1,000 in a contest. Take it today, or ₹1,300 after 6 months?" }
+    reveals: { en: "Patience, the key to compounding" }
+    options:
+      - id: today
+        label: { en: "Today" }
+        icon: zap
+        points: { plan: 0 }
+        insight: { en: "Waiting 6 months here earns 30% more. Patience is how money grows." }
+      - id: depends
+        label: { en: "Depends on what I need" }
+        icon: scale
+        points: { plan: 1 }
+        insight: { en: "Good thinking: the right choice depends on your goal and when you need the money." }
+      - id: after-six-months
+        label: { en: "After 6 months" }
+        icon: hourglass
+        points: { plan: 2 }
+        insight: { en: "Patience pays. This is the idea behind compounding." }
+
+  - id: q-coin-toss
+    prompt: { en: "At a fair, pay ₹100 to toss a coin. Heads you get ₹250, tails nothing." }
+    reveals: { en: "Risk appetite" }
+    options:
+      - id: skip
+        label: { en: "Skip it" }
+        icon: shield
+        points: { risk: 0 }
+        insight: { en: "Careful is fine, but some smart risks are worth taking for long goals." }
+      - id: play-once
+        label: { en: "Play once" }
+        icon: coins
+        points: { risk: 1 }
+        insight: { en: "Taking a small, limited risk you can afford to lose is a balanced choice." }
+      - id: keep-playing
+        label: { en: "Keep playing until I win" }
+        icon: repeat
+        points: { risk: 2 }
+        insight: { en: "Chasing losses is how people lose much more than they planned." }
+
+  - id: q-samosa
+    prompt: { en: "Your grandparents say a samosa cost ₹2 when they were young. Why is it ₹20 now?" }
+    reveals: { en: "Understanding of inflation" }
+    options:
+      - id: shops-greedy
+        label: { en: "Shops got greedy" }
+        icon: store
+        points: { know: 0 }
+        insight: { en: "Prices of almost everything rise over time. This is called inflation." }
+      - id: not-sure
+        label: { en: "Not sure" }
+        icon: help-circle
+        points: { know: 0 }
+        insight: { en: "It's inflation: prices rise over time, so the same money buys less later." }
+      - id: prices-rise
+        label: { en: "Prices rise over time" }
+        icon: trending-up
+        points: { know: 2 }
+        insight: { en: "Exactly. That's why idle money slowly loses its Real Value." }
+
+  - id: q-fd-belief
+    prompt: { en: 'A relative says, "Keep all your money in an FD, it''s the safest." You think:' }
+    reveals: { en: "Investment knowledge" }
+    options:
+      - id: fully-agree
+        label: { en: "Fully agree" }
+        icon: landmark
+        points: { know: 0 }
+        insight: { en: "FDs are safe, but after inflation they grow slowly. Long goals may need more." }
+      - id: whats-fd
+        label: { en: "What's an FD?" }
+        icon: help-circle
+        points: { know: 0 }
+        insight: { en: "An FD locks money with a bank for a fixed time at a fixed rate." }
+      - id: safe-but-slow
+        label: { en: "Safe but grows slowly" }
+        icon: snail
+        points: { know: 1 }
+        insight: { en: "Right. Safe for short goals; slow after inflation for long ones." }
+      - id: depends-goal
+        label: { en: "Depends on the goal" }
+        icon: target
+        points: { know: 2 }
+        insight: { en: "Spot on. The right choice depends on the goal and how long you can wait." }
+
+  - id: q-prize-message
+    prompt: { en: 'A message says: "You won ₹10,000! Pay ₹99 to claim it." You:' }
+    reveals: { en: "Scam awareness" }
+    options:
+      - id: pay
+        label: { en: "Pay, it's only ₹99" }
+        icon: credit-card
+        points: { know: 0 }
+        insight: { en: "Red flag: you never pay to receive a prize. This is a common scam." }
+      - id: ask-friend
+        label: { en: "Ask a friend first" }
+        icon: users
+        points: { know: 1 }
+        insight: { en: "Asking is good. Remember: paying to receive money is always a red flag." }
+      - id: ignore-report
+        label: { en: "Ignore and report it" }
+        icon: flag
+        points: { know: 2 }
+        insight: { en: "Perfect. Ignore and report: you never pay to receive a prize." }

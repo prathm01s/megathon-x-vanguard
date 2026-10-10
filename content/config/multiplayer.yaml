@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=../../packages/content/dist/schemas/config-multiplayer.schema.json
+# Friends' Room settings. Rates are per turn (a year in Chapter 2).
+version: 1
+minPlayers: 3
+maxPlayers: 6
+fillWithBots: true
+turnTimerSeconds: 90          # when the timer runs out, default decisions are used
+loans:
+  maxRatePerTurn: 0.05        # friends can charge at most 5% per turn
+  defaultInterestType: simple
+  maxLoanMultipleOfIncome: 2
+  loanAppRatePerTurn: 0.15    # shown as dangerous
+  lateFine: 500
+  bankRateByTrust:            # highest matching minTrust wins
+    - { minTrust: 70, ratePerTurn: 0.10 }
+    - { minTrust: 40, ratePerTurn: 0.14 }
+    - { minTrust: 20, ratePerTurn: 0.20 }
+    - { minTrust: 0,  ratePerTurn: null }   # bank refuses
+  trust:
+    start: 50
+    onTime: 5
+    late: -15
+    default: -30
+bots:
+  strategies:
+    - { id: cautious,  weight: 1, name: { en: "Careful Kavya" } }
+    - { id: balanced,  weight: 2, name: { en: "Balanced Bala" } }
+    - { id: impulsive, weight: 1, name: { en: "Spendy Sunny" } }
+    - id: scammer-friend
+      weight: 1
+      name: { en: "Smooth-talking Sam" }
+      chapters: [ch3b-business]   # only pushes the Ponzi offer in ch3b
+emotes:
+  - { id: thumbs-up, icon: thumbs-up, label: { en: "Nice!" } }
+  - { id: clap,      icon: hand,      label: { en: "Well played" } }
+  - { id: thinking,  icon: brain,     label: { en: "Hmm…" } }
+  - { id: oops,      icon: frown,     label: { en: "Oops" } }
+  - { id: party,     icon: party-popper, label: { en: "Party!" } }

@@ -1,0 +1,17 @@
+{
+  "name": "@toss/db-types",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Generated Supabase types. Regenerate with `pnpm db:types` (needs local Supabase running).",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "echo \"(generated — no lint)\""
+  },
+  "devDependencies": {
+    "typescript": "~6.0.3"
+  }
+}

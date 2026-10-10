@@ -1,0 +1,303 @@
+{
+  "chapterId": "ch2-first-job",
+  "attempt": 1,
+  "healthScore": 71,
+  "breakdown": [
+    {
+      "componentId": "tasks-on-time",
+      "weight": 27.77777777777778,
+      "fraction": 1,
+      "points": 27.77777777777778,
+      "applicable": true
+    },
+    {
+      "componentId": "safety-net",
+      "weight": 22.22222222222222,
+      "fraction": 1,
+      "points": 22.22222222222222,
+      "applicable": true
+    },
+    {
+      "componentId": "growth",
+      "weight": 22.22222222222222,
+      "fraction": 0,
+      "points": 0,
+      "applicable": true
+    },
+    {
+      "componentId": "diversification",
+      "weight": 16.666666666666668,
+      "fraction": 0.6,
+      "points": 10,
+      "applicable": true
+    },
+    {
+      "componentId": "trust",
+      "weight": 0,
+      "fraction": 0,
+      "points": 0,
+      "applicable": false
+    },
+    {
+      "componentId": "scam-safety",
+      "weight": 11.11111111111111,
+      "fraction": 1,
+      "points": 11.11111111111111,
+      "applicable": true
+    }
+  ],
+  "passed": true,
+  "weakestComponentId": "growth",
+  "report": {
+    "didWell": [
+      {
+        "ruleId": "sip-patience",
+        "text": {
+          "en": "You kept your SIP going through a market storm. That patience paid off."
+        },
+        "params": {
+          "tasksOnTimeRate": 1,
+          "requiredTasksMissed": 0,
+          "emergencyFundMonths": 33.327523677705884,
+          "emergencyFundCovered": "true",
+          "badEventCoveredByFund": "false",
+          "realValueGrowthPct": -0.22852966480446923,
+          "cashShareOfWealth": 0.7993165811473663,
+          "cashRealValueLossPct": 25,
+          "fdShareOfWealth": 0,
+          "equityShareOfWealth": 0.1282042045905807,
+          "diversificationCount": 2,
+          "sipActiveTurns": 5,
+          "sipStartedTurn": 1,
+          "soldDuringCrash": "false",
+          "fdBrokenEarly": "false",
+          "scamsFallen": 0,
+          "scamsSpotted": 1,
+          "repeatScamSpotted": "false",
+          "loansTaken": 0,
+          "loansRepaidOnTime": 0,
+          "loansDefaulted": 0,
+          "trustScore": 50,
+          "highInterestDebt": "false",
+          "windfallSavedPct": 0,
+          "auctionsWon": 0,
+          "overbidPct": 0,
+          "poolBidsJoined": 0,
+          "healthScore": 71,
+          "chapterTurns": 5,
+          "persona": "safe-keeper"
+        },
+        "pillar": "understand-investing",
+        "techniqueId": "sip-rupee-cost-averaging"
+      },
+      {
+        "ruleId": "spotted-scams",
+        "text": {
+          "en": "You spotted {scamsSpotted} scam(s) and kept your money safe."
+        },
+        "params": {
+          "tasksOnTimeRate": 1,
+          "requiredTasksMissed": 0,
+          "emergencyFundMonths": 33.327523677705884,
+          "emergencyFundCovered": "true",
+          "badEventCoveredByFund": "false",
+          "realValueGrowthPct": -0.22852966480446923,
+          "cashShareOfWealth": 0.7993165811473663,
+          "cashRealValueLossPct": 25,
+          "fdShareOfWealth": 0,
+          "equityShareOfWealth": 0.1282042045905807,
+          "diversificationCount": 2,
+          "sipActiveTurns": 5,
+          "sipStartedTurn": 1,
+          "soldDuringCrash": "false",
+          "fdBrokenEarly": "false",
+          "scamsFallen": 0,
+          "scamsSpotted": 1,
+          "repeatScamSpotted": "false",
+          "loansTaken": 0,
+          "loansRepaidOnTime": 0,
+          "loansDefaulted": 0,
+          "trustScore": 50,
+          "highInterestDebt": "false",
+          "windfallSavedPct": 0,
+          "auctionsWon": 0,
+          "overbidPct": 0,
+          "poolBidsJoined": 0,
+          "healthScore": 71,
+          "chapterTurns": 5,
+          "persona": "safe-keeper"
+        },
+        "pillar": "stay-safe"
+      },
+      {
+        "ruleId": "all-tasks-on-time",
+        "text": {
+          "en": "Every task was done on time. That's solid planning."
+        },
+        "params": {
+          "tasksOnTimeRate": 1,
+          "requiredTasksMissed": 0,
+          "emergencyFundMonths": 33.327523677705884,
+          "emergencyFundCovered": "true",
+          "badEventCoveredByFund": "false",
+          "realValueGrowthPct": -0.22852966480446923,
+          "cashShareOfWealth": 0.7993165811473663,
+          "cashRealValueLossPct": 25,
+          "fdShareOfWealth": 0,
+          "equityShareOfWealth": 0.1282042045905807,
+          "diversificationCount": 2,
+          "sipActiveTurns": 5,
+          "sipStartedTurn": 1,
+          "soldDuringCrash": "false",
+          "fdBrokenEarly": "false",
+          "scamsFallen": 0,
+          "scamsSpotted": 1,
+          "repeatScamSpotted": "false",
+          "loansTaken": 0,
+          "loansRepaidOnTime": 0,
+          "loansDefaulted": 0,
+          "trustScore": 50,
+          "highInterestDebt": "false",
+          "windfallSavedPct": 0,
+          "auctionsWon": 0,
+          "overbidPct": 0,
+          "poolBidsJoined": 0,
+          "healthScore": 71,
+          "chapterTurns": 5,
+          "persona": "safe-keeper"
+        },
+        "pillar": "plan-budget"
+      }
+    ],
+    "couldBeBetter": [
+      {
+        "ruleId": "idle-cash",
+        "text": {
+          "en": "Your cash lost about {cashRealValueLossPct}% of its buying power to rising prices."
+        },
+        "params": {
+          "tasksOnTimeRate": 1,
+          "requiredTasksMissed": 0,
+          "emergencyFundMonths": 33.327523677705884,
+          "emergencyFundCovered": "true",
+          "badEventCoveredByFund": "false",
+          "realValueGrowthPct": -0.22852966480446923,
+          "cashShareOfWealth": 0.7993165811473663,
+          "cashRealValueLossPct": 25,
+          "fdShareOfWealth": 0,
+          "equityShareOfWealth": 0.1282042045905807,
+          "diversificationCount": 2,
+          "sipActiveTurns": 5,
+          "sipStartedTurn": 1,
+          "soldDuringCrash": "false",
+          "fdBrokenEarly": "false",
+          "scamsFallen": 0,
+          "scamsSpotted": 1,
+          "repeatScamSpotted": "false",
+          "loansTaken": 0,
+          "loansRepaidOnTime": 0,
+          "loansDefaulted": 0,
+          "trustScore": 50,
+          "highInterestDebt": "false",
+          "windfallSavedPct": 0,
+          "auctionsWon": 0,
+          "overbidPct": 0,
+          "poolBidsJoined": 0,
+          "healthScore": 71,
+          "chapterTurns": 5,
+          "persona": "safe-keeper"
+        },
+        "pillar": "understand-investing",
+        "techniqueId": "real-value"
+      }
+    ],
+    "whatIf": {
+      "candidateId": "idle-cash",
+      "changeText": {
+        "en": "started a ₹2,000 monthly SIP in Sunrise Equity Fund from year 1"
+      },
+      "baselineRealValue": 68811460,
+      "alternativeRealValue": 68811460,
+      "difference": 0,
+      "series": [
+        {
+          "turn": 0,
+          "baseline": 1500000,
+          "alternative": 1500000
+        },
+        {
+          "turn": 1,
+          "baseline": 17386792,
+          "alternative": 17386792
+        },
+        {
+          "turn": 2,
+          "baseline": 23784176,
+          "alternative": 23784176
+        },
+        {
+          "turn": 3,
+          "baseline": 39249529,
+          "alternative": 39249529
+        },
+        {
+          "turn": 4,
+          "baseline": 55286986,
+          "alternative": 55286986
+        },
+        {
+          "turn": 5,
+          "baseline": 68811460,
+          "alternative": 68811460
+        }
+      ]
+    },
+    "gyaanQuestionIds": [
+      "ch2-gyaan-real-value",
+      "ch2-gyaan-sip-storm",
+      "ch2-gyaan-compounding"
+    ]
+  },
+  "badgesEarned": [
+    "patient-investor",
+    "debt-free",
+    "safety-first"
+  ],
+  "personaShift": null,
+  "metrics": {
+    "tasksOnTimeRate": 1,
+    "requiredTasksMissed": 0,
+    "emergencyFundMonths": 33.327523677705884,
+    "emergencyFundCovered": true,
+    "badEventCoveredByFund": false,
+    "realValueGrowthPct": -0.22852966480446923,
+    "cashShareOfWealth": 0.7993165811473663,
+    "cashRealValueLossPct": 25,
+    "fdShareOfWealth": 0,
+    "equityShareOfWealth": 0.1282042045905807,
+    "diversificationCount": 2,
+    "sipActiveTurns": 5,
+    "sipStartedTurn": 1,
+    "soldDuringCrash": false,
+    "fdBrokenEarly": false,
+    "scamsFallen": 0,
+    "scamsSpotted": 1,
+    "repeatScamSpotted": false,
+    "loansTaken": 0,
+    "loansRepaidOnTime": 0,
+    "loansDefaulted": 0,
+    "trustScore": 50,
+    "highInterestDebt": false,
+    "windfallSavedPct": 0,
+    "auctionsWon": 0,
+    "overbidPct": 0,
+    "poolBidsJoined": 0,
+    "healthScore": 71,
+    "chapterTurns": 5,
+    "persona": "safe-keeper"
+  },
+  "next": [
+    "ch3a-salaried",
+    "ch3b-business"
+  ]
+}

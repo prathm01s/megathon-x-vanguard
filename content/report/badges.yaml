@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=../../packages/content/dist/schemas/report-badges.schema.json
+# Badges earned at chapter end when their condition matches the chapter metrics.
+version: 1
+badges:
+  - id: scam-buster
+    title: { en: "Scam Buster" }
+    description: { en: "Spotted a scam that came back in a new disguise." }
+    icon: shield-check
+    when: { metric: repeatScamSpotted, op: "==", value: true }
+  - id: patient-investor
+    title: { en: "Patient Investor" }
+    description: { en: "Kept a SIP going for 3+ turns without panic-selling." }
+    icon: hourglass
+    when:
+      all:
+        - { metric: sipActiveTurns, op: ">=", value: 3 }
+        - { metric: soldDuringCrash, op: "==", value: false }
+  - id: trusted-lender
+    title: { en: "Trusted Lender" }
+    description: { en: "Built a Trust Score of 70 or more in the Friends' Room." }
+    icon: handshake
+    when: { metric: trustScore, op: ">=", value: 70 }
+  - id: debt-free
+    title: { en: "Debt Free" }
+    description: { en: "Finished the chapter with no loans and no loan-app debt." }
+    icon: badge-check
+    when:
+      all:
+        - { metric: loansTaken, op: "==", value: 0 }
+        - { metric: highInterestDebt, op: "==", value: false }
+  - id: diversifier
+    title: { en: "Diversifier" }
+    description: { en: "Spread money across 3 or more options." }
+    icon: pie-chart
+    when: { metric: diversificationCount, op: ">=", value: 3 }
+  - id: safety-first
+    title: { en: "Safety First" }
+    description: { en: "Kept a full 3-month emergency fund." }
+    icon: life-buoy
+    when: { metric: emergencyFundMonths, op: ">=", value: 3 }

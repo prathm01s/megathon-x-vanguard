@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=../../packages/content/dist/schemas/ngo-discussion-prompts.schema.json
+# Three prompts per chapter for NGO facilitators to run a guided session after play.
+version: 1
+prompts:
+  - id: ch2-prompt-fd-vs-sip
+    chapterId: ch2-first-job
+    text: { en: "Who chose an FD and who chose a SIP? How did the market storm feel?" }
+  - id: ch2-prompt-lending
+    chapterId: ch2-first-job
+    text: { en: "Did anyone lend to a friend? Was the interest fair?" }
+  - id: ch2-prompt-scam
+    chapterId: ch2-first-job
+    text: { en: "Which scam almost fooled you, and what gave it away?" }

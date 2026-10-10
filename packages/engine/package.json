@@ -1,0 +1,26 @@
+{
+  "name": "@toss/engine",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Pure, deterministic Toss Life simulation engine. No React, no DB, no I/O.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./fixtures": "./fixtures/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src test fixtures",
+    "fixtures": "tsx fixtures/generate.ts"
+  },
+  "dependencies": {
+    "@toss/content": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.3",
+    "tsx": "^4.23.15",
+    "@types/node": "^24"
+  }
+}

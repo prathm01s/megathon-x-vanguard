@@ -1,0 +1,100 @@
+# yaml-language-server: $schema=../../packages/content/dist/schemas/onboarding-personas.schema.json
+# Four personas, each framed with a strength and a blind spot — never "good" or "bad".
+# assignmentRules: first match wins. The last rule must always match.
+version: 1
+personas:
+  - id: moment-maker
+    name: { en: "Moment Maker" }
+    strength: { en: "Generous, enjoys life" }
+    blindSpot: { en: "Little saved for surprises" }
+    avatarHint: party
+    startChapter: ch1-first-earnings
+    guidedFirstTurn: true
+    eventMultipliers: { social: 1.3 } # more surprise expenses
+    scamMultiplier: 1.0
+    highlightTechniques: [goal-based-investing, real-value]
+    mentorTips:
+      - { en: "Before you spend, put a little aside for surprises." }
+      - { en: "An emergency fund turns a bad toss into a small bump." }
+  - id: safe-keeper
+    name: { en: "Safe Keeper" }
+    strength: { en: "Disciplined saver" }
+    blindSpot: { en: "Keeps everything in cash or FDs" }
+    avatarHint: shield
+    startChapter: ch1-first-earnings
+    guidedFirstTurn: true
+    eventMultipliers: {}
+    scamMultiplier: 0.8
+    highlightTechniques: [real-value, sip-rupee-cost-averaging, compounding]
+    mentorTips:
+      - { en: "Watch the Real Value number, not just the Amount." }
+      - { en: "For goals many years away, a small SIP can do a lot of work." }
+  - id: thrill-seeker
+    name: { en: "Thrill Seeker" }
+    strength: { en: "Bold, open to investing" }
+    blindSpot: { en: "Chases quick returns" }
+    avatarHint: rocket
+    startChapter: ch1-first-earnings
+    guidedFirstTurn: false
+    eventMultipliers: {}
+    scamMultiplier: 1.5 # more scam offers
+    highlightTechniques: [diversification, risk-vs-time, stay-invested]
+    mentorTips:
+      - { en: "Guaranteed high returns are a red flag, not an opportunity." }
+      - { en: "Spread your money so one bad toss can't sink you." }
+  - id: smart-planner
+    name: { en: "Smart Planner" }
+    strength: { en: "Patient and informed" }
+    blindSpot: { en: "Can over-plan and miss opportunities" }
+    avatarHint: compass
+    startChapter: ch2-first-job
+    guidedFirstTurn: false
+    eventMultipliers: {}
+    scamMultiplier: 1.0
+    highlightTechniques: [goal-based-investing, diversification]
+    mentorTips:
+      - { en: "A good plan leaves room to act when a real opportunity appears." }
+
+assignmentRules:
+  - personaId: thrill-seeker
+    when:
+      any:
+        - { metric: risk, op: "==", value: 2 }
+        - all:
+            - { metric: risk, op: "==", value: 1 }
+            - { metric: plan, op: "<=", value: 1 }
+            - { metric: know, op: ">=", value: 3 }
+  - personaId: smart-planner
+    when:
+      all:
+        - { metric: plan, op: ">=", value: 3 }
+        - { metric: know, op: ">=", value: 4 }
+  - personaId: safe-keeper
+    when: { metric: plan, op: ">=", value: 2 }
+  - personaId: moment-maker
+    when: { always: true }
+
+# Evaluated at chapter end with chapter metrics. Shows "Your money style has grown".
+shiftRules:
+  - id: moment-maker-to-safe-keeper
+    from: moment-maker
+    to: safe-keeper
+    consecutiveChapters: 2
+    when: { metric: emergencyFundCovered, op: "==", value: true }
+    message: { en: "You kept a full safety net two chapters in a row. Your money style has grown!" }
+  - id: safe-keeper-to-smart-planner
+    from: safe-keeper
+    to: smart-planner
+    when:
+      all:
+        - { metric: diversificationCount, op: ">=", value: 3 }
+        - { metric: sipActiveTurns, op: ">=", value: 3 }
+    message: { en: "You spread your money and kept a SIP going. Your money style has grown!" }
+  - id: thrill-seeker-to-smart-planner
+    from: thrill-seeker
+    to: smart-planner
+    when:
+      all:
+        - { metric: scamsFallen, op: "==", value: 0 }
+        - { metric: diversificationCount, op: ">=", value: 3 }
+    message: { en: "Bold and careful: no scams, money well spread. Your money style has grown!" }

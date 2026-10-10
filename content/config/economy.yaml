@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=../../packages/content/dist/schemas/config-economy.schema.json
+# The economy every chapter runs in. All rates are illustrative (to be confirmed with Vanguard mentors).
+version: 1
+inflationPerYear: 0.06        # prices rise 6% a year → drives Real Value
+salaryGrowthPerYear: 0.08     # salaried chapters
+currency: INR
+numberFormat: en-IN           # ₹1,00,000 style
+cashLossChancePerYear: 0.02   # cash at home can be lost or stolen...
+cashLossMaxPct: 0.10          # ...up to 10% of it
+considerTax: false            # v1 ignores tax on returns (stated in-game as an assumption)
+emergencyFundOptionId: savings  # money paid into the "emergency fund" task is kept here
+assumptionNote:
+  en: "This is a guess based on past patterns, not a promise."

@@ -1,0 +1,14 @@
+node_modules
+.next
+dist
+coverage
+pnpm-lock.yaml
+packages/db-types/src/database.ts
+supabase/.temp
+*.pdf
+CLAUDE.md
+handoff.md
+content/
+packages/engine/fixtures/*.json
+apps/web/AGENTS.md
+supabase/

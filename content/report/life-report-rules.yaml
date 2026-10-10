@@ -1,0 +1,142 @@
+# yaml-language-server: $schema=../../packages/content/dist/schemas/report-life-report-rules.schema.json
+# Life Report rules. Each rule's `when` is checked against chapter metrics; the highest-priority
+# matches win. Text explains trade-offs — it NEVER says "buy X".
+version: 1
+maxDidWell: 3
+maxCouldBeBetter: 2
+rules:
+  # ── did well ─────────────────────────────────────────────────────────────
+  - id: emergency-fund-saved-you
+    section: did-well
+    priority: 100
+    when: { metric: badEventCoveredByFund, op: "==", value: true }
+    text: { en: "Your safety net covered the {event} without a loan." }
+    pillar: save-manage
+    techniqueId: goal-based-investing
+  - id: sip-patience
+    section: did-well
+    priority: 90
+    when:
+      all:
+        - { metric: sipActiveTurns, op: ">=", value: 3 }
+        - { metric: soldDuringCrash, op: "==", value: false }
+    text: { en: "You kept your SIP going through a market storm. That patience paid off." }
+    pillar: understand-investing
+    techniqueId: sip-rupee-cost-averaging
+  - id: spotted-scams
+    section: did-well
+    priority: 80
+    when: { metric: scamsSpotted, op: ">=", value: 1 }
+    text: { en: "You spotted {scamsSpotted} scam(s) and kept your money safe." }
+    pillar: stay-safe
+  - id: all-tasks-on-time
+    section: did-well
+    priority: 70
+    when: { metric: tasksOnTimeRate, op: "==", value: 1 }
+    text: { en: "Every task was done on time. That's solid planning." }
+    pillar: plan-budget
+  - id: well-diversified
+    section: did-well
+    priority: 60
+    when: { metric: diversificationCount, op: ">=", value: 3 }
+    text: { en: "Your money was spread across {diversificationCount} options, so no single toss could sink you." }
+    pillar: understand-investing
+    techniqueId: diversification
+  - id: saved-windfall
+    section: did-well
+    priority: 50
+    when: { metric: windfallSavedPct, op: ">=", value: 0.5 }
+    text: { en: "You saved most of your windfall instead of spending it all." }
+    pillar: save-manage
+
+  # ── could be better ──────────────────────────────────────────────────────
+  - id: fell-for-scam
+    section: could-be-better
+    priority: 100
+    when: { metric: scamsFallen, op: ">=", value: 1 }
+    text: { en: "A scam cost you money. Look back at its red flags — the same trick may return in a new disguise." }
+    pillar: stay-safe
+  - id: high-interest-debt
+    section: could-be-better
+    priority: 95
+    when: { metric: highInterestDebt, op: "==", value: true }
+    text: { en: "The loan app cost you {interestPaid} in extra charges." }
+    pillar: save-manage
+  - id: panic-sold
+    section: could-be-better
+    priority: 90
+    when: { metric: soldDuringCrash, op: "==", value: true }
+    text: { en: "You sold during a storm and locked in the loss." }
+    pillar: understand-investing
+    techniqueId: stay-invested
+  - id: missed-required-task
+    section: could-be-better
+    priority: 85
+    when: { metric: requiredTasksMissed, op: ">=", value: 1 }
+    text: { en: "A must-do task was missed and cost you a fine. Set money aside for needs first." }
+    pillar: plan-budget
+  - id: no-safety-net
+    section: could-be-better
+    priority: 80
+    when: { metric: emergencyFundMonths, op: "<", value: 1 }
+    text: { en: "You had less than a month's expenses saved for surprises. One bad toss could force a loan." }
+    pillar: save-manage
+    techniqueId: goal-based-investing
+  - id: idle-cash
+    section: could-be-better
+    priority: 70
+    when: { metric: cashShareOfWealth, op: ">", value: 0.4 }
+    text: { en: "Your cash lost about {cashRealValueLossPct}% of its buying power to rising prices." }
+    pillar: understand-investing
+    techniqueId: real-value
+  - id: all-in-fd
+    section: could-be-better
+    priority: 65
+    when:
+      all:
+        - { metric: fdShareOfWealth, op: ">", value: 0.7 }
+        - { metric: chapterTurns, op: ">=", value: 5 }
+    text: { en: "Your FD was safe, but after inflation it barely grew. For long goals, consider spreading money." }
+    pillar: understand-investing
+    techniqueId: risk-vs-time
+  - id: broke-fd-early
+    section: could-be-better
+    priority: 60
+    when: { metric: fdBrokenEarly, op: "==", value: true }
+    text: { en: "Breaking the FD early cost a penalty. Keep emergency money somewhere you can reach for free." }
+    pillar: save-manage
+
+whatIf:
+  template:
+    en: "If you had {change}, you would have about {difference} more today, based on the game's assumptions."
+  candidates:
+    - id: fell-for-scam
+      priority: 100
+      when: { metric: scamsFallen, op: ">=", value: 1 }
+      transform: { type: ignoreScams }
+      changeText: { en: "ignored the scam" }
+    - id: no-emergency-fund
+      priority: 90
+      when: { metric: emergencyFundMonths, op: "<", value: 1 }
+      transform: { type: emergencyFundFirst, optionId: savings, months: 3 }
+      changeText: { en: "set aside 3 months' expenses in a savings account first" }
+    - id: panic-sold
+      priority: 85
+      when: { metric: soldDuringCrash, op: "==", value: true }
+      transform: { type: holdThroughCrash }
+      changeText: { en: "stayed invested through the storm" }
+    - id: idle-cash
+      priority: 80
+      when: { metric: cashShareOfWealth, op: ">", value: 0.4 }
+      transform: { type: startSip, optionId: equity-fund, amountPerMonth: 2000, fromTurn: 1 }
+      changeText: { en: "started a ₹2,000 monthly SIP in Sunrise Equity Fund from year 1" }
+    - id: all-in-fd
+      priority: 70
+      when: { metric: fdShareOfWealth, op: ">", value: 0.7 }
+      transform: { type: moveShare, fromOptionId: fd, toOptionId: equity-fund, share: 0.5, asSip: true }
+      changeText: { en: "moved half of your FD money into a SIP" }
+    - id: default-sip
+      priority: 0
+      when: { always: true }
+      transform: { type: startSip, optionId: equity-fund, amountPerMonth: 1000, fromTurn: 1 }
+      changeText: { en: "added a ₹1,000 monthly SIP from year 1" }

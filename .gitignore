@@ -1,0 +1,35 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# testing
+coverage/
+playwright-report/
+test-results/
+blob-report/
+
+# env (keep the example)
+.env*
+!.env.example
+
+# supabase
+supabase/.branches
+supabase/.temp
+
+# misc
+.DS_Store
+*.pem
+npm-debug.log*
+.pnpm-debug.log*
+.vercel
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json

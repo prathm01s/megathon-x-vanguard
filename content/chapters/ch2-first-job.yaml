@@ -1,0 +1,91 @@
+# yaml-language-server: $schema=../../packages/content/dist/schemas/chapter.schema.json
+# Chapter 2 — First Job. THE HACKATHON PROTOTYPE: fully playable.
+# Amounts are in rupees. Turns are years (5 turns = ages 22–27).
+version: 1
+id: ch2-first-job
+enabled: true
+order: 2
+title: { en: "First Job" }
+ageRange: [22, 27]
+stage: { en: "Young adult" }
+turnUnit: year
+turns: 5
+startingBalance: 15000
+income:
+  label: { en: "Salary" }
+  amountPerMonth: 30000          # ₹3,60,000 a year
+  growthPerYear: economy         # uses economy.salaryGrowthPerYear
+fixedExpenses:
+  - id: rent-food
+    label: { en: "Rent and food" }
+    amountPerMonth: 15000
+    inflationAdjusted: true
+    icon: home
+  - id: money-home
+    label: { en: "Money sent home" }
+    amountPerMonth: 3000
+    inflationAdjusted: true
+    icon: heart-handshake
+tasks:
+  - id: ch2-friend-wedding
+    title: { en: "Friend's wedding: gift and travel" }
+    kind: want
+    amount: 5000
+    dueTurn: 1
+    required: false
+    pillar: plan-budget
+    icon: party-popper
+  - id: ch2-emergency-fund
+    title: { en: "Build an emergency fund of 3 months' expenses" }
+    description: { en: "Keep it in cash or a savings account so you can reach it fast." }
+    kind: safety
+    amount: 54000                # 3 × (15,000 + 3,000); recomputed from expenses
+    targetMonthsOfExpenses: 3
+    dueTurn: 2
+    required: true
+    pillar: save-manage
+    icon: shield
+  - id: ch2-sister-fees
+    title: { en: "Sister's college fees" }
+    kind: need
+    amount: 25000
+    dueTurn: 2
+    required: true
+    lateFine: 2000
+    consequence: blockNextChapterGoal
+    pillar: plan-budget
+    icon: graduation-cap
+  - id: ch2-laptop
+    title: { en: "Laptop for an upskilling course" }
+    kind: goal
+    amount: 40000
+    dueTurn: 3
+    required: false
+    onCompleteConsequence: "salaryBonus:0.05"   # +5% salary once done
+    pillar: plan-budget
+    icon: laptop
+  - id: ch2-two-wheeler
+    title: { en: "Two-wheeler to commute" }
+    kind: goal
+    amount: 70000
+    dueTurn: 5
+    required: false
+    inflationAdjusted: true
+    pillar: plan-budget
+    icon: bike
+unlockOptions: [savings, rd, fd, gold, equity-fund]
+lifeEventPool:
+  - { eventId: medical-emergency }
+  - { eventId: phone-broken }
+  - { eventId: job-break }
+  - { eventId: family-wedding }
+  - { eventId: bonus }
+  - { eventId: promotion }
+scamPool: [otp-unblock-call, instant-loan-app, job-fee-offer, job-fee-offer-repeat]
+auctionIds: [used-bike-auction]
+next: { choice: [ch3a-salaried, ch3b-business] }
+intro:
+  en: "You got your first job! ₹30,000 lands in your account every month. Rent, food and family come first — what you do with the rest is up to you."
+outro:
+  en: "Five years flew by. Time to see how your choices — and the coin tosses — shaped your money."
+discussionPromptIds: [ch2-prompt-fd-vs-sip, ch2-prompt-lending, ch2-prompt-scam]

@@ -1,0 +1,77 @@
+# yaml-language-server: $schema=../../packages/content/dist/schemas/chapter.schema.json
+# Chapter 1 — First Earnings. OUTLINE ONLY (enabled: false). Shown as locked on the Life Ladder.
+# TODO(content): confirm amounts and due turns, write intro/outro, then set enabled: true.
+version: 1
+id: ch1-first-earnings
+enabled: false
+order: 1
+title: { en: "First Earnings" }
+ageRange: [18, 21]
+stage: { en: "Student" }
+turnUnit: month
+turns: 12
+startingBalance: 2000
+income:
+  label: { en: "Stipend and part-time pay" }
+  amountPerMonth: 6000
+  growthPerYear: 0
+fixedExpenses:
+  - id: travel-snacks
+    label: { en: "Travel and snacks" }
+    amountPerMonth: 2500
+    inflationAdjusted: false
+    icon: bus
+tasks:
+  - id: ch1-phone-bill
+    title: { en: "Phone bill" }
+    kind: need
+    amount: 300
+    dueTurn: 1
+    required: true
+    lateFine: 100
+    pillar: plan-budget
+    icon: smartphone
+  - id: ch1-college-fee-share
+    title: { en: "Your share of college fees" }
+    kind: need
+    amount: 8000
+    dueTurn: 6
+    required: true
+    lateFine: 500
+    pillar: plan-budget
+    icon: graduation-cap
+  - id: ch1-friend-birthday
+    title: { en: "Friend's birthday gift" }
+    kind: want
+    amount: 500
+    dueTurn: 3
+    required: false
+    pillar: plan-budget
+    icon: gift
+  - id: ch1-save-phone
+    title: { en: "Save for a new phone" }
+    kind: goal
+    amount: 12000
+    dueTurn: 12
+    required: false
+    pillar: plan-budget
+    icon: smartphone
+  - id: ch1-safety-jar
+    title: { en: "Start a safety jar" }
+    kind: safety
+    amount: 3000
+    dueTurn: 6
+    required: true
+    pillar: save-manage
+    icon: piggy-bank
+unlockOptions: [cash, savings, rd]
+lifeEventPool:
+  - { eventId: scholarship }
+  - { eventId: phone-broken }
+scamPool: [prize-fee-message, job-fee-offer]
+auctionIds: []
+next: ch2-first-job
+intro: { en: "Your first money of your own. Small amounts, big habits." }
+outro: { en: "A year of first earnings is done." }
+discussionPromptIds: []
+outline: "Multiplayer: first small loans between friends."

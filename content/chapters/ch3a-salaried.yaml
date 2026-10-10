@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../packages/content/dist/schemas/chapter.schema.json
+# Chapter 3A — Path: Salaried. OUTLINE ONLY (enabled: false). Shown as locked on the Life Ladder.
+# TODO(content): promotions, home loan EMI (introduce EMIs), health insurance task, child-planning goal.
+version: 1
+id: ch3a-salaried
+enabled: false
+order: 3
+title: { en: "Path: Salaried" }
+ageRange: [28, 40]
+stage: { en: "Building a life" }
+turnUnit: year
+turns: 12
+startingBalance: 0
+income:
+  label: { en: "Salary" }
+  amountPerMonth: 50000
+  growthPerYear: economy
+fixedExpenses: []
+tasks: []
+unlockOptions: [debt-fund, index-fund, asset-mix]
+lifeEventPool:
+  - { eventId: medical-emergency }
+  - { eventId: promotion }
+  - { eventId: bonus }
+scamPool: [guaranteed-weekly-returns-group, fake-trading-app]
+auctionIds: [property-pool-auction]
+next: ch4-legacy
+intro: { en: "A steady job and a growing family. Bigger goals, bigger choices." }
+outro: { en: "Twelve years of salaried life are done." }
+discussionPromptIds: []
+outline: "Home loan EMI, health insurance task, child-planning goal. Auction: pooled bid on a property."
