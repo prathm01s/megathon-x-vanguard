@@ -1,6 +1,9 @@
+import { cpSync, mkdtempSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { checkBundle } from "../src/check";
-import { loadContent } from "../src/load";
+import { DEFAULT_CONTENT_DIR, loadContent } from "../src/load";
 import type { ContentBundle } from "../src/schemas";
 
 function bundle(): ContentBundle {
@@ -47,5 +50,27 @@ describe("content/", () => {
     for (const banned of ["sbi", "hdfc", "icici", "zerodha", "groww", "paytm", "nippon", "axis bank"]) {
       expect(text).not.toContain(banned);
     }
+  });
+
+  it("has the same contentVersion with Windows (CRLF) and Unix (LF) line endings", () => {
+    const convert = (dir: string, eol: string) => {
+      for (const name of readdirSync(dir)) {
+        const p = join(dir, name);
+        if (statSync(p).isDirectory()) convert(p, eol);
+        else if (p.endsWith(".yaml")) {
+          const lf = readFileSync(p, "utf8").replace(/\r\n?/g, "\n");
+          writeFileSync(p, lf.replace(/\n/g, eol));
+        }
+      }
+    };
+    const versionWith = (eol: string) => {
+      const dir = mkdtempSync(join(tmpdir(), "toss-content-"));
+      cpSync(DEFAULT_CONTENT_DIR, dir, { recursive: true });
+      convert(dir, eol);
+      const r = loadContent(dir);
+      if (!r.ok) throw new Error("content invalid");
+      return r.bundle.contentVersion;
+    };
+    expect(versionWith("\r\n")).toBe(versionWith("\n"));
   });
 });

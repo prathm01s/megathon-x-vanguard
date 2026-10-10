@@ -37,6 +37,15 @@ function formatZodIssues(file: string, error: z.ZodError): ContentIssue[] {
   }));
 }
 
+/**
+ * File text with line endings normalised to LF, for the content hash. Without this a Windows
+ * checkout (core.autocrlf) and Linux CI / Vercel would compute different `contentVersion`s for
+ * identical content.
+ */
+function normalisedText(path: string): string {
+  return readFileSync(path, "utf8").replace(/\r\n?/g, "\n");
+}
+
 function readYaml(path: string): unknown {
   return parse(readFileSync(path, "utf8"));
 }
@@ -55,7 +64,7 @@ export function loadContent(contentDir: string = DEFAULT_CONTENT_DIR): LoadResul
       continue;
     }
     files.push(rel);
-    hash.update(rel).update(readFileSync(file));
+    hash.update(rel).update(normalisedText(file));
     let raw: unknown;
     try {
       raw = readYaml(file);
@@ -80,7 +89,7 @@ export function loadContent(contentDir: string = DEFAULT_CONTENT_DIR): LoadResul
     const file = join(chaptersDir, name);
     const rel = `${CHAPTERS_DIR}/${name}`;
     files.push(rel);
-    hash.update(rel).update(readFileSync(file));
+    hash.update(rel).update(normalisedText(file));
     let raw: unknown;
     try {
       raw = readYaml(file);
