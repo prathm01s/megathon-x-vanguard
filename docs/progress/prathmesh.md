@@ -29,6 +29,8 @@
   - Facilitator classroom discussion guides for Chapter 2.
 - **Demo Seed Script (`scripts/seed.ts`):** Implemented cohort simulation for 1 NGO and 40 students utilizing Samarth's engine and bot strategies (`balanced`, `all-cash`, `all-equity`). Generated `supabase/seed.sql` (1,700 lines of verified test data).
 
+- **Merged into `main`** (2026-10-10). Review fixes in your paths are listed in `docs/requests/prathmesh.md` ("From the merge review"); open items are 17–22.
+
 ## In progress
 
 - (All priority tasks completed and verified with passing tests and builds)

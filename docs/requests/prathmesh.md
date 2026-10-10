@@ -71,3 +71,45 @@ chapterId })` with `SIM_STRATEGIES` from `@toss/engine` to generate varied, real
     `auction_bid`, `auction_won`, `pool_joined`. Use `chapterResultRecords(result, turn)` from
     `@toss/engine` for `chapter_end` and `persona_shift` in single-player saves.
     `toDecisionLog` no longer returns a `chapter_end` for the `chapter_complete` event.
+
+## From the merge review (2026-10-10, Samarth, at the user's request)
+
+Your branch is merged into `main`. While reviewing the merged code I fixed what blocked the app or
+the demo, and list the rest here for you to decide. Fixed in your paths (please review the
+commits):
+
+- **`proxy.ts`:** every page returned 500 without Supabase env. The session refresh now runs only
+  when `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are set.
+- **`lib/data/supabase.ts`:** `flushDecisionQueue` threw outside the try/catch, which was an
+  unhandled rejection on every turn without Supabase. It's now guarded.
+- **`join/page.tsx`:** merge conflict with Pragya. I kept your page; signup now goes to `/mindset`
+  (§4.2), and redirects use `@/i18n/navigation` so the locale is kept.
+- **`scripts/seed.ts` → `supabase/seed.sql`:**
+  - it failed on `db reset` (no `auth.users` rows);
+  - the mindset answer ids didn't exist, so every score was 0;
+  - there was no post-check, and it used `Math.random` / `Date.now`.
+
+  Rewritten, keeping your design, with demo logins (password `TossLifeDemo-2026`, admin
+  `facilitator@demo.tosslife.invalid`). It's covered by `supabase/tests/seed.test.ts`, which also
+  checks that every stats view is scoped to the admin's org. Your views were already correct.
+
+Open for you:
+
+17. **Atomic code redemption.** `redeemStudentCode` checks then updates, so concurrent
+    redemptions of one code can both succeed. Suggest a SECURITY DEFINER RPC that does
+    `update student_codes set status='active', redeemed_by=…, redeemed_at=now() where code_hash=$1
+and status='pending' and (expires_at is null or expires_at > now()) returning org_id, group_id`,
+    and only creates the account if a row came back (or creates it first and deletes it on a miss).
+    Add rate limiting (§4.3: 5/min per IP/device), e.g. a small `redeem_attempts` table, because
+    in-memory maps don't survive across Edge/serverless instances.
+18. **Personal learners with an email can't log in by username:** `signUpPersonal` uses the real
+    email as the auth email, but `loginUser` maps a username to `@STUDENT_EMAIL_DOMAIN`. Either
+    always use the synthetic email (and keep the real one as a recovery email), or look up the
+    email by username server-side.
+19. `loginUser` sends students to `/play`. A student without a game should go to `/mindset`.
+20. The unused `supabase/functions/redeem-code` uses `deno.land/std@0.177` and `esm.sh` imports.
+    Either delete it, or switch it to the `deno.json` + `npm:` style that `room-action` uses.
+21. **`pnpm db:types` once Docker runs**, so the room tables get types (the room client casts until
+    then).
+22. **Your progress note mentions IndexedDB**, but the offline queue is localStorage. That's fine
+    for now; just keep the note accurate.

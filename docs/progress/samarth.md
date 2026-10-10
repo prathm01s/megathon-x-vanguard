@@ -25,10 +25,13 @@
   - `/dev/sim` lab and the full `/dev/content` browser (checked in headless Chromium); `pnpm bench`.
   - 144 tests in the repo (engine 111, supabase 16, web 10, content 7); Playwright smoke passes.
 
+- **Merge session** (2026-10-10, at the user's request): merged all branches into `main`,
+  resolved the `join/page.tsx` conflict, reviewed the merged code by running it (the ch2 flow in
+  Chromium), fixed 8 integration bugs (see `handoff.md` §9), and wrote `status.md`. 151 tests.
+
 ## In progress
 
-- Nothing. Waiting for review of PRs `samarth/engine-modules` → `main`, then
-  `samarth/room-server`.
+- Nothing. Everything is merged into `main`.
 
 ## Blocked
 

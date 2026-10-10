@@ -19,6 +19,8 @@
 - AppShell header update (`components/ui/app-shell.tsx`): added profile navigation shortcut alongside the language switcher.
 - Public join route updated (`(public)/join/page.tsx`): provides direct access to personal mindset flow and Student Code preview.
 
+- **Merged into `main`** (2026-10-10). Engine-v2 integration fixes to your screens are listed in `docs/requests/pragya.md` ("From the merge review"); open items are 18–24.
+
 ## In progress
 
 - Regional translations (Telugu UI strings & ch2 content) and PWA setup (§15.7 items 11–12).

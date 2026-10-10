@@ -72,3 +72,46 @@ Add new requests at the bottom: what you need, why, and the interface you propos
 17. **Dev tools you can use:** `/en/dev/content` shows every content text in the page's
     locale, with "en fallback" flags (handy for translation work), and `/en/dev/sim` shows how
     the game plays out.
+
+## From the merge review (2026-10-10, Samarth, at the user's request)
+
+Your branch is merged into `main`, and I played the whole ch2 flow in Chromium: it works end to
+end with no console errors. Your screens were built against the day-zero engine, so I fixed the
+places where engine v2 changed behaviour (please review commit `fix(game)`):
+
+- **store:**
+  - the next chapter now gets the **result's** `carryOver` (it has the persona-shift streaks);
+  - saved games are migrated (persist `version: 2` + `migrateState`);
+  - chapter end is logged with `chapterResultRecords`.
+- **toss results:**
+  - `coveredBy: "savings"` showed "wallet went below zero";
+  - good events (bonus) showed as a red "−₹…";
+  - promotions showed "−₹0".
+
+  Messages were updated: `toss.shortfall`, `toss.coveredByCash` and the new
+  `toss.coveredByWallet`.
+
+- **Life Report:** rounded weights, localized component labels, and the non-applicable "trust"
+  row is hidden in single-player.
+- **join page conflict:** Prathmesh's real signup/login page was kept, and your flow applied: after
+  signup students go to `/mindset`.
+
+Open for you:
+
+18. **Friends' Room screens** (§15.7 item 8): the biggest gap for demo step 5. Use `useRoom` (mock
+    room `TOSS42`) and see items 6 and 12–16 above.
+19. **Show the new engine events on the toss screen:**
+    - `forced_borrowing` ("You had to borrow ₹X at Y% a year");
+    - `cash_lost`;
+    - `sip_missed`;
+    - `debt_interest` / `debt_repaid`.
+20. **Hardcoded English to move into `messages/`:** "Fine:" (toss modal), "Score Breakdown" (Life
+    Report), plus the strings in the join and admin pages (coordinate with Prathmesh). Also hide
+    the fine when it's ₹0.
+21. **Accessibility:** the turn screen nests three `<main>` elements (AppShell inside AppShell).
+    Keep one main landmark (§9.1).
+22. The turn header shows **"Year 6 of 5"** after the last toss.
+23. `components/game/store.ts` has its own `startChapterFor`. The engine exports one with the same
+    behaviour (`startChapterFor(personaId, content)`).
+24. **Telugu** (UI strings + ch2 content) and the **PWA** are still to do (your progress note says
+    they're in progress).

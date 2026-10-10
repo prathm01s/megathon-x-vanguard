@@ -4,8 +4,8 @@ _Life tosses the coin. Your choices decide where it lands._
 
 A multiplayer, mobile-first life-simulation game that teaches financial literacy to Grade 11–12
 students, delivered through NGOs in Hyderabad. Built for the Vanguard India community-stewardship
-hackathon. The full spec is in [`CLAUDE.md`](./CLAUDE.md); what has been built so far is in
-[`handoff.md`](./handoff.md).
+hackathon. The full spec is in [`CLAUDE.md`](./CLAUDE.md). **Current state, how to run it and next
+steps: [`status.md`](./status.md)**; detail and history per person: [`handoff.md`](./handoff.md).
 
 ## Prerequisites
 

@@ -1,6 +1,7 @@
 # Handoff — Toss Life
 
-_Last updated: 2026-10-10 (after Samarth's room-server session)._
+_Last updated: 2026-10-10 (evening), after merging all three branches into `main`. For a shorter
+overview — what's built, how to run it, next steps — read [`status.md`](./status.md)._
 
 This file records what has been built so far, how to run it, which decisions were made and what
 comes next. **Read [`CLAUDE.md`](./CLAUDE.md) first.** It is the spec, and it wins over this
@@ -18,8 +19,20 @@ file. The original pitch is `Toss Life.pdf`.
    14–18. Covers the rooms migration + RLS, the `room-action` Edge Function, the realtime `useRoom`
    backend, the PGlite test harness, the `/dev/sim` lab, the `/dev/content` browser and the engine
    benchmark. Details in §3.4–§3.6.
+4. **Prathmesh — platform** (branch `prathmesh/platform-auth-db-dashboard`): auth server
+   actions, generated DB types, the stats-views migration, Supabase persistence with an offline
+   cache, the join/login page, the NGO dashboard, the `redeem-code` Edge Function, the demo seed,
+   and CI activated. Details in §3.1, §3.5, §3.6.
+5. **Pragya — student screens** (branch `pragya/mindset-turn-screen`): the Money Mindset Check
+   (pre/post + "how you changed"), persona reveal, Life Ladder, chapter intro, turn screen, shop,
+   amount picker, coin toss with sound, scam cards + Red Flags, Life Report, profile and technique
+   visuals. Details in §3.5.
+6. **Merge + review into `main`** (Samarth's session, on request): all branches merged, one
+   conflict resolved, and the merged app reviewed by running it (including playing ch2 end to end
+   in Chromium). Eight integration bugs fixed, listed in §9. `status.md` written.
 
-From now on, each person works only in their own paths (§15.3).
+From now on, each person works only in their own paths (§15.3), on `<name>/<task>` branches with
+PRs into `main`.
 
 ---
 
@@ -32,26 +45,29 @@ From now on, each person works only in their own paths (§15.3).
 | `pnpm content:build`                           | ✅ writes `packages/content/dist/content.json` + 17 JSON Schemas      |
 | `pnpm lint`                                    | ✅ no errors, no warnings                                             |
 | `pnpm typecheck`                               | ✅ all packages + scripts                                             |
-| `pnpm test`                                    | ✅ **144 tests** in 22 files (engine 111, DB/room server 16, web 10, content 7) |
-| `pnpm build`                                   | ✅ Next.js production build, every locale prerendered                 |
-| `pnpm dev` → `/`, `/en`, `/ur`, `/te/play`, …  | ✅ all return 200; `/ur` has `dir="rtl"` (checked on day zero)        |
+| `pnpm test`                                    | ✅ **151 tests** in 23 files (engine 111, DB/room/seed 22, web 10, content 8) |
+| `pnpm build`                                   | ✅ Next.js production build, 93 pages prerendered                     |
+| `pnpm dev` without Supabase env                | ✅ all 17 student/public/NGO/dev routes return 200 (was **500 everywhere** after the merge, fixed) |
+| Student flow in a real browser                 | ✅ mindset → persona → ladder → ch2 intro → 5 tosses with events and scams → Red Flags → Life Report, **0 console errors** (headless Chromium, Pixel 5) |
 | `pnpm sim --runs 300`                          | ✅ meets the §10 balance targets (see §7.1 for the table)             |
 | `pnpm bench`                                   | ✅ a ch2 turn ≈ 0.09 ms on a laptop, ≈ 0.4 ms estimated on a mid-range phone (budget 50 ms) |
-| Migrations + RLS                               | ✅ both migrations apply and their RLS is tested on **PGlite (Postgres 18)** in `pnpm test`. ⚠️ Not yet run on a real Supabase stack (Docker was off) |
+| Migrations + RLS                               | ✅ all 3 migrations apply, and their RLS is tested on **PGlite (Postgres 18)** in `pnpm test`. ⚠️ Not yet run on a real Supabase stack (Docker was off) |
+| Demo seed + stats views                        | ✅ `supabase/seed.sql` applies on all migrations; the admin sees 35 students and every stats view returns the class; students see none of it |
 | Room server (`room-action` Edge Function)      | ✅ end-to-end tests on PGlite; ✅ `pnpm functions:smoke` runs the built bundle under **Deno 2.9** + postgres.js over the Postgres wire. ⚠️ Not deployed (no Supabase Cloud project yet) |
 | `pnpm test:e2e` (Playwright)                   | ✅ 2 smoke tests pass (Chromium, Pixel 5 viewport)                    |
 | `/dev/sim`, `/dev/content`                     | ✅ checked in headless Chromium: simulation runs, inspector updates, no console errors |
-| Git                                            | ✅ `main` = day zero. `samarth/engine-modules` (3 commits) and `samarth/room-server` (4 more, stacked) pushed, waiting for review |
-| CI on GitHub                                   | ⚠️ **not active yet**: the workflow is parked in `docs/pending/ci.yml` (see §8.3) |
+| Git                                            | ✅ every branch merged into `main` (§9) |
+| CI on GitHub                                   | ✅ active in `.github/workflows/ci.yml` (Prathmesh): lint, typecheck, tests; Playwright on PRs into `main` |
 
 ---
 
 ## 2. Get the code and run it
 
 The repo is `https://github.com/IIIT-ECell/megathon26-prajis` (CLAUDE.md §3.1 suggested a new
-`toss-life` repo, but the team's existing hackathon repo is used instead). `main` holds the day-zero
-skeleton, a single commit pushed directly because the repo was empty. **From now on, never commit
-to `main`.** Work on `<name>/<short-task>` branches and open small PRs (§15.1).
+`toss-life` repo, but the team's existing hackathon repo is used instead). `main` has everyone's
+merged work. **Never commit to `main` directly:** work on `<name>/<short-task>` branches and open
+small PRs (§15.1). Full run instructions, including Supabase mode and the demo logins, are in
+`status.md` §3.
 
 ```bash
 git clone https://github.com/IIIT-ECell/megathon26-prajis.git
@@ -63,8 +79,13 @@ pnpm content:build
 pnpm dev                     # http://localhost:3000 → /en
 ```
 
-Useful URLs: `/en` welcome · `/en/play` turn-screen placeholder (renders a real engine fixture) ·
-`/en/dev/content` content summary (dev only) · `/ur` to check RTL.
+Useful URLs (they work with no backend):
+- **Student flow:** `/en/mindset`, then the persona, ladder and chapter screens, `/en/play` and
+  `/en/report`.
+- **Other screens:** `/en/profile`, `/en/join` (signup/login), `/en/admin` (NGO dashboard; needs
+  Supabase for data).
+- **Dev tools:** `/en/dev/content`, `/en/dev/sim`.
+- **Right-to-left check:** `/ur`.
 
 Before every commit: `pnpm content:validate && pnpm lint && pnpm typecheck && pnpm test`.
 
@@ -81,10 +102,9 @@ Before every commit: `pnpm content:validate && pnpm lint && pnpm typecheck && pn
   bans `eval` / `new Function`), `.prettierrc`, `.editorconfig`, `.nvmrc` (24), `.gitattributes`,
   `.gitignore`, `.env.example` (exactly §3.4).
 - Root `vitest.config.ts` runs the `engine`, `content` and `web` projects together.
-- CI workflow (install → `content:validate` → `content:build` → lint → typecheck → test; a
-  Playwright job runs only on PRs into `main`) is written but **parked at `docs/pending/ci.yml`**.
-  See §8.3: someone whose GitHub credential has the `workflow` scope must move it to
-  `.github/workflows/ci.yml`.
+- **CI is active** in `.github/workflows/ci.yml` (Prathmesh): install → `content:validate` →
+  `content:build` → lint → typecheck → test. A Playwright job runs only on PRs into `main`. The
+  parked copy in `docs/pending/` was removed in the merge.
 - `README.md` (setup, layout, scripts, conventions).
 - `docs/requests/<owner>.md` (open asks per person) and `docs/progress/<name>.md`.
 
@@ -192,15 +212,50 @@ _Session 3 additions:_
 - i18n: `i18n/routing.ts` (en, te, hi, ur; Urdu is RTL), `i18n/request.ts` (missing keys fall back
   to English), `i18n/navigation.ts` (always use this `Link`, never `next/link`).
   Strings live in `messages/{en,te,hi,ur}.json`; only `en` is filled in.
-- Routes: `app/[locale]/(public)/page.tsx` (welcome, real), `(public)/join`, `(ngo)/admin`,
-  `(student)/play` and `dev/content` (placeholders).
+- Routes:
+  - `(public)/page.tsx`: welcome.
+  - `(public)/join` (Prathmesh): tabs for **NGO code** redemption (code, nickname, avatar,
+    password), **personal** signup and **log in**. After signup the student goes to `/mindset`
+    (§4.2).
+  - `(ngo)/admin` (Prathmesh): NGO signup when signed out; once signed in, the **overview** (seats,
+    engagement, health score, scam safety, learning gain), **codes** (bulk 1–50, labels, CSV export,
+    revoke), **students** (cohort table, password reset) and **discussion prompts**.
+  - `(student)/*` (Pragya): `mindset`, `mindset/post`, `mindset/changes`, `persona`, `ladder`,
+    `chapter/[chapterId]`, `play`, `report`, `profile`.
+  - `dev/*` (Samarth): `content`, `sim`.
+- **Student screens (Pragya, `components/game/`):**
+  - `store.ts`: a Zustand store, persisted to localStorage, that is the ONLY place screens call
+    the engine and the persistence API from. Every change is saved and logged as a
+    `DecisionRecord`.
+  - `mindset-check.tsx`, `mindset-changes.tsx`, `persona-reveal.tsx`, `life-ladder.tsx`,
+    `chapter-intro.tsx`.
+  - `turn-screen.tsx`: wallet (Amount + Real Value), tasks, holdings, SIPs and mentor tips. It is
+    driven by `getAvailableActions`.
+  - `shop-modal.tsx`, `amount-modal.tsx`.
+  - `toss-modal.tsx`: a 3D coin with Web-Audio sound (`lib/sound.ts`) and mute.
+  - `scam-modal.tsx`: the offer, then a Red Flags card.
+  - `life-report.tsx`: score breakdown, did well / could be better, What-if chart, Gyaan Check,
+    badges, persona shift.
+  - `profile.tsx`: Player ID, persona, badges.
+  - `technique-visuals.tsx`: all 7 visuals.
+  - `game-gate.tsx`: redirects when no game or mindset result exists.
+- **Auth (Prathmesh, `lib/auth/actions.ts`, server actions):** `redeemStudentCode`,
+  `signUpNgo`, `signUpPersonal`, `loginUser`, `signOutUser`, `generateStudentCodes`,
+  `revokeStudentCode`, `resetStudentPassword`. Students get a synthetic email
+  `<username>@STUDENT_EMAIL_DOMAIN`. `proxy.ts` refreshes the Supabase session cookie **only when
+  Supabase is configured** (fixed in the merge, §9).
 - Design system (Pragya): tokens in `app/globals.css` (warm cream, saffron, teal, plus
   `gain`/`loss`/`coin`, dark mode, reduced-motion handling), Nunito plus Noto Telugu, Devanagari and
   Naskh Arabic fonts, `components/ui/{button,card,app-shell,language-switcher,placeholder-screen}.tsx`,
   `components/game/money.tsx` (`MoneyPair` shows Amount + Real Value; `AssumedReturn` shows a
   return with the "assumed" chip). `components.json` is set up for `shadcn add`.
 - `lib/format.ts`: `₹1,00,000` Indian formatting from paise. `lib/content.ts`: the typed bundle.
-- **Persistence API (§15.4 D)**: `lib/data/` with types and a **localStorage mock**.
+- **Persistence API (§15.4 D, Prathmesh):** `lib/data/index.ts`:
+  - `useSession()` reads the Supabase user, profile and org (the mock student without Supabase).
+  - `lib/data/supabase.ts` writes mindset responses, playthroughs, decisions, chapter results and
+    badges. It caches everything in localStorage and queues decisions offline, flushing them when
+    online. Without Supabase it simply stays local.
+  - `lib/data/mock.ts` remains for tests.
 - **Room API (§15.4 E) — mock and realtime backends (Samarth):**
   - `lib/room/index.ts` exposes **`useRoom(code)`** (built on `useSyncExternalStore`) and
     `createRoom(chapterId)`. `useRoom` returns **your `RoomView`**: `me` with your full state,
@@ -221,7 +276,7 @@ _Session 3 additions:_
 - Supabase clients: `lib/supabase/client.ts` (browser) and `lib/supabase/server.ts` (server plus a
   service-role `createAdminClient`, both `server-only`).
 - Tests: Vitest with jsdom (`lib/format.test.ts`, `lib/room/backends.test.ts`) and Playwright
-  (`e2e/smoke.spec.ts`, Pixel 5 viewport).
+  (`e2e/smoke.spec.ts`, Pixel 5 viewport). No component tests for the student screens yet.
 
 ### 3.6 Database (`supabase/`, Prathmesh; room tables and the room server: Samarth)
 
@@ -233,7 +288,24 @@ _Session 3 additions:_
   **RLS is on for every table**: students see their own rows, admins see their org's rows.
   It also adds a trigger that stops clients changing role, org, username or Player ID, and two
   RPCs: `create_organization` (NGO signup) and `respond_to_join_request`.
-- `packages/db-types` holds a **placeholder** `Database` type until `pnpm db:types` runs.
+- **`packages/db-types` (Prathmesh)** holds full `Database` types (tables, the stats views,
+  RPCs, enums), written by hand from the migrations. They don't cover the room tables yet:
+  regenerate with `pnpm db:types` once local Supabase runs.
+- **`migrations/20261010000001_stats_views.sql` (Prathmesh):** 7 dashboard views: `org_seats_v`,
+  `org_engagement_v`, `org_persona_distribution_v`, `org_learning_gain_v`, `org_scam_stats_v`,
+  `org_chapter_stats_v` and `org_student_detail_v`. Each one filters on the caller being the org's
+  admin (`admin_user_id = auth.uid()`), which matters because views run with the owner's rights.
+  This is tested in `tests/seed.test.ts`.
+- **`functions/redeem-code/` (Prathmesh):** an Edge Function version of code redemption with
+  in-memory rate limiting. **The app currently uses the `redeemStudentCode` server action
+  instead** (see §8).
+- **`seed.sql` (generated by `scripts/seed.ts`, Prathmesh; fixed in the merge):**
+  - the demo NGO "Hyderabad Youth Empowerment Trust", 40 seats (35 redeemed, 3 pending,
+    2 expired) and two batches;
+  - 35 students who played ch2 with the engine's bots, with pre/post Mindset Checks, decisions,
+    results and badges;
+  - **logins for everyone**, password `TossLifeDemo-2026`; the admin is
+    `facilitator@demo.tosslife.invalid`.
 - **`migrations/20261010010000_rooms_init.sql` (Samarth):** rooms, room_members, room_views,
   loans, auctions, bid_pools, bid_pool_members and bids.
   - `rooms.state` (the full `RoomState`, the source of truth) and `rooms.seed` are **never readable
@@ -256,7 +328,8 @@ _Session 3 additions:_
   `asAnon`), so migrations and RLS are tested in `pnpm test` without Docker. Test files:
   `migrations.test.ts`, `accounts-smoke.test.ts` (Prathmesh's migration: it applies, and the signup
   RPC, column trigger and profile isolation work), `room-server.test.ts` (end to end through RLS),
-  and `deno-smoke.ts` (`pnpm functions:smoke`).
+  `seed.test.ts` (the demo seed applies; stats views are scoped to the admin's org) and
+  `deno-smoke.ts` (`pnpm functions:smoke`).
 
 ---
 
@@ -342,20 +415,44 @@ _Session 3 (Samarth):_
 34. **Windfall saved** = money moved into savings or investments in the decide phase right after
     the windfall (capped at the windfall).
 
+_Prathmesh / Pragya (from their branches):_
+
+35. **Code redemption and signup are Next server actions** using the service-role client
+    (`lib/auth/actions.ts`), not Edge Functions. The `redeem-code` function exists but is unused.
+36. **The persistence layer is local-first:** every save goes to localStorage first, then to
+    Supabase; decisions queue offline. Without Supabase the game is fully local.
+37. **The student game session lives in one Zustand store** (`components/game/store.ts`),
+    persisted to localStorage under `toss-life:game:v1` (persist version 2 since the merge).
+38. **Screens render only after the saved game has loaded** from the device (`GameGate` in
+    `game-gate.tsx`), which avoids server-render flashes. It doesn't redirect anywhere.
+
+_Merge (2026-10-10):_
+
+39. **Content version ignores line endings** (decision for cross-platform saves; see §9).
+40. **The app must run with no Supabase env.** That is the default for local work, the mocks and
+    CI e2e, so anything that creates a Supabase client must check the env first.
+
 ---
 
-## 5. Not done yet (simplified or stubbed)
+## 5. Not done yet
 
-Each of these is marked `TODO(<owner>)` in the code:
-
-- **Samarth:**
-  - Deploying the room server (needs the Supabase Cloud project) and a real two-phone test.
-  - Rooms in ch3a/ch3b/ch4 are implemented but only testable once those chapters have content.
-- **Platform (Prathmesh):** auth flows, `redeem-code` and admin Edge Functions, real persistence
-  with an IndexedDB offline queue, stats views, the dashboard, `scripts/seed.ts` (stub, but it can
-  now use `playChapter`), and Supabase session refresh in `proxy.ts`.
-- **UI (Pragya):** every real screen, animations, translations and the PWA (§9.4; nothing is set
-  up yet).
+- **Everyone:** nothing has run against a real Supabase project. There's no cloud project yet,
+  and local Supabase needs Docker.
+- **Samarth:** deploy the room server and run a two-phone test. Rooms in ch3a/ch3b/ch4 are
+  implemented but only testable once those chapters have content.
+- **Prathmesh:**
+  - atomic, rate-limited code redemption (§8);
+  - the email/username login gap;
+  - `pnpm db:types` with the room tables;
+  - a Playwright test of the full demo path (§13);
+  - Vercel + Supabase Cloud deployment.
+- **Pragya:**
+  - the **Friends' Room screens** (the biggest gap for demo step 5);
+  - Telugu translations;
+  - the PWA;
+  - showing the new engine events (forced borrowing, cash lost, missed SIP) on the toss screen;
+  - moving hardcoded English into `messages/`;
+  - the small UI fixes in §8.
 
 ---
 
@@ -363,10 +460,10 @@ Each of these is marked `TODO(<owner>)` in the code:
 
 | Who           | Start with                                                                                                         |
 | ------------- | ------------------------------------------------------------------------------------------------------------------ |
-| **Anyone**    | Review and merge `samarth/engine-modules` → `main`, then `samarth/room-server` → `main`. Turn on branch protection for `main` (require PR + passing CI). |
-| **Samarth**   | Deploy the room server once Supabase Cloud exists; help fill ch1/ch3 content numbers; the team decision in §7.2. Open items in `docs/requests/samarth.md`. |
-| **Prathmesh** | Activate CI first (§8.3, and add `pnpm functions:build` before tests). Your migration already passes on PGlite: use `supabase/tests/harness.ts` for RLS tests, then confirm on Docker (`pnpm db:start && pnpm db:reset && pnpm db:types`). Then auth and the public screens (§15.6 items 2–5). See `docs/requests/prathmesh.md` items 12–16. |
-| **Pragya**    | `docs/requests/pragya.md`, then the mindset check, persona reveal and turn screen against the fixtures and `lib/data` mock (§15.7 items 2–5). The **Friends' Room UI can start now** against `useRoom` (room `TOSS42`): it returns your redacted `RoomView` (requests 12–17). |
+| **Everyone**  | Pull `main` and branch from it. Turn on branch protection for `main` (require PR + passing CI). Read `status.md`. |
+| **Prathmesh** | 1) Supabase Cloud project + `supabase db push` + seed + Vercel env (demo steps 1, 2, 6 depend on it). 2) Atomic code-redemption RPC with rate limiting. 3) Fix login for personal learners with an email. 4) `pnpm db:types` incl. room tables. 5) Playwright demo-path test. See `docs/requests/prathmesh.md` 17–22. |
+| **Pragya**    | 1) **Friends' Room screens** on `useRoom` (room `TOSS42` in mock mode): lobby, loans, Trust Score, auction + pool bid, mutual-fund reveal, emotes, turn timer. 2) Telugu translation of UI + ch2 content. 3) New toss events + strings into `messages/`. 4) PWA. See `docs/requests/pragya.md` 18–24. |
+| **Samarth**   | Deploy `room-action` once the cloud project exists, then a two-phone room test; help Pragya wire the room screens; ch1/ch3 numbers; the team decision in §7.2. |
 
 ---
 
@@ -399,23 +496,31 @@ team wants all-cash to fail the chapter, the cleanest lever is `growth` weight o
 ## 8. Known issues
 
 1. **Migrations haven't run on a real Supabase stack yet.** They pass on PGlite (Postgres 18),
-   including RLS, but PGlite only emulates Supabase's `auth` schema and roles. Run
+   including RLS and the seed, but PGlite only emulates Supabase's `auth` schema and roles. Run
    `pnpm db:start && pnpm db:reset` once Docker is available.
-2. **Git identity on the setup machine.** The first commit was made with that machine's git
+2. **Code redemption is not atomic** (Prathmesh): the `redeemStudentCode` server action checks
+   `status = 'pending'` and then updates, so two students racing on one code can both succeed.
+   There is also no rate limiting on that path; the unused `redeem-code` function rate-limits in
+   memory only.
+3. **Personal learners who sign up with an email can't log in by username** (Prathmesh): signup
+   uses the real email as the auth email, but login maps a username to the synthetic domain.
+4. **Turn screen UI** (Pragya):
+   - three nested `<main>` elements (AppShell inside AppShell; WCAG needs one);
+   - "Year 6 of 5" after the last toss;
+   - missed optional tasks show "Fine: ₹0";
+   - hardcoded English ("Fine:", "Score Breakdown", and the join/admin text).
+5. **`components/game/store.ts` duplicates `startChapterFor`** (the engine exports one).
+6. **Git identity on the setup machine.** The first commit was made with that machine's git
    config (`samarth-singla`). Everyone should check `git config user.name` / `user.email` on their
    own machine before committing.
-3. **CI is parked, not running.** The first push was rejected: the setup machine's GitHub
-   credential has no `workflow` scope, and GitHub blocks adding `.github/workflows/*` without it.
-   Fix: from a machine or token with that scope, run
-   `git mv docs/pending/ci.yml .github/workflows/ci.yml`, commit on a branch and open a PR. If you
-   use the Git Credential Manager, `gh auth refresh -s workflow` or signing in again with a token
-   that includes `workflow` is enough. Until then, run the checks locally before every PR.
-4. **Root config was touched by the room-server session** (Prathmesh's area): `package.json`
+7. **Pushing changes to `.github/workflows/` needs a GitHub login with the `workflow` scope.**
+   The setup machine's credential doesn't have it (`gh auth refresh -s workflow` fixes that).
+8. **Root config was touched by the room-server session** (Prathmesh's area): `package.json`
    scripts/devDeps, `vitest.config.ts`, `eslint.config.mjs`, `.gitignore`, `supabase/config.toml`.
    All are additive and listed in `docs/requests/prathmesh.md` item 12 for review.
-5. **`pnpm functions:smoke` downloads Deno 2.9.6 via npx on first run** (about 100 MB), and Playwright
+9. **`pnpm functions:smoke` downloads Deno 2.9.6 via npx on first run** (about 100 MB), and Playwright
    needs `pnpm --filter web exec playwright install chromium` once per machine.
-6. **Shell tool quirk on this Windows machine** (only matters if you use Claude Code here): bash
+10. **Shell tool quirk on this Windows machine** (only matters if you use Claude Code here): bash
    heredocs that contain an apostrophe fail in the Bash tool, so write files with the editor or
    Write tool instead.
 
@@ -425,3 +530,30 @@ scammer-friend; `/dev/sim`; performance check; Playwright smoke has now been run
 _Resolved in session 2:_ the debt fund now can lose money in a storm (decision 15); balance meets
 §10 (§7); What if no longer shows ₹0 changes (decision 24); personas whose start chapter is
 disabled start in the first enabled one (`startChapterFor`).
+
+---
+
+## 9. The merge into `main` (2026-10-10)
+
+**Order:** `main` (day zero + `deliverables/M1.pdf`) ← `samarth/room-server` (contains
+`samarth/engine-modules`) ← `prathmesh/platform-auth-db-dashboard` ← `pragya/mindset-turn-screen`.
+
+**Conflict:** only `apps/web/app/[locale]/(public)/join/page.tsx`, which Pragya had turned into a
+placeholder with a disabled code box while Prathmesh (the owner) built the real
+signup/login. I kept Prathmesh's page and applied Pragya's intent: new students go to
+`/mindset`. Redirects now use the locale-aware router, so a Telugu user stays on `/te`.
+
+**Integration bugs found by running the merged app, and fixed** (each in its own commit):
+
+| Commit | Fix |
+| --- | --- |
+| `fix(content)` | `contentVersion` differed between Windows (CRLF) and Linux (LF) for identical content; the hash now uses normalised text, with a regression test |
+| `fix(web)` | `proxy.ts` 500'd **every page** without Supabase env; the decision-queue flush threw an unhandled rejection every turn without Supabase |
+| `fix(game)` | store: wrong `carryOver` source (persona shifts never triggered), no migration of old saves. Toss screen: emergency-fund-covered events shown as "wallet below zero", bonuses shown as red losses. Life Report: unrounded weights and a "trust 0/0" row |
+| `fix(seed)` | `seed.sql` failed on `db reset` (no `auth.users`); invalid mindset ids gave every student 0; no post-check; non-deterministic. Regenerated, with tests |
+| `style` | Prettier on the merged files (formatting only) |
+| `chore(ci)` | removed the duplicate parked CI file |
+
+**Verified after the merge:** content valid · lint clean · typecheck clean · 151/151 tests ·
+production build (93 pages) · Playwright 2/2 · Deno smoke 7/7 · the full ch2 student flow in
+headless Chromium with 0 console errors.
