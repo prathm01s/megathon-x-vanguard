@@ -1,3 +1,4 @@
+import { User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
@@ -8,12 +9,21 @@ export function AppShell({ children }: { children: ReactNode }) {
   const t = useTranslations("app");
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
-      <header className="flex items-center justify-between gap-3 px-4 py-3">
+      <header className="flex items-center justify-between gap-2 px-4 py-3">
         <Link href="/" className="flex min-h-11 items-center gap-2 text-lg font-extrabold">
           <span aria-hidden className="inline-block size-7 rounded-full bg-coin shadow-inner" />
           {t("name")}
         </Link>
-        <LanguageSwitcher />
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher />
+          <Link
+            href="/profile"
+            aria-label="Profile"
+            className="grid size-11 place-items-center rounded-lg border-2 border-border bg-card text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+          >
+            <User className="size-5" />
+          </Link>
+        </div>
       </header>
       <main className="flex flex-1 flex-col px-4 pb-6">{children}</main>
     </div>
