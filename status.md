@@ -10,15 +10,18 @@ For the spec read [`CLAUDE.md`](./CLAUDE.md). For per-person detail, decisions a
 
 `main` now contains everyone's work: Samarth's engine, content system and Friends' Room server;
 Prathmesh's accounts, database, stats views, persistence and NGO dashboard; and Pragya's student
-screens, from the Money Mindset Check to the Life Report. A student can play **Chapter 2 end to
+screens (Money Mindset Check to Life Report), plus her first Friends' Room screens, partial Telugu
+and a basic PWA. A student can play **Chapter 2 end to
 end in the browser today**: mindset check → persona → Life Ladder → chapter intro → five yearly
 tosses with life events, a market storm and scam calls → Red Flags → Life Report with Health
 Score, What-if and Gyaan Check. This was verified by actually playing it in headless Chromium,
 with zero console errors. Everything passes: lint, typecheck, 151 tests, the production build,
 the Playwright smoke tests and the Deno smoke test of the room server. Not done yet:
 
-- the **Friends' Room screens**;
-- **Telugu translations** and the **PWA**;
+- **wiring the Friends' Room screens to the real room:** they render the live room but still
+  simulate turns, loans and emotes locally;
+- **completing Telugu** (about half of the UI; no game content yet);
+- **real offline play**;
 - running against a **real Supabase project**: nothing is deployed, and every database check so
   far ran on PGlite (Postgres 18).
 
@@ -26,33 +29,33 @@ the Playwright smoke tests and the Deno smoke test of the room server. Not done 
 
 ## 2. What is built
 
-| Area                              | Owner                       | State                                                                                                                                                                                        | Where                                                                                 |
-| --------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| Monorepo, tooling, CI workflow    | Prathmesh                   | ✅ CI active in `.github/workflows/ci.yml` (lint, typecheck, tests; Playwright on PRs to `main`)                                                                                             | root                                                                                  |
-| Content system + all game content | Samarth / Pragya            | ✅ Zod schemas, validator, build, watch; **ch2 complete**, ch1/ch3a/ch3b/ch4 outlines (disabled)                                                                                             | `packages/content`, `content/`                                                        |
-| Simulation engine                 | Samarth                     | ✅ month-by-month turns, SIPs/RD, events, scams, loans, auctions, Health Score, Life Report, What-if (5 transforms), bots, save migration. Balance meets §10                                 | `packages/engine`                                                                     |
-| Friends' Room rules + server      | Samarth                     | ✅ rules in the engine; `room-action` Edge Function; rooms migration with RLS; realtime client; per-player redacted views                                                                    | `packages/engine/src/room*.ts`, `supabase/functions/room-action`, `apps/web/lib/room` |
-| Accounts & auth                   | Prathmesh                   | ✅ code redemption, personal signup, login, NGO signup, admin code tools, password reset (server actions)                                                                                    | `apps/web/lib/auth/actions.ts`, `(public)/join`, `(ngo)/admin`                        |
-| Database                          | Prathmesh (+ Samarth rooms) | ✅ 3 migrations: accounts + RLS, stats views (7), rooms + RLS. Generated DB types                                                                                                            | `supabase/migrations`, `packages/db-types`                                            |
-| Persistence                       | Prathmesh                   | ✅ Supabase persistence with a localStorage cache and offline decision queue; falls back to local without Supabase                                                                           | `apps/web/lib/data`                                                                   |
-| NGO dashboard                     | Prathmesh                   | ✅ overview, codes (bulk, labels, CSV, revoke), students (+ password reset), discussion prompts                                                                                              | `apps/web/app/[locale]/(ngo)/admin`                                                   |
-| Demo seed                         | Prathmesh (fixed in merge)  | ✅ 1 NGO, 40 seats, 35 students with played games, pre/post mindset, logins                                                                                                                  | `scripts/seed.ts` → `supabase/seed.sql`                                               |
-| Student screens                   | Pragya                      | ✅ mindset (pre/post + "how you changed"), persona, ladder, chapter intro, turn screen, shop, amount picker, coin toss with sound, scam + Red Flags, Life Report, profile, technique visuals | `apps/web/components/game`, `(student)/*`                                             |
-| Friends' Room screens             | Pragya                      | ❌ not started; the `useRoom` hook and mock room (`TOSS42`) are ready                                                                                                                        | —                                                                                     |
-| Translations (Telugu first)       | Pragya                      | ❌ English only (`te.json` has only the language name)                                                                                                                                       | `apps/web/messages`, `content/`                                                       |
-| PWA / offline install             | Pragya                      | ❌ not started                                                                                                                                                                               | —                                                                                     |
-| Dev tools                         | Samarth                     | ✅ `/dev/content` (content browser), `/dev/sim` (balancing lab)                                                                                                                              | `apps/web/app/[locale]/dev`                                                           |
+| Area                              | Owner                       | State                                                                                                                                                                                                                                                                            | Where                                                                                 |
+| --------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Monorepo, tooling, CI workflow    | Prathmesh                   | ✅ CI active in `.github/workflows/ci.yml` (lint, typecheck, tests; Playwright on PRs to `main`)                                                                                                                                                                                 | root                                                                                  |
+| Content system + all game content | Samarth / Pragya            | ✅ Zod schemas, validator, build, watch; **ch2 complete**, ch1/ch3a/ch3b/ch4 outlines (disabled)                                                                                                                                                                                 | `packages/content`, `content/`                                                        |
+| Simulation engine                 | Samarth                     | ✅ month-by-month turns, SIPs/RD, events, scams, loans, auctions, Health Score, Life Report, What-if (5 transforms), bots, save migration. Balance meets §10                                                                                                                     | `packages/engine`                                                                     |
+| Friends' Room rules + server      | Samarth                     | ✅ rules in the engine; `room-action` Edge Function; rooms migration with RLS; realtime client; per-player redacted views                                                                                                                                                        | `packages/engine/src/room*.ts`, `supabase/functions/room-action`, `apps/web/lib/room` |
+| Accounts & auth                   | Prathmesh                   | ✅ code redemption, personal signup, login, NGO signup, admin code tools, password reset (server actions)                                                                                                                                                                        | `apps/web/lib/auth/actions.ts`, `(public)/join`, `(ngo)/admin`                        |
+| Database                          | Prathmesh (+ Samarth rooms) | ✅ 3 migrations: accounts + RLS, stats views (7), rooms + RLS. Generated DB types                                                                                                                                                                                                | `supabase/migrations`, `packages/db-types`                                            |
+| Persistence                       | Prathmesh                   | ✅ Supabase persistence with a localStorage cache and offline decision queue; falls back to local without Supabase                                                                                                                                                               | `apps/web/lib/data`                                                                   |
+| NGO dashboard                     | Prathmesh                   | ✅ overview, codes (bulk, labels, CSV, revoke), students (+ password reset), discussion prompts                                                                                                                                                                                  | `apps/web/app/[locale]/(ngo)/admin`                                                   |
+| Demo seed                         | Prathmesh (fixed in merge)  | ✅ 1 NGO, 40 seats, 35 students with played games, pre/post mindset, logins                                                                                                                                                                                                      | `scripts/seed.ts` → `supabase/seed.sql`                                               |
+| Student screens                   | Pragya                      | ✅ mindset (pre/post + "how you changed"), persona, ladder, chapter intro, turn screen, shop, amount picker, coin toss with sound, scam + Red Flags, Life Report, profile, technique visuals                                                                                     | `apps/web/components/game`, `(student)/*`                                             |
+| Friends' Room screens             | Pragya                      | 🟡 **prototype**: room hub (join/create), room screen (turn sync header, timer, shared toss, wallet, Trust), loan modal, auction modal, emotes. Renders the live `useRoom` data, but **turns, loans, bids and emotes are simulated locally**, not sent through `useRoom` actions | `apps/web/components/multiplayer`, `(student)/room`                                   |
+| Translations (Telugu first)       | Pragya                      | 🟡 `te.json`: 123 of 240 UI strings translated (another 44 keys don't match an English key, so they're never shown). Game content YAML not yet translated                                                                                                                        | `apps/web/messages`, `content/`                                                       |
+| PWA / offline install             | Pragya                      | 🟡 manifest, icon and a service worker (production only). Offline navigation falls back to the cached `/` page, so offline single-player isn't there yet                                                                                                                         | `apps/web/public`                                                                     |
+| Dev tools                         | Samarth                     | ✅ `/dev/content` (content browser), `/dev/sim` (balancing lab)                                                                                                                                                                                                                  | `apps/web/app/[locale]/dev`                                                           |
 
 ### Against the demo script (CLAUDE.md §13)
 
-| #   | Demo step                                                                               | Status                                                                                |
-| --- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| 1   | NGO admin signs up and generates a Student Code                                         | 🟡 UI and server actions built; needs a Supabase project to run                       |
-| 2   | Student redeems the code, sets a nickname, takes the Mindset Check, gets a persona      | 🟡 redemption needs Supabase; mindset → persona ✅ verified in browser                |
-| 3   | Plays Chapter 2: fees, FD vs SIP, medical emergency, market storm, OTP scam             | ✅ verified in browser                                                                |
-| 4   | Life Report with Real Value and a What-if replay                                        | ✅ verified in browser                                                                |
-| 5   | Friends' Room, 1 human + bots: loan with interest, Pool Bid auction, mutual-fund reveal | 🟡 server + mock + tests ✅; **screens missing**                                      |
-| 6   | Admin dashboard: the student, persona distribution, scam fall rates, learning gain      | 🟡 UI + stats views ✅ (views tested on the seeded class); needs Supabase to run live |
+| #   | Demo step                                                                               | Status                                                                                         |
+| --- | --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| 1   | NGO admin signs up and generates a Student Code                                         | 🟡 UI and server actions built; needs a Supabase project to run                                |
+| 2   | Student redeems the code, sets a nickname, takes the Mindset Check, gets a persona      | 🟡 redemption needs Supabase; mindset → persona ✅ verified in browser                         |
+| 3   | Plays Chapter 2: fees, FD vs SIP, medical emergency, market storm, OTP scam             | ✅ verified in browser                                                                         |
+| 4   | Life Report with Real Value and a What-if replay                                        | ✅ verified in browser                                                                         |
+| 5   | Friends' Room, 1 human + bots: loan with interest, Pool Bid auction, mutual-fund reveal | 🟡 server + mock + tests ✅; screens exist, but they're **not yet wired** to `useRoom` actions |
+| 6   | Admin dashboard: the student, persona distribution, scam fall rates, learning gain      | 🟡 UI + stats views ✅ (views tested on the seeded class); needs Supabase to run live          |
 
 ---
 
@@ -75,9 +78,9 @@ game saves to the browser, rooms run in memory with bots, and the login uses a m
 Good for building and demoing screens.
 
 - **Play:** `/en/mindset` → persona → ladder → chapter 2 → `/en/play` → `/en/report`
-- **Friends' Room data:** room code `TOSS42` through `useRoom` (no screen yet)
+- **Friends' Room:** `/en/room` (hub) and `/en/room/TOSS42` (a mock room at turn 3)
 - **Dev tools:** `/en/dev/content`, `/en/dev/sim`
-- **Other languages:** `/te/...` (English text until translated), `/ur/...` (right-to-left)
+- **Other languages:** `/te/...` (about half translated), `/ur/...` (right-to-left)
 
 ### Mode B: with Supabase (accounts, dashboard, real rooms)
 
@@ -113,7 +116,7 @@ pnpm sim -- --runs 300              # balance report      ·   pnpm bench   # en
 
 **Results on merged `main` (this review):** content valid (0 warnings) · lint 0 issues ·
 typecheck 0 errors · **151/151 tests** (engine 111, DB/room/seed 22, web 10, content 8) · build
-OK (93 pages) · Playwright 2/2 · Deno smoke 7/7 · a ch2 turn ≈ 0.4 ms estimated on a mid-range
+OK (107 pages) · Playwright 2/2 · Deno smoke 7/7 · a ch2 turn ≈ 0.4 ms estimated on a mid-range
 phone (budget 50 ms).
 
 ---
@@ -124,6 +127,8 @@ phone (budget 50 ms).
 
 - **Order:** `main` (day zero + M1 PDF) ← `samarth/room-server` (which includes
   `samarth/engine-modules`) ← `prathmesh/platform-auth-db-dashboard` ← `pragya/mindset-turn-screen`.
+- **A second Pragya merge:** she pushed one more commit (Friends' Room UI, Telugu, PWA) while
+  the review was running, and it was merged too.
 - **One textual conflict, `apps/web/app/[locale]/(public)/join/page.tsx`:** kept Prathmesh's real
   signup/login page (his path) and applied Pragya's flow: after signing up, students go to the
   Money Mindset Check, as §4.2 requires. Redirects now keep the locale.
@@ -131,17 +136,19 @@ phone (budget 50 ms).
 
 **Bugs found by testing the merged code, and fixed:**
 
-| Problem                                      | Effect before the fix                                                                                               | Fix                                                                                                       |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `proxy.ts` always created a Supabase client  | **every page returned 500** without Supabase env (local dev, mocks, CI e2e)                                         | refresh the session only when Supabase is configured                                                      |
-| Decision-queue flush not guarded             | an unhandled promise rejection on every turn without Supabase                                                       | caught; records stay queued locally                                                                       |
-| Content hash read raw bytes                  | Windows (CRLF) and Linux (LF) got **different `contentVersion`s** for the same content                              | hash line-ending-normalised text; regression test                                                         |
-| Game store carried the state's `carryOver`   | persona shifts across chapters could never trigger                                                                  | uses the chapter result's `carryOver`                                                                     |
-| Game store saved v1 states with no migration | old saved games would crash                                                                                         | zustand persist v2 + the engine's `migrateState`                                                          |
-| Toss results: `coveredBy: "savings"`         | "Your emergency fund covered this" was shown as "wallet went below zero"                                            | handled; messages updated for engine v2                                                                   |
-| Toss results: good events                    | a **bonus showed as a red "−₹…"**; a promotion as "−₹0"                                                             | gains shown as "+", no amount for income changes                                                          |
-| Life Report score breakdown                  | "27.77777777777778 pts" and a "trust 0 / 0" row in single-player                                                    | rounded, localized labels, hides non-applicable parts                                                     |
-| `supabase/seed.sql`                          | **failed on `db reset`** (no `auth.users`); invalid mindset answer ids → all scores 0; no post-check; `Math.random` | regenerated: logins, valid pre/post answers, deterministic, nicknames only; seed + stats-view tests added |
+| Problem                                      | Effect before the fix                                                                                                                       | Fix                                                                                                       |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `proxy.ts` always created a Supabase client  | **every page returned 500** without Supabase env (local dev, mocks, CI e2e)                                                                 | refresh the session only when Supabase is configured                                                      |
+| Decision-queue flush not guarded             | an unhandled promise rejection on every turn without Supabase                                                                               | caught; records stay queued locally                                                                       |
+| Content hash read raw bytes                  | Windows (CRLF) and Linux (LF) got **different `contentVersion`s** for the same content                                                      | hash line-ending-normalised text; regression test                                                         |
+| Game store carried the state's `carryOver`   | persona shifts across chapters could never trigger                                                                                          | uses the chapter result's `carryOver`                                                                     |
+| Game store saved v1 states with no migration | old saved games would crash                                                                                                                 | zustand persist v2 + the engine's `migrateState`                                                          |
+| Toss results: `coveredBy: "savings"`         | "Your emergency fund covered this" was shown as "wallet went below zero"                                                                    | handled; messages updated for engine v2                                                                   |
+| Toss results: good events                    | a **bonus showed as a red "−₹…"**; a promotion as "−₹0"                                                                                     | gains shown as "+", no amount for income changes                                                          |
+| Life Report score breakdown                  | "27.77777777777778 pts" and a "trust 0 / 0" row in single-player                                                                            | rounded, localized labels, hides non-applicable parts                                                     |
+| `supabase/seed.sql`                          | **failed on `db reset`** (no `auth.users`); invalid mindset answer ids → all scores 0; no post-check; `Math.random`                         | regenerated: logins, valid pre/post answers, deterministic, nicknames only; seed + stats-view tests added |
+| Friends' Room screen                         | **`/room/<code>` stuck on "Loading…" forever** (state captured the null hydration snapshot); built against the old room API (3 type errors) | live room as the base, local overrides on top; `RoomView`/`PublicMember` types; yearly bank rate          |
+| Service worker                               | registered in dev too, and caches `/_next/` cache-first → **stale code during development**                                                 | registered in production builds only                                                                      |
 
 **Housekeeping:** Prettier applied to the merged files (a formatting-only commit); the duplicate
 parked CI file was removed.
@@ -166,8 +173,18 @@ parked CI file was removed.
 
 **Pragya**
 
-1. **Friends' Room screens** (§15.7 item 8) are the biggest gap for demo step 5. Everything they
-   need is ready in `useRoom` (see `docs/requests/pragya.md` 6–17).
+1. **Wire the Friends' Room screens to `useRoom` actions** (the biggest gap for demo step 5).
+   Today:
+   - "Submit turn" only bumps a local counter;
+   - loan offers are fabricated locally;
+   - accept and repay move no money;
+   - peer emotes are simulated.
+
+   Replace these with `actions.submitTurn` / `requestLoan` / `offerLoan` / `acceptLoan` /
+   `repayLoan` / `placeBid` / `joinPool` / `react` and read everything from `room`. Also remove
+   the hardcoded values: "₹54,000 paid", "Tasks Paid (4/5)", "Gold is up +4%" (shown next to a
+   real CRASH), the 5-turn total, and "Income …/yr", which shows the monthly figure.
+
 2. **New engine events aren't shown on the toss screen:** `forced_borrowing` ("you had to borrow…"),
    `cash_lost`, `sip_missed`, `debt_interest`/`debt_repaid`.
 3. **Hardcoded English in components:** "Fine:", "Score Breakdown" and the join/admin text, so
@@ -190,13 +207,13 @@ parked CI file was removed.
 
 ## 6. Next steps (in priority order for the demo)
 
-| #   | What                                                                                                                                                | Who                                    |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| 1   | Create the Supabase Cloud project; push migrations; seed; deploy `room-action`; set Vercel env                                                      | Prathmesh (+ Samarth for the function) |
-| 2   | Friends' Room screens on `useRoom`: lobby, loan request/offer/accept/repay, Trust Score, auction + pool bid, mutual-fund reveal, emotes, turn timer | Pragya                                 |
-| 3   | Atomic, rate-limited code redemption (RPC); the username/email login fix                                                                            | Prathmesh                              |
-| 4   | Telugu translation of UI strings + ch2 content; then the PWA install and offline single-player                                                      | Pragya                                 |
-| 5   | Show the new engine events on the toss screen; move hardcoded strings into `messages/`                                                              | Pragya                                 |
-| 6   | Playwright test of the full demo path (§13) against local Supabase                                                                                  | Prathmesh                              |
-| 7   | A real two-phone Friends' Room test once deployed; content numbers for ch1/ch3                                                                      | Samarth                                |
-| 8   | Team: confirm return rates with Vanguard mentors; decide whether all-cash should fail ch2                                                           | All                                    |
+| #   | What                                                                                                               | Who                                    |
+| --- | ------------------------------------------------------------------------------------------------------------------ | -------------------------------------- |
+| 1   | Create the Supabase Cloud project; push migrations; seed; deploy `room-action`; set Vercel env                     | Prathmesh (+ Samarth for the function) |
+| 2   | Wire the Friends' Room screens to `useRoom` actions (they render, but simulate locally)                            | Pragya                                 |
+| 3   | Atomic, rate-limited code redemption (RPC); the username/email login fix                                           | Prathmesh                              |
+| 4   | Finish Telugu (117 missing UI keys, 44 orphan keys, ch2 content); real offline single-player in the service worker | Pragya                                 |
+| 5   | Show the new engine events on the toss screen; move hardcoded strings into `messages/`                             | Pragya                                 |
+| 6   | Playwright test of the full demo path (§13) against local Supabase                                                 | Prathmesh                              |
+| 7   | A real two-phone Friends' Room test once deployed; content numbers for ch1/ch3                                     | Samarth                                |
+| 8   | Team: confirm return rates with Vanguard mentors; decide whether all-cash should fail ch2                          | All                                    |

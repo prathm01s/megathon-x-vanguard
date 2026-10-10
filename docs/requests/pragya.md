@@ -115,3 +115,44 @@ Open for you:
     behaviour (`startChapterFor(personaId, content)`).
 24. **Telugu** (UI strings + ch2 content) and the **PWA** are still to do (your progress note says
     they're in progress).
+
+## From the second merge review (2026-10-10): your Friends' Room / Telugu / PWA commit
+
+Merged into `main`. Fixed so it compiles and renders (commit `fix(room-ui)`):
+
+- **`/room/<code>` never left "Loading…".** `useState(baseRoom)` captured the hydration snapshot
+  (null). The screen now uses the live room and keeps only local overrides.
+- **Types updated to the current API:** `RoomView`, `PublicMember`. `me` now comes from `useRoom`:
+  the signed-in player, with their own state.
+- **The loan modal read `ratePerTurn`**; bank rates are `ratePerYear` since engine v2.
+- **The service worker is registered in production only.** It serves `/_next/` cache-first,
+  which pinned stale code under `next dev`.
+
+Open for you:
+
+25. **Wire the room screen to `useRoom` actions** instead of local simulation. Map each control
+    to its action:
+
+    | Control                 | Action                                                                                   |
+    | ----------------------- | ---------------------------------------------------------------------------------------- |
+    | Submit                  | `actions.submitTurn()`                                                                   |
+    | Loans                   | `requestLoan`, `offerLoan({ loanId: requestId, … })`, `acceptLoan(offerId)`, `repayLoan` |
+    | Auction                 | `placeBid`, `createPool` / `joinPool`                                                    |
+    | Emotes                  | `react(emoteId)`; show `room.reactions`                                                  |
+    | Timer                   | `tick()` when your countdown hits 0 (deadline = `content.multiplayer.turnTimerSeconds`)  |
+    | Your own turn decisions | `actions.act(action)`, the same as single-player                                         |
+
+    Read everything from `room`: pending loans, `myDebts`, `auction`, `tosses`, `me.state` for the
+    tasks. Errors are `RoomError.code`.
+
+26. **Remove hardcoded values in `room-screen.tsx`:** "₹54,000 paid", "Tasks Paid (4/5)", "Gold is
+    up +4%, inflation is at 6%" (it sits next to a real toss, e.g. CRASH), `totalTurns = 5`,
+    fallback cash/income numbers. "Income: …/yr" shows the **monthly** income.
+27. **The lobby's ready toggle** should call `actions.ready()` (the host's `ready()` starts the
+    game).
+28. **Mutual-fund reveal:** show `content.auctions.mutualFundRevealText` when a pool wins (item 6).
+29. **Telugu:** 117 English keys have no Telugu yet, and 44 Telugu keys (e.g. `mindset.subtitle`,
+    `persona.title`) don't exist in `en.json`, so they're never shown; rename them to the real keys.
+    The game content YAML needs `te:` strings too: `/te/dev/content` lists every untranslated item.
+30. **Offline single-player:** cache the student routes plus the content bundle, so a game can be
+    played offline after one visit (§9.4). Today offline navigation falls back to `/`.

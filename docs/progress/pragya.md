@@ -21,6 +21,8 @@
 
 - **Merged into `main`** (2026-10-10). Engine-v2 integration fixes to your screens are listed in `docs/requests/pragya.md` ("From the merge review"); open items are 18–24.
 
+- **Second merge** (2026-10-10): Friends' Room UI, Telugu and PWA merged into `main`. Fixes and open items are 25–30 in `docs/requests/pragya.md`.
+
 ## In progress
 
 - Regional translations (Telugu UI strings & ch2 content) and PWA setup (§15.7 items 11–12).

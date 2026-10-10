@@ -30,6 +30,9 @@ file. The original pitch is `Toss Life.pdf`.
 6. **Merge + review into `main`** (Samarth's session, on request): all branches merged, one
    conflict resolved, and the merged app reviewed by running it (including playing ch2 end to end
    in Chromium). Eight integration bugs fixed, listed in §9. `status.md` written.
+7. **Pragya — Friends' Room UI, Telugu, PWA** (one more commit on her branch, merged during the
+   same review): the room hub and room screen, loan, auction and emotes components,
+   `messages/te.json`, plus the manifest and service worker. Integration fixes are in §9.
 
 From now on, each person works only in their own paths (§15.3), on `<name>/<task>` branches with
 PRs into `main`.
@@ -38,26 +41,26 @@ PRs into `main`.
 
 ## 1. Status at a glance
 
-| Check                                          | Result                                                               |
-| ---------------------------------------------- | -------------------------------------------------------------------- |
-| `pnpm install`                                 | ✅ pnpm 12, 5 workspace projects                                      |
-| `pnpm content:validate`                        | ✅ 21 files valid, **no warnings** (the debt-fund guardrail issue is fixed) |
-| `pnpm content:build`                           | ✅ writes `packages/content/dist/content.json` + 17 JSON Schemas      |
-| `pnpm lint`                                    | ✅ no errors, no warnings                                             |
-| `pnpm typecheck`                               | ✅ all packages + scripts                                             |
-| `pnpm test`                                    | ✅ **151 tests** in 23 files (engine 111, DB/room/seed 22, web 10, content 8) |
-| `pnpm build`                                   | ✅ Next.js production build, 93 pages prerendered                     |
-| `pnpm dev` without Supabase env                | ✅ all 17 student/public/NGO/dev routes return 200 (was **500 everywhere** after the merge, fixed) |
-| Student flow in a real browser                 | ✅ mindset → persona → ladder → ch2 intro → 5 tosses with events and scams → Red Flags → Life Report, **0 console errors** (headless Chromium, Pixel 5) |
-| `pnpm sim --runs 300`                          | ✅ meets the §10 balance targets (see §7.1 for the table)             |
-| `pnpm bench`                                   | ✅ a ch2 turn ≈ 0.09 ms on a laptop, ≈ 0.4 ms estimated on a mid-range phone (budget 50 ms) |
-| Migrations + RLS                               | ✅ all 3 migrations apply, and their RLS is tested on **PGlite (Postgres 18)** in `pnpm test`. ⚠️ Not yet run on a real Supabase stack (Docker was off) |
-| Demo seed + stats views                        | ✅ `supabase/seed.sql` applies on all migrations; the admin sees 35 students and every stats view returns the class; students see none of it |
-| Room server (`room-action` Edge Function)      | ✅ end-to-end tests on PGlite; ✅ `pnpm functions:smoke` runs the built bundle under **Deno 2.9** + postgres.js over the Postgres wire. ⚠️ Not deployed (no Supabase Cloud project yet) |
-| `pnpm test:e2e` (Playwright)                   | ✅ 2 smoke tests pass (Chromium, Pixel 5 viewport)                    |
-| `/dev/sim`, `/dev/content`                     | ✅ checked in headless Chromium: simulation runs, inspector updates, no console errors |
-| Git                                            | ✅ every branch merged into `main` (§9) |
-| CI on GitHub                                   | ✅ active in `.github/workflows/ci.yml` (Prathmesh): lint, typecheck, tests; Playwright on PRs into `main` |
+| Check | Result |
+| --- | --- |
+| `pnpm install` | ✅ pnpm 12, 5 workspace projects |
+| `pnpm content:validate` | ✅ 21 files valid, **no warnings** (the debt-fund guardrail issue is fixed) |
+| `pnpm content:build` | ✅ writes `packages/content/dist/content.json` + 17 JSON Schemas |
+| `pnpm lint` | ✅ no errors, no warnings |
+| `pnpm typecheck` | ✅ all packages + scripts |
+| `pnpm test` | ✅ **151 tests** in 23 files (engine 111, DB/room/seed 22, web 10, content 8) |
+| `pnpm build` | ✅ Next.js production build, 107 pages prerendered |
+| `pnpm dev` without Supabase env | ✅ all 17 student/public/NGO/dev routes return 200 (was **500 everywhere** after the merge, fixed) |
+| Student flow in a real browser | ✅ mindset → persona → ladder → ch2 intro → 5 tosses with events and scams → Red Flags → Life Report, **0 console errors** (headless Chromium, Pixel 5) |
+| `pnpm sim --runs 300` | ✅ meets the §10 balance targets (see §7.1 for the table) |
+| `pnpm bench` | ✅ a ch2 turn ≈ 0.09 ms on a laptop, ≈ 0.4 ms estimated on a mid-range phone (budget 50 ms) |
+| Migrations + RLS | ✅ all 3 migrations apply, and their RLS is tested on **PGlite (Postgres 18)** in `pnpm test`. ⚠️ Not yet run on a real Supabase stack (Docker was off) |
+| Demo seed + stats views | ✅ `supabase/seed.sql` applies on all migrations; the admin sees 35 students and every stats view returns the class; students see none of it |
+| Room server (`room-action` Edge Function) | ✅ end-to-end tests on PGlite; ✅ `pnpm functions:smoke` runs the built bundle under **Deno 2.9** + postgres.js over the Postgres wire. ⚠️ Not deployed (no Supabase Cloud project yet) |
+| `pnpm test:e2e` (Playwright) | ✅ 2 smoke tests pass (Chromium, Pixel 5 viewport) |
+| `/dev/sim`, `/dev/content` | ✅ checked in headless Chromium: simulation runs, inspector updates, no console errors |
+| Git | ✅ every branch merged into `main` (§9) |
+| CI on GitHub | ✅ active in `.github/workflows/ci.yml` (Prathmesh): lint, typecheck, tests; Playwright on PRs into `main` |
 
 ---
 
@@ -211,7 +214,8 @@ _Session 3 additions:_
   Next 16 renamed `middleware.ts` to **`proxy.ts`**, which does the locale routing.
 - i18n: `i18n/routing.ts` (en, te, hi, ur; Urdu is RTL), `i18n/request.ts` (missing keys fall back
   to English), `i18n/navigation.ts` (always use this `Link`, never `next/link`).
-  Strings live in `messages/{en,te,hi,ur}.json`; only `en` is filled in.
+  Strings live in `messages/{en,te,hi,ur}.json`. `en` is complete; `te` has 123 of 240 keys,
+  plus 44 orphan keys that are never shown; `hi` and `ur` aren't started.
 - Routes:
   - `(public)/page.tsx`: welcome.
   - `(public)/join` (Prathmesh): tabs for **NGO code** redemption (code, nickname, avatar,
@@ -221,7 +225,16 @@ _Session 3 additions:_
     engagement, health score, scam safety, learning gain), **codes** (bulk 1–50, labels, CSV export,
     revoke), **students** (cohort table, password reset) and **discussion prompts**.
   - `(student)/*` (Pragya): `mindset`, `mindset/post`, `mindset/changes`, `persona`, `ladder`,
-    `chapter/[chapterId]`, `play`, `report`, `profile`.
+    `chapter/[chapterId]`, `play`, `report`, `profile`, `room` (join/create hub) and
+    `room/[code]`.
+- **Friends' Room screens (Pragya, `components/multiplayer/`):**
+  - `room-screen.tsx`: turn-sync header, timer, shared-toss card, wallet + Trust, actions.
+  - `room-lobby.tsx`, `loan-modal.tsx`, `auction-modal.tsx`, `room-emotes.tsx`.
+  - **This is a prototype.** It renders the live `useRoom` data, but turns, loans, bids and emotes
+    are simulated in local state, not sent through `useRoom` actions (§8).
+- **PWA (Pragya):** `public/manifest.json`, `public/icon.svg` and `public/sw.js`, which serves
+  `/_next/` cache-first and falls back to `/` for offline navigation. The service worker is
+  registered in production builds only.
   - `dev/*` (Samarth): `content`, `sim`.
 - **Student screens (Pragya, `components/game/`):**
   - `store.ts`: a Zustand store, persisted to localStorage, that is the ONLY place screens call
@@ -447,9 +460,9 @@ _Merge (2026-10-10):_
   - a Playwright test of the full demo path (§13);
   - Vercel + Supabase Cloud deployment.
 - **Pragya:**
-  - the **Friends' Room screens** (the biggest gap for demo step 5);
-  - Telugu translations;
-  - the PWA;
+  - **wiring the Friends' Room screens to `useRoom` actions** (the biggest gap for demo step 5);
+  - finishing Telugu (UI + content);
+  - real offline single-player;
   - showing the new engine events (forced borrowing, cash lost, missed SIP) on the toss screen;
   - moving hardcoded English into `messages/`;
   - the small UI fixes in §8.
@@ -458,12 +471,12 @@ _Merge (2026-10-10):_
 
 ## 6. Next steps per person
 
-| Who           | Start with                                                                                                         |
-| ------------- | ------------------------------------------------------------------------------------------------------------------ |
-| **Everyone**  | Pull `main` and branch from it. Turn on branch protection for `main` (require PR + passing CI). Read `status.md`. |
+| Who | Start with |
+| --- | --- |
+| **Everyone** | Pull `main` and branch from it. Turn on branch protection for `main` (require PR + passing CI). Read `status.md`. |
 | **Prathmesh** | 1) Supabase Cloud project + `supabase db push` + seed + Vercel env (demo steps 1, 2, 6 depend on it). 2) Atomic code-redemption RPC with rate limiting. 3) Fix login for personal learners with an email. 4) `pnpm db:types` incl. room tables. 5) Playwright demo-path test. See `docs/requests/prathmesh.md` 17–22. |
-| **Pragya**    | 1) **Friends' Room screens** on `useRoom` (room `TOSS42` in mock mode): lobby, loans, Trust Score, auction + pool bid, mutual-fund reveal, emotes, turn timer. 2) Telugu translation of UI + ch2 content. 3) New toss events + strings into `messages/`. 4) PWA. See `docs/requests/pragya.md` 18–24. |
-| **Samarth**   | Deploy `room-action` once the cloud project exists, then a two-phone room test; help Pragya wire the room screens; ch1/ch3 numbers; the team decision in §7.2. |
+| **Pragya** | 1) **Wire the room screens to `useRoom` actions** (submitTurn, loans, bids, pools, react, tick) and remove the hardcoded values. 2) Finish Telugu (UI keys + ch2 content). 3) New toss events + strings into `messages/`. 4) Offline single-player in `sw.js`. See `docs/requests/pragya.md` 18–30. |
+| **Samarth** | Deploy `room-action` once the cloud project exists, then a two-phone room test; help Pragya wire the room screens; ch1/ch3 numbers; the team decision in §7.2. |
 
 ---
 
@@ -510,17 +523,22 @@ team wants all-cash to fail the chapter, the cleanest lever is `growth` weight o
    - missed optional tasks show "Fine: ₹0";
    - hardcoded English ("Fine:", "Score Breakdown", and the join/admin text).
 5. **`components/game/store.ts` duplicates `startChapterFor`** (the engine exports one).
-6. **Git identity on the setup machine.** The first commit was made with that machine's git
+6. **The Friends' Room UI is not wired to the room** (Pragya): it simulates turns, loans and
+   emotes locally, and has hardcoded values (§3.5). The engine, mock and server behind
+   `useRoom` are complete and tested.
+7. **The service worker isn't an offline game yet** (Pragya): offline navigation falls back to
+   the cached `/` page.
+8. **Git identity on the setup machine.** The first commit was made with that machine's git
    config (`samarth-singla`). Everyone should check `git config user.name` / `user.email` on their
    own machine before committing.
-7. **Pushing changes to `.github/workflows/` needs a GitHub login with the `workflow` scope.**
+9. **Pushing changes to `.github/workflows/` needs a GitHub login with the `workflow` scope.**
    The setup machine's credential doesn't have it (`gh auth refresh -s workflow` fixes that).
-8. **Root config was touched by the room-server session** (Prathmesh's area): `package.json`
+10. **Root config was touched by the room-server session** (Prathmesh's area): `package.json`
    scripts/devDeps, `vitest.config.ts`, `eslint.config.mjs`, `.gitignore`, `supabase/config.toml`.
    All are additive and listed in `docs/requests/prathmesh.md` item 12 for review.
-9. **`pnpm functions:smoke` downloads Deno 2.9.6 via npx on first run** (about 100 MB), and Playwright
+11. **`pnpm functions:smoke` downloads Deno 2.9.6 via npx on first run** (about 100 MB), and Playwright
    needs `pnpm --filter web exec playwright install chromium` once per machine.
-10. **Shell tool quirk on this Windows machine** (only matters if you use Claude Code here): bash
+12. **Shell tool quirk on this Windows machine** (only matters if you use Claude Code here): bash
    heredocs that contain an apostrophe fail in the Bash tool, so write files with the editor or
    Write tool instead.
 
@@ -553,7 +571,10 @@ signup/login. I kept Prathmesh's page and applied Pragya's intent: new students 
 | `fix(seed)` | `seed.sql` failed on `db reset` (no `auth.users`); invalid mindset ids gave every student 0; no post-check; non-deterministic. Regenerated, with tests |
 | `style` | Prettier on the merged files (formatting only) |
 | `chore(ci)` | removed the duplicate parked CI file |
+| `fix(room-ui)` | (second Pragya merge) `/room/<code>` stuck on "Loading…" forever (hydration snapshot captured in `useState`); 3 type errors against the current room API; the loan modal read a removed field; the service worker is now registered in production only |
 
-**Verified after the merge:** content valid · lint clean · typecheck clean · 151/151 tests ·
-production build (93 pages) · Playwright 2/2 · Deno smoke 7/7 · the full ch2 student flow in
-headless Chromium with 0 console errors.
+**Verified after the merge:**
+- content valid · lint clean · typecheck clean · 151/151 tests;
+- production build (107 pages) · Playwright 2/2 · Deno smoke 7/7;
+- the full ch2 student flow in headless Chromium, with 0 console errors;
+- the Friends' Room screens render the live mock room (`TOSS42`) in English and Telugu.
