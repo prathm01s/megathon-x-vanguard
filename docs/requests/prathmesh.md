@@ -115,3 +115,12 @@ Open for you — all resolved in session 2 & 3:
 
 Your track is in [`docs/plan-v2.md`](../plan-v2.md) (track P). Start with your contract in §2 so the
 others can build against it.
+
+## Dev server back on Turbopack (2026-10-11, Samarth)
+
+Commit `7a8ed87` changed `apps/web` `dev` to `next dev --webpack`. Tailwind 4 is wired only for
+Turbopack here (`turbopack.rules` in `next.config.ts` + `@tailwindcss/turbopack`); there is no
+PostCSS config, so under webpack the CSS is served unprocessed and every page renders unstyled.
+`dev` is plain `next dev` again. If Turbopack crashed on your machine (on Windows we've seen a
+one-off `0xc0000142` "node process exited" panic that a restart fixes), tell us; a webpack
+fallback would need `@tailwindcss/postcss` + `postcss.config.mjs`.
