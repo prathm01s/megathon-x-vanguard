@@ -8,6 +8,7 @@ id: ch3a-salaried
 enabled: true
 order: 3
 title: { en: "Path: Salaried" }
+scene: family-home
 ageRange: [28, 40]
 stage: { en: "Building a life" }
 turnUnit: year

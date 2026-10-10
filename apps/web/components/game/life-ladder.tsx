@@ -1,17 +1,18 @@
 "use client";
 
 import type { Chapter } from "@toss/content";
-import { CheckCircle2, Lock, Play, RotateCcw, Users } from "lucide-react";
+import { Lock, Play, RotateCcw } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { buttonVariants } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Link } from "@/i18n/navigation";
+import { GameButton } from "@/components/ui/game-button";
+import { Link, useRouter } from "@/i18n/navigation";
 import { content } from "@/lib/content";
+import { GAME_TEXT, INK, PANEL } from "@/lib/game-style";
 import { cn } from "@/lib/utils";
 import { GameGate } from "./game-gate";
 import { PersonaAvatar } from "./persona-reveal";
 import { startChapterFor, useGameStore } from "./store";
 import { useLocalize } from "./use-localize";
+import { LevelScene } from "./village/scenes";
 
 /** Groups chapters into rungs; career-choice siblings (ch3a / ch3b) share a rung. */
 function ladderRungs(chapters: Chapter[]): Chapter[][] {
@@ -27,7 +28,13 @@ function ladderRungs(chapters: Chapter[]): Chapter[][] {
   return rows.filter(Boolean);
 }
 
-/** Life Ladder map (§9.2 #8): chapters, locked / unlocked, and the career branch. */
+/** 0–3 stars from a chapter score: pass = 1, 75+ = 2, 90+ = 3. */
+function starsFor(result: { passed: boolean; healthScore: number } | undefined): number {
+  if (!result?.passed) return 0;
+  return result.healthScore >= 90 ? 3 : result.healthScore >= 75 ? 2 : 1;
+}
+
+/** The level map (§9.2 #8): one picture card per life stage, locked ahead, stars behind. */
 export function LifeLadder() {
   return (
     <GameGate>
@@ -56,49 +63,42 @@ function Ladder() {
   }
 
   const rows = ladderRungs(content.chapters);
+  const level = persona?.difficulty;
 
   return (
-    <section className="flex flex-col gap-4 py-4">
+    <section className="flex flex-col gap-3 py-3 pb-28">
       <header className="flex items-center gap-3">
         {persona && <PersonaAvatar hint={persona.avatarHint} className="size-14 ring-4" />}
-        <div>
-          <h1 className="text-2xl font-extrabold">{t("title")}</h1>
-          {persona && <p className="font-semibold text-muted-foreground">{l(persona.name)}</p>}
+        <div className="min-w-0">
+          <h1 className={cn(GAME_TEXT, "text-2xl leading-tight")}>{t("title")}</h1>
+          {persona && level && (
+            <p className="text-sm font-bold text-muted-foreground">
+              <span className="text-[#d4a017]" aria-hidden>
+                {"★".repeat(level.stars)}
+                {"☆".repeat(4 - level.stars)}
+              </span>{" "}
+              {l(persona.name)} · {l(level.label)}
+            </p>
+          )}
         </div>
       </header>
-      <p className="text-muted-foreground">{t("subtitle")}</p>
 
-      {/* Friends' Room Classroom Multiplayer Entry */}
-      <Card className="flex items-center justify-between p-3.5 border-2 border-primary/40 bg-primary/5">
-        <div className="flex items-center gap-3">
-          <span className="grid size-10 place-items-center rounded-xl bg-primary text-primary-foreground">
-            <Users className="size-5" />
-          </span>
-          <div>
-            <h2 className="text-sm font-extrabold text-foreground">Friends&apos; Room</h2>
-            <p className="text-xs text-muted-foreground">Play with classmates in lockstep turns</p>
-          </div>
-        </div>
-        <Link
-          href="/room"
-          className={cn(buttonVariants({ size: "default" }), "font-extrabold text-xs")}
-        >
-          Join Room
-        </Link>
-      </Card>
-
-      <ol className="relative flex flex-col gap-4 before:absolute before:inset-y-4 before:start-6 before:w-1 before:rounded-full before:bg-border">
+      <ol className="flex flex-col items-stretch">
         {rows.map((row, i) => (
-          <li key={i} className="relative">
-            {row.length > 1 && (
-              <p className="mb-2 ps-14 text-sm font-bold text-secondary">{t("choosePath")}</p>
+          <li key={i} className="flex flex-col items-stretch">
+            {i > 0 && (
+              <div aria-hidden className="mx-auto h-6 border-l-4 border-dashed border-[#94a3b8]" />
             )}
-            <div className={cn("grid gap-3", row.length > 1 && "grid-cols-2 ps-14")}>
+            {row.length > 1 && (
+              <p className={cn(GAME_TEXT, "mb-1 text-center text-base text-secondary")}>
+                {t("choosePath")}
+              </p>
+            )}
+            <div className={cn("grid gap-3", row.length > 1 ? "grid-cols-2" : "grid-cols-1")}>
               {row.map((c) => (
-                <ChapterRung
+                <LevelCard
                   key={c.id}
                   chapter={c}
-                  step={i + 1}
                   compact={row.length > 1}
                   unlocked={unlocked.has(c.id)}
                   inProgress={state?.chapterId === c.id && state.status !== "chapter_complete"}
@@ -111,7 +111,7 @@ function Ladder() {
 
       <Link
         href="/mindset/post"
-        className="text-center text-sm font-semibold text-primary underline underline-offset-4"
+        className="mt-2 text-center text-sm font-semibold text-primary underline underline-offset-4"
       >
         {t("retakeMindset")}
       </Link>
@@ -119,101 +119,94 @@ function Ladder() {
   );
 }
 
-function ChapterRung({
+function LevelCard({
   chapter,
-  step,
   compact,
   unlocked,
   inProgress,
 }: {
   chapter: Chapter;
-  step: number;
   compact: boolean;
   unlocked: boolean;
   inProgress: boolean;
 }) {
   const t = useTranslations("ladder");
+  const tv = useTranslations("village");
   const l = useLocalize();
+  const router = useRouter();
   const local = useGameStore((s) => s.results[chapter.id]);
   const saved = useGameStore((s) => s.savedChapters[chapter.id]);
   const result = local ?? saved;
   const playable = chapter.enabled && unlocked;
+  const stars = starsFor(result);
   const [from, to] = chapter.ageRange;
 
   return (
-    <div className={cn("flex gap-3", compact && "flex-col")}>
-      {!compact && (
-        <span
-          aria-hidden
-          className={cn(
-            "z-10 grid size-12 shrink-0 place-items-center rounded-full text-lg font-extrabold ring-4 ring-background",
-            result?.passed
-              ? "bg-gain text-primary-foreground"
-              : playable
-                ? "bg-coin"
-                : "bg-muted text-muted-foreground",
-          )}
-        >
-          {result?.passed ? (
-            <CheckCircle2 className="size-6" />
-          ) : playable ? (
-            step
-          ) : (
-            <Lock className="size-5" />
-          )}
-        </span>
+    <article
+      className={cn(
+        "relative overflow-hidden rounded-3xl border-[3px] shadow-md",
+        !playable && "opacity-75 grayscale",
       )}
-      <Card className={cn("flex-1 space-y-2", !playable && "opacity-70")}>
-        <div className="flex items-start justify-between gap-2">
-          <h2 className="font-bold leading-tight">{l(chapter.title)}</h2>
-          {!playable && (
-            <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground">
-              {chapter.enabled ? t("locked") : t("comingSoon")}
-            </span>
+      style={{ borderColor: INK, background: PANEL, color: INK }}
+    >
+      <div className="relative">
+        <LevelScene
+          scene={chapter.scene}
+          className={cn("block w-full", compact ? "h-24" : "h-32")}
+        />
+        <span
+          className={cn(
+            GAME_TEXT,
+            "absolute start-2 top-2 rounded-full border-2 bg-[#7c3aed] px-2 text-sm text-white",
           )}
+          style={{ borderColor: INK }}
+        >
+          {tv("townHall", { level: chapter.order })}
+        </span>
+        {stars > 0 && (
+          <span
+            className="absolute end-2 top-2 rounded-full border-2 bg-white px-1.5 text-base leading-6"
+            style={{ borderColor: INK }}
+            aria-label={t("passed", { score: result?.healthScore ?? 0 })}
+          >
+            <span className="text-[#f5a524]">{"★".repeat(stars)}</span>
+            <span className="text-[#cbd5e1]">{"★".repeat(3 - stars)}</span>
+          </span>
+        )}
+        {!playable && (
+          <span className="absolute inset-0 grid place-items-center">
+            <span
+              className="grid size-12 place-items-center rounded-full border-[3px] bg-white"
+              style={{ borderColor: INK }}
+            >
+              <Lock
+                className="size-6"
+                aria-label={chapter.enabled ? t("locked") : t("comingSoon")}
+              />
+            </span>
+          </span>
+        )}
+      </div>
+      <div className="flex flex-col gap-2 p-2.5">
+        <div className="flex items-baseline justify-between gap-2">
+          <h2 className={cn(GAME_TEXT, "truncate", compact ? "text-base" : "text-xl")}>
+            {l(chapter.title)}
+          </h2>
+          <span className="shrink-0 text-xs font-bold text-[#55658a]">
+            {from}–{to}
+          </span>
         </div>
-        <p className="text-sm text-muted-foreground">
-          {t("age", { from, to })} · {t("turns", { count: chapter.turns, unit: chapter.turnUnit })}
-        </p>
-        {result && (
-          <p className={cn("text-sm font-bold", result.passed ? "text-gain" : "text-primary")}>
-            {result.passed
-              ? t("passed", { score: result.healthScore })
-              : t("notPassed", { score: result.healthScore })}
-          </p>
-        )}
         {playable && (
-          <div className="space-y-1.5 pt-1">
-            {inProgress ? (
-              <Link href="/play" className={cn(buttonVariants(), "w-full")}>
-                <Play aria-hidden /> {t("continue")}
-              </Link>
-            ) : (
-              <Link
-                href={`/chapter/${chapter.id}`}
-                className={cn(
-                  buttonVariants({ variant: result ? "outline" : "default" }),
-                  "w-full",
-                )}
-              >
-                {result ? <RotateCcw aria-hidden /> : <Play aria-hidden />}
-                {result ? t("replay") : t("play")}
-              </Link>
-            )}
-            {chapter.id === "ch2-first-job" && (
-              <Link
-                href="/room"
-                className={cn(
-                  buttonVariants({ variant: "outline" }),
-                  "w-full text-xs font-bold border-primary/40 text-primary hover:bg-primary/5",
-                )}
-              >
-                <Users aria-hidden className="size-3.5" /> Friends&apos; Room (Multiplayer)
-              </Link>
-            )}
-          </div>
+          <GameButton
+            tone={inProgress ? "gold" : result ? "stone" : "green"}
+            className={cn("w-full", compact ? "min-h-11 text-base" : "min-h-12")}
+            onClick={() => router.push(inProgress ? "/play" : `/chapter/${chapter.id}`)}
+          >
+            {result && !inProgress ? <RotateCcw aria-hidden /> : <Play aria-hidden />}
+            {inProgress ? t("continue") : result ? t("replay") : t("play")}
+          </GameButton>
         )}
-      </Card>
-    </div>
+      </div>
+    </article>
   );
 }

@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { GameButton } from "@/components/ui/game-button";
 import { useRouter } from "@/i18n/navigation";
 import { content } from "@/lib/content";
-import { getAvailableActions, type ActionOption } from "@toss/engine";
+import { getAvailableActions, type ActionOption, type ChapterResult } from "@toss/engine";
 import { AmountModal } from "./amount-modal";
 import { GameGate } from "./game-gate";
 import { PersonaAvatar } from "./persona-reveal";
@@ -17,6 +17,7 @@ import { ShopModal } from "./shop-modal";
 import { useGameStore, type FastForwardSummary } from "./store";
 import { TossModal } from "./toss-modal";
 import { useLocalize } from "./use-localize";
+import { GuideInsights } from "./guide/insights";
 import { FastForwardModal } from "./village/fast-forward";
 import { InvestRail, isBuilt, SideStats, TaskSheet, VillageGround } from "./village/village";
 import { GAME_TEXT, INK } from "@/lib/game-style";
@@ -53,6 +54,7 @@ function Screen() {
   const [openTaskId, setOpenTaskId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [ffSummary, setFfSummary] = useState<FastForwardSummary | null>(null);
+  const [insight, setInsight] = useState<ChapterResult | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   function showToast(text: string) {
     setToast(text);
@@ -118,9 +120,11 @@ function Screen() {
     advance();
   }
 
+  // Meera explains the level first; the full report opens after.
   function handleFinishChapter() {
-    finishChapter();
-    router.push("/report");
+    const result = finishChapter();
+    if (result) setInsight(result);
+    else router.push("/report");
   }
 
   const openTask = state.tasks.find((x) => x.taskId === openTaskId);
@@ -290,6 +294,8 @@ function Screen() {
       {pendingScam && !lastTurn && !ffSummary && (
         <ScamModal pendingScam={pendingScam} state={state} onRespond={handleScamResponse} />
       )}
+
+      {insight && <GuideInsights result={insight} onDone={() => router.push("/report")} />}
 
       {ffSummary && (
         <FastForwardModal

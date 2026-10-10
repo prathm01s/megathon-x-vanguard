@@ -9,6 +9,7 @@ id: ch3b-business
 enabled: true
 order: 4
 title: { en: "Path: Business" }
+scene: shop
 ageRange: [28, 40]
 stage: { en: "Building a life" }
 turnUnit: year

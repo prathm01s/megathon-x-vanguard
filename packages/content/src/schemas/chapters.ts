@@ -72,6 +72,8 @@ export const chapterSchema = z.strictObject({
   enabled: z.boolean(),
   order: z.number().int().positive(),
   title: localizedStringSchema,
+  /** Picture for the chapter on the level map: campus, office, family-home, shop or sunset-home. */
+  scene: z.enum(["campus", "office", "family-home", "shop", "sunset-home"]).optional(),
   ageRange: z.tuple([z.number().int(), z.number().int()]),
   stage: localizedStringSchema,
   turnUnit: z.enum(["month", "year"]),

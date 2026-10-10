@@ -8,6 +8,7 @@ id: ch4-legacy
 enabled: true
 order: 5
 title: { en: "Legacy" }
+scene: sunset-home
 ageRange: [41, 60]
 stage: { en: "Looking ahead" }
 turnUnit: year

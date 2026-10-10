@@ -6,6 +6,7 @@ id: ch2-first-job
 enabled: true
 order: 2
 title: { en: "First Job", te: "మొదటి ఉద్యోగం" }
+scene: office
 ageRange: [22, 27]
 stage: { en: "Young adult", te: "యువత" }
 turnUnit: year

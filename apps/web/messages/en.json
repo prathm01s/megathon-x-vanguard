@@ -238,7 +238,10 @@
     "spottedTitle": "Nice catch!",
     "spottedBody": "You didn't fall for it. Here's what gave it away:",
     "redFlags": "Red flags",
-    "inGame": "In-game practice — not a real message."
+    "inGame": "In-game practice — not a real message.",
+    "guideIntro": "Psst! You just got {channel, select, call {a call} message {a message} app {an app notification} investment_listing {an investment offer} friend_offer {an offer from a friend} other {a message}}. Careful…",
+    "guideFell": "Oh no! That was a scam. Here's how to spot it next time.",
+    "guideSpotted": "Great catch! These were the red flags."
   },
   "result": {
     "title": "Chapter complete",
@@ -417,5 +420,18 @@
     "ffReport": "See my Life Report",
     "ffAnswer": "Answer the message",
     "ffContinue": "Continue"
+  },
+  "guide": {
+    "name": "Meera",
+    "tapForTip": "Meera, your guide. Tap for a tip.",
+    "tipBuild": "Tap a flag to build it. Pay what's due soon first!",
+    "tipInvest": "Money you won't need for years can grow. Try the Invest button.",
+    "tipScam": "If someone asks you to pay first to get money, it's a scam.",
+    "insightsTitle": "How this level went",
+    "insightsPassed": "Level complete with {score}/100! Here's what I noticed.",
+    "insightsNotPassed": "You scored {score}/100. So close! Here's what to try next time.",
+    "didWell": "What you did well",
+    "couldBeBetter": "Next time",
+    "seeReport": "See my full report"
   }
 }

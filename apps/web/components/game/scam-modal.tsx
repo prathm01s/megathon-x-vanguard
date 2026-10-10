@@ -3,12 +3,14 @@
 import { AlertOctagon, MessageSquare, PhoneCall, ShieldAlert, Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { GameButton } from "@/components/ui/game-button";
+import { GAME_TEXT } from "@/lib/game-style";
+import { cn } from "@/lib/utils";
 import { content } from "@/lib/content";
 import { formatPaise } from "@/lib/format";
 import { playAlertSound, playSuccessChime } from "@/lib/sound";
 import type { GameState, PendingScam } from "@toss/engine";
+import { GuideLine, GuideScene } from "./guide/guide";
 import { useLocalize } from "./use-localize";
 
 export interface ScamModalProps {
@@ -47,99 +49,89 @@ export function ScamModal({ pendingScam, state, onRespond }: ScamModalProps) {
       : Math.round(state.cash * scam.lossIfFallen.pct);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 animate-in fade-in duration-200">
-      <Card className="w-full max-w-sm space-y-4 rounded-2xl bg-card p-5 shadow-2xl border-2 border-primary/50 animate-in zoom-in-95">
-        {/* Scam disclaimer */}
-        <div className="flex items-center justify-between text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-          <span className="flex items-center gap-1 text-primary">
-            <AlertOctagon className="size-3.5" />
-            {t("incoming", { channel: scam.channel })}
-          </span>
-          <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] lowercase text-foreground">
-            {t("inGame")}
-          </span>
-        </div>
-
-        {!outcome ? (
-          /* Incoming scam offer card */
-          <div className="space-y-4">
-            <div className="rounded-xl border border-border bg-accent/20 p-3 space-y-2">
-              <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+    <GuideScene
+      mood={!outcome ? "alert" : outcome.falls ? "worried" : "cheer"}
+      label={t("incoming", { channel: scam.channel })}
+    >
+      {!outcome ? (
+        <div className="space-y-3">
+          <GuideLine>{t("guideIntro", { channel: scam.channel })}</GuideLine>
+          <div className="space-y-1.5 rounded-2xl border-2 border-[#1e2a4a]/25 bg-white p-3">
+            <div className="flex items-center justify-between gap-2 text-xs font-bold text-[#55658a]">
+              <span className="flex items-center gap-1.5">
                 {scam.channel === "call" ? (
-                  <PhoneCall className="size-4 text-primary animate-pulse" />
+                  <PhoneCall className="size-4 animate-pulse text-[#dc2626]" />
                 ) : (
-                  <MessageSquare className="size-4 text-secondary" />
+                  <MessageSquare className="size-4 text-[#0f766e]" />
                 )}
-                <span>{t("from", { sender: l(scam.sender) })}</span>
-              </div>
-              <p className="text-sm font-medium leading-relaxed text-foreground">
-                &ldquo;{l(scam.offerText)}&rdquo;
-              </p>
+                {t("from", { sender: l(scam.sender) })}
+              </span>
+              <span className="rounded-full bg-[#e2ecff] px-2 py-0.5 text-[10px]">
+                {t("inGame")}
+              </span>
             </div>
-
-            <p className="text-xs font-bold text-muted-foreground">{t("whatDoYouDo")}</p>
-
-            <div className="flex flex-col gap-2">
-              {scam.actions.map((act) => (
-                <Button
-                  key={act.id}
-                  variant={act.falls ? "outline" : "default"}
-                  className="w-full justify-start text-xs font-bold h-11"
-                  onClick={() => handleSelect(act.id, act.falls)}
-                >
-                  {l(act.label)}
-                </Button>
-              ))}
-            </div>
+            <p className="text-sm font-semibold leading-relaxed">
+              &ldquo;{l(scam.offerText)}&rdquo;
+            </p>
           </div>
-        ) : (
-          /* Outcome / Red flags resolution */
-          <div className="space-y-4">
-            <div
-              className={`rounded-xl p-4 text-center space-y-2 ${
-                outcome.falls
-                  ? "bg-loss/10 border border-loss/30 text-loss"
-                  : "bg-gain/10 border border-gain/30 text-gain"
-              }`}
-            >
-              <div className="mx-auto grid size-12 place-items-center rounded-full bg-card shadow-sm">
-                {outcome.falls ? (
-                  <ShieldAlert className="size-6 text-loss" />
-                ) : (
-                  <Sparkles className="size-6 text-gain" />
-                )}
-              </div>
-              <h3 className="font-extrabold text-base">
+          <p className="text-sm font-extrabold">{t("whatDoYouDo")}</p>
+          <div className="flex flex-col gap-2">
+            {scam.actions.map((act) => (
+              <button
+                key={act.id}
+                type="button"
+                onClick={() => handleSelect(act.id, act.falls)}
+                className="min-h-11 rounded-xl border-2 border-[#1e2a4a]/30 bg-white px-3 text-start text-sm font-bold active:translate-y-px"
+              >
+                {l(act.label)}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <GuideLine>{outcome.falls ? t("guideFell") : t("guideSpotted")}</GuideLine>
+          <div
+            className={`flex items-center gap-3 rounded-2xl border-2 p-3 ${
+              outcome.falls
+                ? "border-[#dc2626]/40 bg-[#fde8e8] text-[#b91c1c]"
+                : "border-[#16a34a]/40 bg-[#e3f8e8] text-[#15803d]"
+            }`}
+          >
+            {outcome.falls ? (
+              <ShieldAlert className="size-7 shrink-0" />
+            ) : (
+              <Sparkles className="size-7 shrink-0" />
+            )}
+            <div>
+              <p className={cn(GAME_TEXT, "text-lg leading-tight")}>
                 {outcome.falls ? t("fellTitle") : t("spottedTitle")}
-              </h3>
+              </p>
               {outcome.falls && (
-                <p className="text-xs font-bold text-loss">
+                <p className="text-sm font-bold">
                   {t("lost", { amount: formatPaise(lossAmountPaise) })}
                 </p>
               )}
             </div>
-
-            {/* Red flags list */}
-            <div className="space-y-2">
-              <h4 className="text-xs font-bold uppercase text-muted-foreground tracking-wider">
-                {t("redFlags")}
-              </h4>
-              <ul className="space-y-1.5 text-xs">
-                {scam.redFlags.map((flag, i) => (
-                  <li key={i} className="flex items-start gap-2 text-muted-foreground">
-                    <span className="text-primary font-bold">•</span>
-                    <span>{l(flag)}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <Button className="w-full font-bold" onClick={handleAcknowledge}>
-              {tc("continue")}
-            </Button>
           </div>
-        )}
-      </Card>
-    </div>
+          <div>
+            <p className="flex items-center gap-1 text-xs font-extrabold uppercase tracking-wide text-[#55658a]">
+              <AlertOctagon className="size-3.5" /> {t("redFlags")}
+            </p>
+            <ul className="mt-1 space-y-1 text-sm font-semibold">
+              {scam.redFlags.map((flag, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <span className="text-[#dc2626]">🚩</span>
+                  <span>{l(flag)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <GameButton tone="green" className="w-full" onClick={handleAcknowledge}>
+            {tc("continue")}
+          </GameButton>
+        </div>
+      )}
+    </GuideScene>
   );
 }
