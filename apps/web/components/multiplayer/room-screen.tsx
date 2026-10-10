@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  CheckCircle2,
-  Clock,
-  Gavel,
-  Handshake,
-  Shield,
-  TrendingUp,
-} from "lucide-react";
+import { CheckCircle2, Clock, Gavel, Handshake, Shield, TrendingUp } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -24,7 +17,7 @@ import { useRoom } from "@/lib/room";
 import { formatPaise } from "@/lib/format";
 import { playCoinTossSound, playSuccessChime } from "@/lib/sound";
 import { content } from "@/lib/content";
-import type { Loan, RoomState } from "@toss/engine";
+import type { Loan, RoomView } from "@toss/engine";
 
 let idCounter = 0;
 function nextId(prefix: string): string {
@@ -46,7 +39,13 @@ export function RoomScreen({ code }: RoomScreenProps) {
   const baseRoom = roomHook.room;
 
   // Local state for interactive demo
-  const [roomState, setRoomState] = useState<RoomState | null>(baseRoom);
+  // NOTE (merge review): local copy for the interactive prototype. Turns, loans and emotes
+  // below are simulated locally and not yet sent through `roomHook.actions` (see
+  // docs/requests/pragya.md). `useRoom` returns this player's redacted RoomView.
+  // Local overrides on top of the live room. (useState(baseRoom) captured the hydration
+  // snapshot, which is null, so the screen stayed on "Loading…" forever — merge review.)
+  const [localRoom, setRoomState] = useState<RoomView | null>(null);
+  const roomState = localRoom ?? baseRoom;
   const [isLobby, setIsLobby] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(45);
   const [hasSubmittedTurn, setHasSubmittedTurn] = useState(false);
@@ -59,12 +58,16 @@ export function RoomScreen({ code }: RoomScreenProps) {
   const [emotes, setEmotes] = useState<EmoteMessage[]>([]);
 
   // Local loans copy
-  const [loans, setLoans] = useState<Loan[]>(baseRoom?.loans ?? []);
+  const [localLoans, setLocalLoans] = useState<Loan[] | null>(null);
+  const loans = localLoans ?? baseRoom?.loans ?? [];
+  const setLoans = (update: (prev: Loan[]) => Loan[]) => setLocalLoans(update(loans));
 
   // Shared market toss reveal banner
   const [showTossNotice, setShowTossNotice] = useState(true);
 
-  const me = roomState?.members.find((m) => !m.isBot) ?? null;
+  // The signed-in player, with their own full game state (others are public info only).
+  const me = roomHook.me;
+  const myTrust = roomState?.members.find((m) => m.id === me?.id)?.trustScore ?? me?.trustScore;
   const currentTurn = roomState?.turn ?? 2;
   const totalTurns = 5;
 
@@ -164,6 +167,7 @@ export function RoomScreen({ code }: RoomScreenProps) {
       principal: amountRupees * 100,
       ratePerTurn: 0.03,
       interestType: "simple",
+      startTurn: currentTurn,
       dueTurn: due,
       status: "offered",
       repaidAmount: 0,
@@ -181,9 +185,7 @@ export function RoomScreen({ code }: RoomScreenProps) {
   function handleRepayLoan(loanId: string, amountPaise: number) {
     setLoans((prev) =>
       prev.map((l) =>
-        l.id === loanId
-          ? { ...l, status: "repaid" as const, repaidAmount: amountPaise }
-          : l,
+        l.id === loanId ? { ...l, status: "repaid" as const, repaidAmount: amountPaise } : l,
       ),
     );
     // Increase trust score on timely repayment
@@ -271,9 +273,7 @@ export function RoomScreen({ code }: RoomScreenProps) {
                 >
                   <span className="size-1.5 rounded-full bg-current" />
                   <span>{isThisMe ? t("you") : member.nickname}</span>
-                  <span className="text-[10px] font-normal">
-                    {isDecided ? "✓" : "…"}
-                  </span>
+                  <span className="text-[10px] font-normal">{isDecided ? "✓" : "…"}</span>
                 </div>
               );
             })}
@@ -294,7 +294,8 @@ export function RoomScreen({ code }: RoomScreenProps) {
             </span>
           </div>
           <p className="text-[11px] text-muted-foreground leading-snug">
-            All players in this room share the same market toss outcome! Gold is up +4%, inflation is at 6%.
+            All players in this room share the same market toss outcome! Gold is up +4%, inflation
+            is at 6%.
           </p>
         </Card>
       )}
@@ -313,7 +314,7 @@ export function RoomScreen({ code }: RoomScreenProps) {
           <div className="text-end">
             <div className="flex items-center justify-end gap-1 text-xs font-bold text-foreground">
               <Shield className="size-3.5 text-coin" />
-              <span>Trust: {me?.trustScore ?? 50}/100</span>
+              <span>Trust: {myTrust ?? 50}/100</span>
             </div>
             <p className="text-[10px] text-muted-foreground mt-0.5">
               Income: {formatPaise(me?.state.incomePerMonth ?? 3674160)}/yr
@@ -356,9 +357,7 @@ export function RoomScreen({ code }: RoomScreenProps) {
           <h3 className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
             Turn Decisions
           </h3>
-          <span className="text-[11px] font-semibold text-gain">
-            Tasks Paid (4/5)
-          </span>
+          <span className="text-[11px] font-semibold text-gain">Tasks Paid (4/5)</span>
         </div>
 
         <Card className="p-3 text-xs space-y-2 border border-border">

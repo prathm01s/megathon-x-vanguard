@@ -5,10 +5,10 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import type { RoomMember, RoomState } from "@toss/engine";
+import type { RoomMember, RoomView } from "@toss/engine";
 
 export interface RoomLobbyProps {
-  room: RoomState;
+  room: RoomView;
   me: RoomMember | null;
   onToggleReady: () => void;
 }
@@ -71,13 +71,15 @@ export function RoomLobby({ room, me, onToggleReady }: RoomLobbyProps) {
                 >
                   <div className="flex items-center gap-3">
                     <span className="grid size-10 place-items-center rounded-full bg-accent text-foreground font-bold">
-                      {member.isBot ? <Bot className="size-5 text-secondary" /> : member.nickname.slice(0, 2).toUpperCase()}
+                      {member.isBot ? (
+                        <Bot className="size-5 text-secondary" />
+                      ) : (
+                        member.nickname.slice(0, 2).toUpperCase()
+                      )}
                     </span>
                     <div>
                       <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-sm leading-tight">
-                          {member.nickname}
-                        </span>
+                        <span className="font-bold text-sm leading-tight">{member.nickname}</span>
                         {isMe && (
                           <span className="rounded bg-primary/20 px-1.5 py-0.2 text-[10px] font-bold text-primary">
                             {t("you")}
@@ -98,9 +100,7 @@ export function RoomLobby({ room, me, onToggleReady }: RoomLobbyProps) {
 
                   <span
                     className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${
-                      member.ready
-                        ? "bg-gain/20 text-gain"
-                        : "bg-muted text-muted-foreground"
+                      member.ready ? "bg-gain/20 text-gain" : "bg-muted text-muted-foreground"
                     }`}
                   >
                     {member.ready ? (

@@ -7,12 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { content } from "@/lib/content";
 import { formatPaise, formatRate } from "@/lib/format";
-import type { Loan, RoomMember } from "@toss/engine";
+import type { Loan, PublicMember, RoomMember } from "@toss/engine";
 
 export interface LoanModalProps {
   loans: Loan[];
   me: RoomMember | null;
-  members: RoomMember[];
+  members: PublicMember[];
   currentTurn: number;
   onRequestLoan: (amountRupees: number, dueTurn: number) => void;
   onAcceptLoan: (loanId: string) => void;
@@ -38,14 +38,11 @@ export function LoanModal({
   const [dueTurn, setDueTurn] = useState(currentTurn + 2);
 
   const trust = me?.trustScore ?? 50;
-  const bankConfig = content.multiplayer.loans.bankRateByTrust.find(
-    (b) => trust >= b.minTrust,
-  );
-  const bankRate = bankConfig?.ratePerTurn;
+  const bankConfig = content.multiplayer.loans.bankRateByTrust.find((b) => trust >= b.minTrust);
+  // Bank rates are yearly in content (engine v2, handoff decision 17).
+  const bankRate = bankConfig?.ratePerYear;
 
-  const myActiveLoans = loans.filter(
-    (l) => l.borrowerMemberId === me?.id && l.status === "active",
-  );
+  const myActiveLoans = loans.filter((l) => l.borrowerMemberId === me?.id && l.status === "active");
   const myPendingRequests = loans.filter(
     (l) => l.borrowerMemberId === me?.id && (l.status === "requested" || l.status === "offered"),
   );
@@ -69,7 +66,9 @@ export function LoanModal({
           <div className="flex items-center gap-2">
             <Shield className="size-4 text-coin" />
             <div>
-              <span className="font-bold">{t("trustScore")}: {trust}/100</span>
+              <span className="font-bold">
+                {t("trustScore")}: {trust}/100
+              </span>
               <p className="text-[10px] text-muted-foreground">{t("trustHelp")}</p>
             </div>
           </div>
@@ -123,7 +122,7 @@ export function LoanModal({
                         ? "Big Bank"
                         : l.lenderMemberId === "loan-app"
                           ? "Quick Cash App"
-                          : lender?.nickname ?? "Friend";
+                          : (lender?.nickname ?? "Friend");
                     const totalRepay = Math.round(l.principal * (1 + l.ratePerTurn));
 
                     return (
@@ -156,12 +155,17 @@ export function LoanModal({
 
                   {/* Offers for pending requests */}
                   {myPendingRequests.map((req) => (
-                    <Card key={req.id} className="p-3.5 space-y-3 bg-secondary/5 border-secondary/30">
+                    <Card
+                      key={req.id}
+                      className="p-3.5 space-y-3 bg-secondary/5 border-secondary/30"
+                    >
                       <div className="flex justify-between items-center text-xs">
                         <span className="font-bold text-secondary">
                           Loan Requested: {formatPaise(req.principal)}
                         </span>
-                        <span className="text-[11px] text-muted-foreground">Due: Turn {req.dueTurn}</span>
+                        <span className="text-[11px] text-muted-foreground">
+                          Due: Turn {req.dueTurn}
+                        </span>
                       </div>
 
                       <div className="space-y-2 pt-1">
@@ -194,7 +198,9 @@ export function LoanModal({
                               <Building className="size-4 text-primary" />
                               <div>
                                 <p className="font-bold">Big Bank</p>
-                                <p className="text-[10px] text-muted-foreground">{formatRate(bankRate)} institutional rate</p>
+                                <p className="text-[10px] text-muted-foreground">
+                                  {formatRate(bankRate)} a year · institutional rate
+                                </p>
                               </div>
                             </div>
                             <Button
@@ -218,7 +224,9 @@ export function LoanModal({
                             <Smartphone className="size-4 text-loss" />
                             <div>
                               <p className="font-bold text-loss">Instant Loan App</p>
-                              <p className="text-[10px] text-loss font-semibold">15% predatory rate! (Hidden fees)</p>
+                              <p className="text-[10px] text-loss font-semibold">
+                                15% predatory rate! (Hidden fees)
+                              </p>
                             </div>
                           </div>
                           <Button
@@ -258,9 +266,7 @@ export function LoanModal({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-muted-foreground">
-                  {t("loanDue")}
-                </label>
+                <label className="text-xs font-bold text-muted-foreground">{t("loanDue")}</label>
                 <div className="flex gap-2">
                   {[currentTurn + 1, currentTurn + 2, currentTurn + 3].map((turnVal) => (
                     <Button
@@ -282,7 +288,8 @@ export function LoanModal({
                   <span>Borrowing Rules</span>
                 </div>
                 <p className="text-[11px] text-muted-foreground">
-                  On-time repayment raises Trust Score by +5. Late repayment incurs a ₹500 fine and drops Trust by -15.
+                  On-time repayment raises Trust Score by +5. Late repayment incurs a ₹500 fine and
+                  drops Trust by -15.
                 </p>
               </div>
 

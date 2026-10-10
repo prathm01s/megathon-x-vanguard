@@ -71,11 +71,15 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       </head>
       <body className="min-h-dvh font-sans">
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{});});}`,
-          }}
-        />
+        {/* Production only: sw.js serves /_next/ cache-first, which is right for hashed
+            production chunks but would pin stale code under `next dev` (merge review). */}
+        {process.env.NODE_ENV === "production" && (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{});});}`,
+            }}
+          />
+        )}
       </body>
     </html>
   );

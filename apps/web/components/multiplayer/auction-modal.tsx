@@ -9,13 +9,13 @@ import { ContentIcon } from "@/components/game/icon";
 import { useLocalize } from "@/components/game/use-localize";
 import { content } from "@/lib/content";
 import { formatPaise } from "@/lib/format";
-import type { RoomMember } from "@toss/engine";
+import type { PublicMember, RoomMember } from "@toss/engine";
 
 export interface AuctionModalProps {
   currentTurn: number;
   chapterId: string;
   me: RoomMember | null;
-  members: RoomMember[];
+  members: PublicMember[];
   onClose: () => void;
   onBidSubmitted?: (amountPaise: number, isPool: boolean) => void;
 }
@@ -56,12 +56,9 @@ export function AuctionModal({
     { name: members[2]?.nickname ?? "Spendy Sunny", amountPaise: minBidPaise * 0.2 },
   ];
   const totalPoolPaise =
-    poolContributionPaise +
-    peerContributors.reduce((acc, c) => acc + c.amountPaise, 0);
+    poolContributionPaise + peerContributors.reduce((acc, c) => acc + c.amountPaise, 0);
   const myPoolSharePct =
-    totalPoolPaise > 0
-      ? Math.round((poolContributionPaise / totalPoolPaise) * 100)
-      : 0;
+    totalPoolPaise > 0 ? Math.round((poolContributionPaise / totalPoolPaise) * 100) : 0;
 
   function handlePlaceSoloBid() {
     setWinningBidPaise(soloBidPaise);
@@ -158,7 +155,8 @@ export function AuctionModal({
                       <span>Pool Money with Classmates</span>
                     </div>
                     <p className="text-[11px] text-muted-foreground">
-                      Large assets are expensive. By pooling together, everyone gets a proportional share of future earnings!
+                      Large assets are expensive. By pooling together, everyone gets a proportional
+                      share of future earnings!
                     </p>
                   </div>
 
@@ -174,7 +172,9 @@ export function AuctionModal({
                           className="flex items-center justify-between rounded-lg border border-border bg-card p-2"
                         >
                           <span className="font-medium">{c.name}</span>
-                          <span className="font-bold tabular-nums">{formatPaise(c.amountPaise)}</span>
+                          <span className="font-bold tabular-nums">
+                            {formatPaise(c.amountPaise)}
+                          </span>
                         </li>
                       ))}
                       <li className="flex items-center justify-between rounded-lg border border-primary/40 bg-primary/10 p-2 font-bold text-primary">
@@ -193,8 +193,12 @@ export function AuctionModal({
                   {/* Contribution Slider */}
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-bold text-muted-foreground">Choose Your Contribution</span>
-                      <span className="font-extrabold text-sm">{formatPaise(poolContributionPaise)}</span>
+                      <span className="font-bold text-muted-foreground">
+                        Choose Your Contribution
+                      </span>
+                      <span className="font-extrabold text-sm">
+                        {formatPaise(poolContributionPaise)}
+                      </span>
                     </div>
                     <input
                       type="range"
@@ -280,7 +284,8 @@ export function AuctionModal({
               </span>
               <h3 className="text-lg font-extrabold">Auction Won!</h3>
               <p className="text-xs text-muted-foreground">
-                Winning Bid: <span className="font-bold text-foreground">{formatPaise(winningBidPaise)}</span>
+                Winning Bid:{" "}
+                <span className="font-bold text-foreground">{formatPaise(winningBidPaise)}</span>
               </p>
             </div>
 
