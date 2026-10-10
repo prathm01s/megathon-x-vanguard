@@ -2,7 +2,8 @@
 
 // Student path choice → Student Code entry, personal signup, or login (§4.2). Owner: Prathmesh.
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+// Locale-aware router: keeps /te, /hi, /ur on redirects.
+import { useRouter } from "@/i18n/navigation";
 import { AppShell } from "@/components/ui/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -59,7 +60,8 @@ export default function JoinPage() {
       setError(res.error || "Failed to redeem code.");
     } else {
       setSuccess("Account created successfully! Redirecting...");
-      setTimeout(() => router.push("/play"), 1000);
+      // New students start with the Money Mindset Check (§4.2).
+      setTimeout(() => router.push("/mindset"), 1000);
     }
   };
 
@@ -81,7 +83,7 @@ export default function JoinPage() {
       setError(res.error || "Failed to create personal account.");
     } else {
       setSuccess("Account created! Redirecting to game...");
-      setTimeout(() => router.push("/play"), 1000);
+      setTimeout(() => router.push("/mindset"), 1000);
     }
   };
 
