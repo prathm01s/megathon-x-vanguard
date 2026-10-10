@@ -1,6 +1,6 @@
 # Handoff — Toss Life
 
-_Last updated: 2026-10-10 (after Samarth's engine + mock room session)._
+_Last updated: 2026-10-10 (after Samarth's room-server session)._
 
 This file records what has been built so far, how to run it, which decisions were made and what
 comes next. **Read [`CLAUDE.md`](./CLAUDE.md) first.** It is the spec, and it wins over this
@@ -13,6 +13,11 @@ file. The original pitch is `Toss Life.pdf`.
    only.
 2. **Samarth — engine modules + mock room** (branch `samarth/engine-modules`, PR into `main`):
    CLAUDE.md §15.5 items 3–13. Details in §3.4 and §3.5 below.
+3. **Samarth — room server** (branch `samarth/room-server`, **stacked on**
+   `samarth/engine-modules`: merge that one first, then open this PR into `main`): §15.5 items
+   14–18. Covers the rooms migration + RLS, the `room-action` Edge Function, the realtime `useRoom`
+   backend, the PGlite test harness, the `/dev/sim` lab, the `/dev/content` browser and the engine
+   benchmark. Details in §3.4–§3.6.
 
 From now on, each person works only in their own paths (§15.3).
 
@@ -27,13 +32,16 @@ From now on, each person works only in their own paths (§15.3).
 | `pnpm content:build`                           | ✅ writes `packages/content/dist/content.json` + 17 JSON Schemas      |
 | `pnpm lint`                                    | ✅ no errors, no warnings                                             |
 | `pnpm typecheck`                               | ✅ all packages + scripts                                             |
-| `pnpm test`                                    | ✅ **109 tests** in 16 files (engine 95, content 7, web 7)            |
+| `pnpm test`                                    | ✅ **144 tests** in 22 files (engine 111, DB/room server 16, web 10, content 7) |
 | `pnpm build`                                   | ✅ Next.js production build, every locale prerendered                 |
 | `pnpm dev` → `/`, `/en`, `/ur`, `/te/play`, …  | ✅ all return 200; `/ur` has `dir="rtl"` (checked on day zero)        |
 | `pnpm sim --runs 300`                          | ✅ meets the §10 balance targets (see §7.1 for the table)             |
-| Supabase migration                             | ⚠️ **written but never applied**: Docker Desktop was not running      |
-| `pnpm test:e2e` (Playwright)                   | ⚠️ configured with a smoke test but **not run** (browsers not installed) |
-| Git                                            | ✅ `main` = day zero. `samarth/engine-modules` = 2 more commits, pushed, waiting for review |
+| `pnpm bench`                                   | ✅ a ch2 turn ≈ 0.09 ms on a laptop, ≈ 0.4 ms estimated on a mid-range phone (budget 50 ms) |
+| Migrations + RLS                               | ✅ both migrations apply and their RLS is tested on **PGlite (Postgres 18)** in `pnpm test`. ⚠️ Not yet run on a real Supabase stack (Docker was off) |
+| Room server (`room-action` Edge Function)      | ✅ end-to-end tests on PGlite; ✅ `pnpm functions:smoke` runs the built bundle under **Deno 2.9** + postgres.js over the Postgres wire. ⚠️ Not deployed (no Supabase Cloud project yet) |
+| `pnpm test:e2e` (Playwright)                   | ✅ 2 smoke tests pass (Chromium, Pixel 5 viewport)                    |
+| `/dev/sim`, `/dev/content`                     | ✅ checked in headless Chromium: simulation runs, inspector updates, no console errors |
+| Git                                            | ✅ `main` = day zero. `samarth/engine-modules` (3 commits) and `samarth/room-server` (4 more, stacked) pushed, waiting for review |
 | CI on GitHub                                   | ⚠️ **not active yet**: the workflow is parked in `docs/pending/ci.yml` (see §8.3) |
 
 ---
@@ -163,6 +171,20 @@ All files from §3.2 exist with the §8 data in English only:
   shared market / separate lives, loans, pool auction, multiplayer scoring), and **§10 balance
   checks** that fail if content tuning breaks the targets.
 
+_Session 3 additions:_
+
+| File | Does |
+| --- | --- |
+| `room-protocol.ts` | **The room wire protocol.** `RoomRequest` (a Zod-validated union: join, leave, start, act, submit_turn, tick, request_loan, offer_loan, accept_loan, repay_loan, place_bid, join_pool, react) and `applyRoomRequest`, the one dispatcher both the mock room and the Edge Function call |
+| `room.ts` | Additions: `viewRoomFor(room, userId)`, a per-player `RoomView` (your full state; others `PublicMember` only; sealed bids hidden until close; **seeds redacted**); a decision **outbox** (`RoomState.outbox`, drained by `drainOutbox`); the turn-timer default (unanswered scam cards → "ignore"); the `scammer-friend` Ponzi push (`PendingScam.fromMemberId`); host handover |
+| `decisions.ts` | `chapterResultRecords(result, turn)` → `chapter_end` (with the score) + `persona_shift` |
+| `actions.ts` / `events.ts` / `turn.ts` | windfall tracking: `windfallSavedPct` = windfall moved into savings/investments in the decide phase right after it arrived |
+
+- New tests (16): decision outbox, per-player views and sealed bids, timer defaults, scammer
+  friend, windfall, chapter records, and **`fixtures.test.ts`**, which fails if the JSON fixtures
+  drift from the engine (regenerate with `pnpm --filter @toss/engine fixtures`).
+- New fixture: `sampleRoomView`, which is room `TOSS42` as the mock user sees it.
+
 ### 3.5 Web app (`apps/web`, shared; see §15.3 for who owns which folder)
 
 - **Next.js 16.4** (App Router, `cacheComponents`, Turbopack), React 19.3, Tailwind 4, next-intl 4.
@@ -179,23 +201,29 @@ All files from §3.2 exist with the §8 data in English only:
   return with the "assumed" chip). `components.json` is set up for `shadcn add`.
 - `lib/format.ts`: `₹1,00,000` Indian formatting from paise. `lib/content.ts`: the typed bundle.
 - **Persistence API (§15.4 D)**: `lib/data/` with types and a **localStorage mock**.
-- **Room API (§15.4 E) — working mock room (Samarth, session 2):**
-  - `lib/room/store.ts` runs the real engine room rules in memory, with bots, and notifies
-    subscribers. `lib/room/index.ts` exposes the **`useRoom(code)`** hook (built on
-    `useSyncExternalStore`) and `createRoom(chapterId)`.
-  - The actions are the contract's (`join`, `leave`, `ready`, `submitTurn`, `requestLoan`,
-    `offerLoan`, `acceptLoan`, `repayLoan`, `placeBid`, `createPool`, `joinPool`) plus three
-    backwards-compatible additions: **`act(action)`** (your own decisions inside the room),
-    **`react(emoteId)`** and a `myDebts` list. `ready()` from the host starts the game.
-  - Room **`TOSS42`** is preloaded from the fixture, and its human player is the mock session user.
-  - Later the realtime client swaps the store's internals for Edge Function calls and Supabase
-    Realtime, keeping the same hook.
+- **Room API (§15.4 E) — mock and realtime backends (Samarth):**
+  - `lib/room/index.ts` exposes **`useRoom(code)`** (built on `useSyncExternalStore`) and
+    `createRoom(chapterId)`. `useRoom` returns **your `RoomView`**: `me` with your full state,
+    `members` as `PublicMember`s, `isHost`, `pendingLoans`, `myDebts`, `auction`, and `actions`.
+    The actions are the contract's (`join`, `leave`, `ready`, `submitTurn`, `requestLoan`,
+    `offerLoan`, `acceptLoan`, `repayLoan`, `placeBid`, `createPool`, `joinPool`) plus `act(action)`,
+    `react(emoteId)`, `tick()` and `join(personaId)`. They reject with a `RoomError`, whose `code`
+    is stable.
+  - `lib/room/backend.ts` is the seam. `NEXT_PUBLIC_ROOM_BACKEND` picks the implementation:
+    - `mock-backend.ts` (the default) runs `applyRoomRequest` in memory with bots, and room
+      **`TOSS42`** is preloaded for the mock user;
+    - `supabase-backend.ts` calls the `room-action` Edge Function and follows the player's own
+      `room_views` row with Supabase Realtime.
+- **Dev tools (Samarth):** `/[locale]/dev/content` is the full content browser (validation,
+  expected returns, translation coverage, every item in the page locale with "en fallback" flags,
+  live with `pnpm dev`). `/[locale]/dev/sim` is the balancing lab (bots, histograms, a game
+  inspector, turn timing). Both are dev-only (404 in production).
 - Supabase clients: `lib/supabase/client.ts` (browser) and `lib/supabase/server.ts` (server plus a
   service-role `createAdminClient`, both `server-only`).
-- Tests: Vitest with jsdom (`lib/format.test.ts`, `lib/room/store.test.ts`) and Playwright
+- Tests: Vitest with jsdom (`lib/format.test.ts`, `lib/room/backends.test.ts`) and Playwright
   (`e2e/smoke.spec.ts`, Pixel 5 viewport).
 
-### 3.6 Database (`supabase/`, Prathmesh)
+### 3.6 Database (`supabase/`, Prathmesh; room tables and the room server: Samarth)
 
 - `supabase init` done (`project_id = "toss-life"`).
 - `migrations/20261010000000_accounts.sql` covers **all non-room tables in §5**: organizations
@@ -206,7 +234,29 @@ All files from §3.2 exist with the §8 data in English only:
   It also adds a trigger that stops clients changing role, org, username or Player ID, and two
   RPCs: `create_organization` (NGO signup) and `respond_to_join_request`.
 - `packages/db-types` holds a **placeholder** `Database` type until `pnpm db:types` runs.
-- Room tables (rooms, members, loans, auctions, bids, pools) are **not written yet** (Samarth, next).
+- **`migrations/20261010010000_rooms_init.sql` (Samarth):** rooms, room_members, room_views,
+  loans, auctions, bid_pools, bid_pool_members and bids.
+  - `rooms.state` (the full `RoomState`, the source of truth) and `rooms.seed` are **never readable
+    by clients**, enforced with column grants.
+  - Each player reads only their own `room_views` row, which is in the Realtime publication.
+  - Sealed bids are readable by their owner until the auction closes.
+  - The NGO admin reads their class's rooms (`rooms.org_id` = the host's NGO).
+  - There are no client write policies: the Edge Function (service role) is the only writer.
+- **`functions/room-action/` (Samarth):**
+  - `handler.ts`: one transaction per call: lock the room row, auto-resolve the turn if its timer
+    ran out, validate, apply, then write the state, projections, every player's view, the
+    decisions, and at the end the `chapter_results` and `badges_earned`.
+  - `sql-repo.ts` holds the SQL. A room start creates a `playthroughs` row per human
+    (`seed = 'room:<code>'`, seeds redacted).
+  - `index.ts` is the Deno entry: `@supabase/server`'s `withSupabase({ auth: "user" })` + postgres.js.
+  - `build.ts` bundles the handler + engine + content into `_bundle/handler.js` (gitignored).
+    **Run `pnpm functions:build` before `supabase functions serve/deploy`.**
+- **`tests/` (Samarth):** `harness.ts` runs every migration on **PGlite** with Supabase's
+  `auth.uid()`, roles, `extensions` schema and Realtime publication emulated (`asUser` / `asService` /
+  `asAnon`), so migrations and RLS are tested in `pnpm test` without Docker. Test files:
+  `migrations.test.ts`, `accounts-smoke.test.ts` (Prathmesh's migration: it applies, and the signup
+  RPC, column trigger and profile isolation work), `room-server.test.ts` (end to end through RLS),
+  and `deno-smoke.ts` (`pnpm functions:smoke`).
 
 ---
 
@@ -266,20 +316,41 @@ _Session 2 (Samarth):_
 24. **What if never shows a change that doesn't help.** `chooseWhatIf` takes the highest-priority
     matching candidate whose replay ends with more Real Value; otherwise it shows none.
 
+_Session 3 (Samarth):_
+
+25. **One room protocol, one dispatcher.** The mock and the server both run `applyRoomRequest`, so
+    the UI behaves identically against either.
+26. **The server sends each player a redacted `RoomView`**, never the full room: no other players'
+    cash or holdings, and no sealed bids before close.
+27. **Seeds never leave the server in rooms.** With the room seed a player could precompute the
+    market for everyone. Views and room playthrough rows have empty seeds. (In single-player the
+    engine runs on the device, so its seed is necessarily local.)
+28. **`rooms.state` is the source of truth; the other room tables are projections** written in the
+    same transaction (for RLS-safe stats and the decision log). Requests are serialised with a
+    `select … for update` row lock.
+29. **The turn timer needs no cron.** Each turn gets a `turn_deadline`, and any call after it
+    (including `tick`) resolves the turn with default decisions first.
+30. **The server identifies the player from the verified JWT only**, and reads their persona from
+    their latest Mindset Check (the `join` persona in the body is ignored server-side).
+31. **Room games are normal playthroughs**: one `playthroughs` row per human, plus `decisions`,
+    `chapter_results` and `badges_earned`, so dashboards include multiplayer without extra work.
+32. **The Edge Function is a build artefact.** esbuild bundles the handler + engine + content +
+    zod into one ESM file. That avoids Deno import maps for workspace TypeScript and keeps
+    `handler.ts` testable in Node.
+33. **JSON parameters are sent as text** (`$n::text::jsonb`). postgres.js JSON-encodes values it
+    sees as jsonb, which double-encoded our state; `pnpm functions:smoke` caught it.
+34. **Windfall saved** = money moved into savings or investments in the decide phase right after
+    the windfall (capped at the windfall).
+
 ---
 
 ## 5. Not done yet (simplified or stubbed)
 
 Each of these is marked `TODO(<owner>)` in the code:
 
-- **Engine (Samarth):**
-  - `windfallSavedPct` is always 0 (the `saved-windfall` rule never fires), because spending in
-    later turns isn't attributed to the windfall.
-  - Room loan, auction and persona-shift actions don't emit `DecisionRecord`s yet.
-  - The `scammer-friend` bot doesn't push the Ponzi offer in rooms yet (ch3b is disabled anyway).
-  - `/dev/sim` route; the engine performance check (§15.5 item 18).
-- **Room server (Samarth):** room migrations with RLS, room Edge Functions (call `room.ts`; turn
-  timer = call `resolveTurn` when it expires), and the realtime `useRoom` client (§15.5 items 14–16).
+- **Samarth:**
+  - Deploying the room server (needs the Supabase Cloud project) and a real two-phone test.
+  - Rooms in ch3a/ch3b/ch4 are implemented but only testable once those chapters have content.
 - **Platform (Prathmesh):** auth flows, `redeem-code` and admin Edge Functions, real persistence
   with an IndexedDB offline queue, stats views, the dashboard, `scripts/seed.ts` (stub, but it can
   now use `playChapter`), and Supabase session refresh in `proxy.ts`.
@@ -292,10 +363,10 @@ Each of these is marked `TODO(<owner>)` in the code:
 
 | Who           | Start with                                                                                                         |
 | ------------- | ------------------------------------------------------------------------------------------------------------------ |
-| **Anyone**    | Review and merge PR `samarth/engine-modules` → `main`. Turn on branch protection for `main` (require PR + passing CI). |
-| **Samarth**   | Room migrations, room Edge Functions on top of `room.ts`, realtime `useRoom` (§15.5 items 14–16), then `/dev/sim` and the performance check. Open items in `docs/requests/samarth.md`. |
-| **Prathmesh** | Activate CI first (§8.3). Then start Docker, run `pnpm db:start && pnpm db:reset`, fix the migration, run `pnpm db:types`, then auth and the public screens (§15.6 items 2–5). Load saved games with `migrateState` (see `docs/requests/prathmesh.md`). |
-| **Pragya**    | `docs/requests/pragya.md`, then the mindset check, persona reveal and turn screen against the fixtures and `lib/data` mock (§15.7 items 2–5). The **Friends' Room UI can start now** against `useRoom` (room `TOSS42`). |
+| **Anyone**    | Review and merge `samarth/engine-modules` → `main`, then `samarth/room-server` → `main`. Turn on branch protection for `main` (require PR + passing CI). |
+| **Samarth**   | Deploy the room server once Supabase Cloud exists; help fill ch1/ch3 content numbers; the team decision in §7.2. Open items in `docs/requests/samarth.md`. |
+| **Prathmesh** | Activate CI first (§8.3, and add `pnpm functions:build` before tests). Your migration already passes on PGlite: use `supabase/tests/harness.ts` for RLS tests, then confirm on Docker (`pnpm db:start && pnpm db:reset && pnpm db:types`). Then auth and the public screens (§15.6 items 2–5). See `docs/requests/prathmesh.md` items 12–16. |
+| **Pragya**    | `docs/requests/pragya.md`, then the mindset check, persona reveal and turn screen against the fixtures and `lib/data` mock (§15.7 items 2–5). The **Friends' Room UI can start now** against `useRoom` (room `TOSS42`): it returns your redacted `RoomView` (requests 12–17). |
 
 ---
 
@@ -327,7 +398,9 @@ team wants all-cash to fail the chapter, the cleanest lever is `growth` weight o
 
 ## 8. Known issues
 
-1. **The migration is untested.** Expect small fixes on its first `db reset`.
+1. **Migrations haven't run on a real Supabase stack yet.** They pass on PGlite (Postgres 18),
+   including RLS, but PGlite only emulates Supabase's `auth` schema and roles. Run
+   `pnpm db:start && pnpm db:reset` once Docker is available.
 2. **Git identity on the setup machine.** The first commit was made with that machine's git
    config (`samarth-singla`). Everyone should check `git config user.name` / `user.email` on their
    own machine before committing.
@@ -337,9 +410,17 @@ team wants all-cash to fail the chapter, the cleanest lever is `growth` weight o
    `git mv docs/pending/ci.yml .github/workflows/ci.yml`, commit on a branch and open a PR. If you
    use the Git Credential Manager, `gh auth refresh -s workflow` or signing in again with a token
    that includes `workflow` is enough. Until then, run the checks locally before every PR.
-4. **Shell tool quirk on this Windows machine** (only matters if you use Claude Code here): bash
+4. **Root config was touched by the room-server session** (Prathmesh's area): `package.json`
+   scripts/devDeps, `vitest.config.ts`, `eslint.config.mjs`, `.gitignore`, `supabase/config.toml`.
+   All are additive and listed in `docs/requests/prathmesh.md` item 12 for review.
+5. **`pnpm functions:smoke` downloads Deno 2.9.6 via npx on first run** (about 100 MB), and Playwright
+   needs `pnpm --filter web exec playwright install chromium` once per machine.
+6. **Shell tool quirk on this Windows machine** (only matters if you use Claude Code here): bash
    heredocs that contain an apostrophe fail in the Bash tool, so write files with the editor or
    Write tool instead.
+
+_Resolved in session 3:_ room server built and tested; room decision records; windfall tracking;
+scammer-friend; `/dev/sim`; performance check; Playwright smoke has now been run.
 
 _Resolved in session 2:_ the debt fund now can lose money in a storm (decision 15); balance meets
 §10 (§7); What if no longer shows ₹0 changes (decision 24); personas whose start chapter is

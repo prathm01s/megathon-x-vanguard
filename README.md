@@ -46,12 +46,16 @@ pnpm dev                       # http://localhost:3000 (redirects to /en)
 | `pnpm content:validate`               | Schema, cross-reference, expected-return, persona, locale checks |
 | `pnpm content:build`                  | YAML → `content.json` + JSON Schemas for editor autocompletion   |
 | `pnpm content:watch`                  | Rebuild content on every YAML change                             |
-| `pnpm test`                           | Vitest across engine, content and web                            |
+| `pnpm test`                           | Vitest: engine, content, web, and DB/RLS/room server (PGlite)    |
 | `pnpm test:e2e`                       | Playwright (mobile viewport)                                     |
 | `pnpm lint` / `typecheck`             | ESLint / TypeScript across all packages                          |
 | `pnpm format`                         | Prettier                                                         |
 | `pnpm sim -- --runs 1000`             | Simulated ch2 playthroughs per strategy (balancing)              |
 | `pnpm --filter @toss/engine fixtures` | Regenerate engine JSON fixtures                                  |
+| `pnpm bench`                          | Engine speed vs. the 50 ms-per-turn phone budget                 |
+| `pnpm functions:build`                | Bundle the `room-action` Edge Function (run before serve/deploy) |
+| `pnpm functions:serve` / `:deploy`    | Serve locally (needs Docker) / deploy the room server            |
+| `pnpm functions:smoke`                | Run the built Edge Function under Deno against a test database   |
 | `pnpm db:start` / `db:stop`           | Local Supabase (Docker)                                          |
 | `pnpm db:reset`                       | Re-apply migrations + `supabase/seed.sql`                        |
 | `pnpm db:types`                       | Regenerate `packages/db-types/src/database.ts`                   |

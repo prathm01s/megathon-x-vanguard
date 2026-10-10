@@ -46,3 +46,29 @@ Add new requests at the bottom: what you need, why, and the interface you propos
     reports the units bought that turn. A unit starts at ₹10. In a storm year the same instalment
     buys more units.
 11. **Fixtures were regenerated** for the v2 state. Use `@toss/engine/fixtures` as before.
+
+## From Samarth's room-server session (2026-10-10)
+
+12. **`useRoom` now returns YOUR view of the room (`RoomView`)**, exactly what the real server
+    sends:
+    - `room.me` has your full `GameState`;
+    - `members` are `PublicMember`s (nickname, avatar, Trust Score, `ready`, `awaitingScam`,
+      `finished`), with no cash or holdings of other players;
+    - before an auction closes you only see your own bid and your pool's bid.
+
+    Also new: `isHost`, `actions.tick()`, `actions.join(personaId)`, and actions now reject with a
+    `RoomError` (`import { RoomError } from "@/lib/room"`). Fixture: `sampleRoomView` from
+    `@toss/engine/fixtures`.
+
+13. **Join with the player's persona:** call `actions.join(personaIdFromMindsetCheck)`. (The real
+    server ignores it and reads the persona from the player's latest Mindset Check.)
+14. **Turn timer UI:** each turn auto-resolves after `content.multiplayer.turnTimerSeconds` (90 s).
+    Show a countdown and call `actions.tick()` when it reaches 0. Players who haven't answered a
+    scam card get "ignore" by default.
+15. **Friend scam card:** a `PendingScam` with `fromMemberId` was pushed by a friend in the room
+    (the "double your money" scheme). Show that friend's nickname as the sender.
+16. **More error codes to translate:** `not_host`, `room_not_found`, `bad_request`,
+    `no_profile`, `unauthenticated`, `server_error`, `network`.
+17. **Dev tools you can use:** `/en/dev/content` shows every content text in the page's
+    locale, with "en fallback" flags (handy for translation work), and `/en/dev/sim` shows how
+    the game plays out.
