@@ -5,7 +5,7 @@
 
 import { createClient } from "@/lib/supabase/client";
 import { content } from "@/lib/content";
-import { createPlaythrough } from "@toss/engine";
+import { createPlaythrough, startChapterFor } from "@toss/engine";
 import type { PersistenceApi, PlaythroughId } from "./types";
 import type { Json } from "@toss/db-types";
 import type {
@@ -15,6 +15,7 @@ import type {
   MindsetAnswers,
   MindsetResult,
 } from "@toss/engine";
+import { uuid } from "@/lib/uuid";
 
 // The generated types require a non-null value for NOT NULL jsonb columns.
 type JsonValue = NonNullable<Json>;
@@ -191,10 +192,10 @@ export const supabasePersistence: PersistenceApi = {
         content,
         personaId,
         seed,
-        chapterId: "ch2-first-job",
+        chapterId: startChapterFor(personaId, content),
       });
 
-    const localId = crypto.randomUUID();
+    const localId = uuid();
     cacheLocal(`playthrough:${localId}`, {
       personaId,
       seed,

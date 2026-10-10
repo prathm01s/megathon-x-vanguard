@@ -156,3 +156,8 @@ Open for you:
     The game content YAML needs `te:` strings too: `/te/dev/content` lists every untranslated item.
 30. **Offline single-player:** cache the student routes plus the content bundle, so a game can be
     played offline after one visit (§9.4). Today offline navigation falls back to `/`.
+
+## v2 redesign (2026-10-11)
+
+Your track is in [`docs/plan-v2.md`](../plan-v2.md) (track G). Start with your contract in §2 so the
+others can build against it.

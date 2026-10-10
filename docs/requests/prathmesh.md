@@ -110,3 +110,8 @@ Open for you — all resolved in session 2 & 3:
 22. ~~**Your progress note mentions IndexedDB.**~~ **Done:** Upgraded decision logging in
     `apps/web/lib/data/supabase.ts` to real IndexedDB (`toss-life:persistence` / `offline_queue`) with
     localStorage fallback.
+
+## v2 redesign (2026-10-11)
+
+Your track is in [`docs/plan-v2.md`](../plan-v2.md) (track P). Start with your contract in §2 so the
+others can build against it.

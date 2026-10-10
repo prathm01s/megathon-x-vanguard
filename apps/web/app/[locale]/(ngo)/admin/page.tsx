@@ -34,6 +34,7 @@ import {
   Send,
   X,
 } from "lucide-react";
+import { uuid } from "@/lib/uuid";
 
 export default function AdminPage() {
   const session = useSession();
@@ -368,7 +369,7 @@ export default function AdminPage() {
     if (res.success && res.data?.codes) {
       setNewlyGeneratedCodes(res.data.codes);
       const newItems = res.data.codes.map((c) => ({
-        id: crypto.randomUUID(),
+        id: uuid(),
         code: c,
         status: "pending",
         label: effectiveLabel,

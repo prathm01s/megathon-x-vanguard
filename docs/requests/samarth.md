@@ -34,7 +34,7 @@ Add new requests at the bottom: what you need, why, and the interface you propos
 
 11. **Team decision (handoff §7.2):** should all-cash fail the chapter, or only the growth
     component? Today it passes with 63.
-12. **Deploy the room server** once the Supabase Cloud project exists: `pnpm functions:deploy`,
-    apply migrations, set `NEXT_PUBLIC_ROOM_BACKEND=supabase` on Vercel. Then a real two-phone test.
-13. **Rooms beyond ch2:** the property / shop auctions and ch3b's scammer friend are implemented
-    but untested with real content, because those chapters are still outlines.
+12. ~~**Deploy the room server.**~~ **Done** (2026-10-11): `room-action` is deployed to the hosted
+    project. A real two-phone test is still to do (now possible over the hotspot, `pnpm dev:lan`).
+13. **Rooms beyond ch2:** chapters 3A/3B now exist, but the room hub only creates ch2 rooms, so the
+    property / shop auctions and ch3b's scammer friend are still untested in play.

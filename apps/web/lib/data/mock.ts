@@ -1,6 +1,7 @@
 // localStorage-backed mock of the Persistence API so every screen can be built and
 // tested before Supabase is wired up (§15.4 D). Browser only.
 import type { PersistenceApi, PlaythroughId, Session } from "./types";
+import { uuid } from "@/lib/uuid";
 
 const KEY = "toss-life:mock-db:v1";
 
@@ -60,7 +61,7 @@ export const mockPersistence: PersistenceApi = {
   },
   async startPlaythrough(personaId, seed, initialState) {
     const db = read();
-    const id = globalThis.crypto.randomUUID();
+    const id = uuid();
     db.playthroughs[id] = {
       personaId,
       seed,

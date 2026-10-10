@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "pnpm content:build && concurrently -n content,web \"pnpm content:watch\" \"pnpm --filter web dev\"",
+    "dev:lan": "pnpm content:build && concurrently -n content,web \"pnpm content:watch\" \"pnpm --filter web dev -- -H 0.0.0.0\"",
     "build": "pnpm content:build && pnpm --filter web build",
     "content:build": "pnpm --filter @toss/content build:content",
     "content:validate": "pnpm --filter @toss/content validate",

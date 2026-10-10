@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { RoomMember, RoomView } from "@toss/engine";
+import { copyText } from "@/lib/uuid";
 
 export interface RoomLobbyProps {
   room: RoomView;
@@ -19,7 +20,7 @@ export function RoomLobby({ room, me, isHost, onToggleReady }: RoomLobbyProps) {
   const [copied, setCopied] = useState(false);
 
   function copyCode() {
-    void navigator.clipboard.writeText(room.code);
+    void copyText(room.code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }

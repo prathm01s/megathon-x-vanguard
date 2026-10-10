@@ -14,6 +14,7 @@ import { ContentIcon } from "./icon";
 import { PersonaAvatar } from "./persona-reveal";
 import { useGameStore } from "./store";
 import { useLocalize } from "./use-localize";
+import { copyText } from "@/lib/uuid";
 
 export function ProfileScreen() {
   return (
@@ -43,7 +44,7 @@ function ProfileView() {
 
   function copyPlayerId() {
     if (!session.profile?.playerId) return;
-    void navigator.clipboard.writeText(session.profile.playerId);
+    void copyText(session.profile.playerId);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }

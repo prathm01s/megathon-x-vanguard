@@ -1,6 +1,6 @@
 # Handoff — Toss Life
 
-_Last updated: 2026-10-11, after content expansion (chapters 1–4), Friends' Room live wiring, database repair & cloud deployment, and demo test verification. For a shorter overview — what's built, how to run it, next steps — read [`status.md`](./status.md)._
+_Last updated: 2026-10-11 (session 9: localhost + hotspot testing, v2 plan in `docs/plan-v2.md`). For a shorter overview — what's built, how to run it, next steps — read [`status.md`](./status.md)._
 
 This file records what has been built so far, how to run it, which decisions were made and what
 comes next. **Read [`CLAUDE.md`](./CLAUDE.md) first.** It is the spec, and it wins over this
@@ -28,16 +28,23 @@ file. The original pitch is `Toss Life.pdf`.
    visuals. Details in §3.5.
 6. **Merge + review into `main`** (Samarth's session, on request): all branches merged, one
    conflict resolved, and the merged app reviewed by running it (including playing ch2 end to end
-   in Chromium). Eight integration bugs fixed, listed in §9. `status.md` written.
+   in Chromium). Eight integration bugs fixed (see `git log` for the `fix(...)` commits of
+   2026-10-10). `status.md` written.
 7. **Pragya — Friends' Room UI, Telugu, PWA** (one more commit on her branch, merged during the
    same review): the room hub and room screen, loan, auction and emotes components,
-   `messages/te.json`, plus the manifest and service worker. Integration fixes are in §9.
+   `messages/te.json`, plus the manifest and service worker. Integration fix: commit `fix(room-ui)`.
 8. **Content expansion, Friends' Room live wiring, atomic redemption & real-backend demo suite**
    (2026-10-11):
    - All 5 chapters (1, 2, 3A, 3B, 4) written, balanced and playable with scaled life events, fixed costs, Gyaan check (3 each), discussion prompts (3 each), and income-proportional bot investments.
    - Friends' Room wired to real `useRoom` actions; `Create Room` creates real room on server via `useCreateRoom()`; room screen display and translations fixed.
    - Supabase hosted project deployed (`vapzfepyyjdsxxjclpwr`): migration repair for `20261010020000`, `supabase db push --include-all`, all 5 migrations in sync; `room-action` edge function deployed; `packages/db-types` regenerated.
    - E2E demo test suites (`e2e/demo.spec.ts` and `e2e/demo-supabase.spec.ts`) automated and verified.
+9. **Localhost + hotspot, v2 plan** (2026-10-11, Samarth's session): Vercel paused. The app now
+   works on phones over plain `http://<laptop-ip>:3000` (`pnpm dev:lan`): `crypto.randomUUID` and
+   the Clipboard API need HTTPS, so `lib/uuid.ts` adds fallbacks; `allowedDevOrigins` lets LAN
+   devices load the dev server. Offline playthroughs now start in the persona's chapter (was
+   hardcoded to ch2). Docs corrected (database password removed from them). The v2 redesign is
+   planned and split between the three of us in `docs/plan-v2.md`.
 
 ---
 
@@ -46,7 +53,7 @@ file. The original pitch is `Toss Life.pdf`.
 | Check | Result |
 | --- | --- |
 | `pnpm install` | ✅ pnpm 12, 5 workspace projects |
-| `pnpm content:validate` | ✅ 25 files valid, **no warnings** |
+| `pnpm content:validate` | ✅ 21 files valid (warns only about missing Telugu/Hindi/Urdu content strings) |
 | `pnpm content:build` | ✅ writes `packages/content/dist/content.json` + 17 JSON Schemas (`e3ef7d69dec5`) |
 | `pnpm lint` | ✅ no errors, no warnings |
 | `pnpm typecheck` | ✅ all packages + scripts |
@@ -59,7 +66,7 @@ file. The original pitch is `Toss Life.pdf`.
 | Migrations + RLS | ✅ **all 5 migrations applied & verified in cloud** (`vapzfepyyjdsxxjclpwr`) and on PGlite in tests |
 | Demo seed + stats views | ✅ `supabase/seed.sql` applies on all migrations; admin sees 35 students, batch cohorts, slips; stats views return class data |
 | Room server (`room-action` Edge Function) | ✅ **Deployed to hosted Supabase** (`vapzfepyyjdsxxjclpwr`); smoke tests passing under Deno |
-| `pnpm test:e2e` (Playwright) | ✅ `demo.spec.ts` and `smoke.spec.ts` pass; `demo-supabase.spec.ts` automated |
+| `pnpm test:e2e` (Playwright) | ✅ `demo.spec.ts` and `smoke.spec.ts` pass; `demo-supabase.spec.ts` passed against local Supabase |
 | `/dev/sim`, `/dev/content` | ✅ verified in browser: simulation runs, inspector updates, no console errors |
 | Git | ✅ `main` clean and in sync with `origin/main` |
 | CI on GitHub | ✅ active in `.github/workflows/ci.yml`: lint, typecheck, tests; Playwright on PRs into `main` |
@@ -87,7 +94,8 @@ Playwright automatically connects to your running dev server on `http://localhos
 # 1. Run the student journey & mock room test
 pnpm --filter web exec playwright test e2e/demo.spec.ts
 
-# 2. Run the full hackathon demo script (§13) against the real Supabase cloud backend
+# 2. Run the full hackathon demo script (§13) against a real backend. It creates a student and a
+#    room, so use a LOCAL Supabase (pnpm db:start, then run the app with its keys), not the hosted one.
 # (NGO admin code creation -> Student redemption -> Mindset & Ch2 -> Friends Room with real server -> Admin dashboard verification)
 pnpm --filter web exec playwright test e2e/demo-supabase.spec.ts
 
@@ -97,13 +105,23 @@ pnpm --filter web exec playwright test e2e/smoke.spec.ts
 
 ### Hosted Supabase Maintenance / Sync
 
-If syncing or verifying migrations on the remote Supabase database:
+The hosted project is up to date (checked 2026-10-11 over HTTPS: `room-action` answers 401
+without a token, the redemption RPC exists, the demo admin can log in). After a new migration or a
+content change, from a network that allows the database ports (a phone hotspot works; many campus
+Wi-Fi networks block them):
+
 ```powershell
-$env:SUPABASE_DB_PASSWORD = "Megathon123"
-pnpm exec supabase migration repair --status reverted 20261010020000
-pnpm exec supabase db push --include-all --password Megathon123
-pnpm functions:deploy
+$env:SUPABASE_DB_PASSWORD = "<database password>"   # Supabase → Project Settings → Database
+pnpm exec supabase db push
+pnpm functions:deploy                               # the room server bundles the content
 ```
+
+Never write the database password into a committed file. It was in these docs for a few hours on
+2026-10-11 (commit `19ce5b6`, private repo): rotate it in the dashboard.
+
+### Testing on phones over a hotspot
+
+`pnpm dev:lan` serves the app on every network interface. Full steps are in `status.md` §3.
 
 ---
 
@@ -125,12 +143,12 @@ pnpm functions:deploy
 ### 3.3 Game content (`content/`, Pragya & Samarth)
 
 - **All 5 chapters complete & playable**:
-  - `ch1-first-earnings` (12 months): intro/outro, prompts, scaled event weights, festival-gift and bike-repair events.
-  - `ch2-first-job`: 5 annual turns, FD vs SIP, market storm, OTP scam, emergency fund tasks.
-  - `ch3a-salaried`: fixed costs (home loan EMI), term insurance, retirement plans, hospital stay events.
-  - `ch3b-business`: shop upgrade / delivery van with earnings bonus, stock damage, festival rush.
-  - `ch4-legacy`: estate planning, child education fund, parent care, grand goals.
-- **Events and Scams**: 8 life events + 5 income-scaled events; 8 scams extended to chapters 3 and 4.
+  - `ch1-first-earnings` (12 months, ₹6,000 stipend): phone bill, college fee share, safety jar, phone goal.
+  - `ch2-first-job` (5 years): emergency fund, sister's fees, laptop (+5% salary), two-wheeler; FD vs SIP.
+  - `ch3a-salaried` (12 years): home loan EMI as a fixed cost, health insurance, certification (+5%), baby, 6-month fund, car, child's education fund.
+  - `ch3b-business` (12 years, ±30% income): restock, health insurance, 6-month buffer, shop upgrade (+10%), child's school, delivery van (+8%).
+  - `ch4-legacy` (20 years): health cover, 6-month fund, child's college (6 years away), home repair, trip with parents, retirement fund (required, 20 years away).
+- **Events and Scams**: 15 life events (5 new ones cost months of income, so they scale with the chapter); 8 scams, extended to chapters 3 and 4.
 - **Gyaan Check & Prompts**: 3 questions and 3 discussion prompts each for all 4 distinct chapter types.
 - **Bot logic**: SIP and RD investment amounts scale proportionally with chapter income.
 
@@ -197,13 +215,16 @@ pnpm functions:deploy
 
 ## 6. Known issues & remaining tasks
 
-1. **Vercel Cloud Deployment**:
-   - The repository needs to be imported/connected via the Vercel dashboard.
+1. **Vercel Cloud Deployment** (paused; localhost for now):
+   - The first attempt didn't work. The repository needs to be imported/connected via the Vercel dashboard.
    - Set the 6 environment variables on Vercel from `.env.local`.
    - Build command override: `pnpm content:build && pnpm --filter web build`.
 2. **Telugu Localization**:
-   - Complete remaining UI strings (~111 keys remaining in `messages/te.json`).
-3. **PWA Offline Mode**:
+   - UI strings are complete (248/248). Game content is 9% translated.
+3. **Security (Prathmesh):** `redeem_student_code_claim` can be called directly with the anon key,
+   and the caller passes the IP the rate limit counts by. Revoke `execute` from `anon` and
+   `authenticated` (only the server action, with the service role, should call it).
+4. **PWA Offline Mode**:
    - Cache single-player assets in `public/sw.js` for zero-connectivity gameplay.
 
 ---

@@ -11,6 +11,9 @@ loadEnvConfig(resolve(__dirname, "../.."), process.env.NODE_ENV !== "production"
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
 const nextConfig: NextConfig = {
+  // Phones and laptops on the same Wi-Fi / hotspot open the dev server by IP (`pnpm dev:lan`).
+  // Next blocks dev requests from other hostnames unless listed; these are the private ranges.
+  allowedDevOrigins: ["192.168.*.*", "10.*.*.*", "172.*.*.*"],
   cacheComponents: true,
   partialPrefetching: true,
   // Workspace packages ship TypeScript source.

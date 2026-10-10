@@ -29,12 +29,22 @@
   resolved the `join/page.tsx` conflict, reviewed the merged code by running it (the ch2 flow in
   Chromium), fixed 8 integration bugs (see `handoff.md` §9), and wrote `status.md`. 151 tests.
 
+- **Second merge session** (2026-10-11): merged Prathmesh's and Pragya's latest branches; ran the
+  app against real Supabase for the first time and fixed what broke (the app never read the root
+  `.env.local`; `org_seats_v` counted 1,440 codes instead of 40; the dashboard showed sample
+  numbers); `pnpm db:env`; regenerated DB types.
+- **Content expansion** (2026-10-11): chapters 1, 3A, 3B and 4 written and balanced with `pnpm sim`
+  (balanced passes 87–100%, all-cash fails ch4); 7 new life events; Gyaan Check and discussion
+  prompts for every chapter; bots invest a share of income.
+- **Friends' Room on the real server:** Create Room makes a real room (`useCreateRoom`); room screen
+  turn number and titles fixed; `e2e/demo-supabase.spec.ts` runs the whole §13 script.
+- **Localhost + hotspot** (2026-10-11): `pnpm dev:lan`, HTTPS-only API fallbacks, docs corrected,
+  `docs/plan-v2.md` (the gamified redesign, split between the three of us).
+
 ## In progress
 
-- Nothing. Everything is merged into `main`.
+- v2 redesign, my part: see `docs/plan-v2.md` (track S).
 
 ## Blocked
 
-- Deploying the room server needs the Supabase Cloud project (Prathmesh, §15.6 item 13).
-
-Next up: `docs/requests/samarth.md` items 11–13.
+- Nothing.
