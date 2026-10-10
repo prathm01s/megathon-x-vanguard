@@ -37,7 +37,15 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "app" });
-  return { title: t("name"), description: t("tagline") };
+  return {
+    title: t("name"),
+    description: t("tagline"),
+    manifest: "/manifest.json",
+    icons: {
+      icon: "/icon.svg",
+      apple: "/icon.svg",
+    },
+  };
 }
 
 export const viewport: Viewport = {
@@ -57,8 +65,17 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       dir={dirFor(locale)}
       className={`${nunito.variable} ${notoTelugu.variable} ${notoDevanagari.variable} ${notoArabic.variable}`}
     >
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+      </head>
       <body className="min-h-dvh font-sans">
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{});});}`,
+          }}
+        />
       </body>
     </html>
   );
