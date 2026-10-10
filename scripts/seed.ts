@@ -51,14 +51,56 @@ const STUDENT_DOMAIN = process.env.STUDENT_EMAIL_DOMAIN || "students.tosslife.in
 
 // Nicknames only — no real names (§6).
 const NICKNAMES = [
-  "Aarav", "Fatima", "Rohan", "Sneha", "Vikram", "Priya", "Zaid", "Ananya", "Karthik", "Divya",
-  "Arjun", "Zoya", "SaiT", "Meera", "Aditya", "Sana", "Rahul", "Pooja", "Suresh", "Bhavna",
-  "Imran", "Swati", "Nikhil", "Kavya", "Harish", "Ritu", "Deepak", "Ayesha", "Manoj", "Shreya",
-  "Tanmay", "Alia", "Coinflip", "Neha", "Kunal", "Varun", "Shruti", "Pranav", "Anu", "Vijay",
+  "Aarav",
+  "Fatima",
+  "Rohan",
+  "Sneha",
+  "Vikram",
+  "Priya",
+  "Zaid",
+  "Ananya",
+  "Karthik",
+  "Divya",
+  "Arjun",
+  "Zoya",
+  "SaiT",
+  "Meera",
+  "Aditya",
+  "Sana",
+  "Rahul",
+  "Pooja",
+  "Suresh",
+  "Bhavna",
+  "Imran",
+  "Swati",
+  "Nikhil",
+  "Kavya",
+  "Harish",
+  "Ritu",
+  "Deepak",
+  "Ayesha",
+  "Manoj",
+  "Shreya",
+  "Tanmay",
+  "Alia",
+  "Coinflip",
+  "Neha",
+  "Kunal",
+  "Varun",
+  "Shruti",
+  "Pranav",
+  "Anu",
+  "Vijay",
 ];
 
 // A spread of play styles so the dashboard shows contrasts.
-const STRATEGIES: StrategyId[] = ["balanced", "cautious", "impulsive", "all-cash", "all-equity-no-fund"];
+const STRATEGIES: StrategyId[] = [
+  "balanced",
+  "cautious",
+  "impulsive",
+  "all-cash",
+  "all-equity-no-fund",
+];
 
 const q = (s: string) => `'${s.replace(/'/g, "''")}'`;
 const json = (v: unknown) => `${q(JSON.stringify(v))}::jsonb`;
@@ -66,7 +108,11 @@ const uuid = (group: number, n: number) =>
   `00000000-0000-0000-${String(group).padStart(4, "0")}-${String(n).padStart(12, "0")}`;
 
 /** Pre-check: seeded answers. Post-check: same student, a bit wiser (best answer on most questions). */
-function mindsetAnswers(questions: MindsetQuestion[], seed: string, phase: "pre" | "post"): MindsetAnswers {
+function mindsetAnswers(
+  questions: MindsetQuestion[],
+  seed: string,
+  phase: "pre" | "post",
+): MindsetAnswers {
   const rng = createRng(seed, "bots", phase === "pre" ? 1 : 2);
   const answers: MindsetAnswers = {};
   for (const question of questions) {
@@ -84,7 +130,12 @@ function mindsetAnswers(questions: MindsetQuestion[], seed: string, phase: "pre"
 function decisionLog(state: GameState, records: DecisionRecord[]): DecisionRecord[] {
   const ctx = (turn: number) => ({ chapterId: state.chapterId, turn });
   const out: DecisionRecord[] = [
-    { type: "chapter_start", chapterId: state.chapterId, turn: 0, payload: { personaId: state.personaId } },
+    {
+      type: "chapter_start",
+      chapterId: state.chapterId,
+      turn: 0,
+      payload: { personaId: state.personaId },
+    },
   ];
   for (const { turn, action } of state.actionLog) {
     const r = toDecisionLog(action, ctx(turn));
@@ -98,7 +149,12 @@ function decisionLog(state: GameState, records: DecisionRecord[]): DecisionRecor
       payload: { marketState: toss.marketState, independent: toss.independent },
     });
     if (toss.lifeEventId) {
-      out.push({ type: "life_event", chapterId: state.chapterId, turn: toss.turn, payload: { eventId: toss.lifeEventId } });
+      out.push({
+        type: "life_event",
+        chapterId: state.chapterId,
+        turn: toss.turn,
+        payload: { eventId: toss.lifeEventId },
+      });
     }
   }
   return [...out, ...records];
@@ -128,13 +184,17 @@ export function buildSeedSql(content: ContentBundle): string {
     `DELETE FROM auth.users WHERE id = '${ADMIN_ID}' OR id::text LIKE '00000000-0000-0000-0001-%';`,
     "",
     "-- 1. NGO admin login, organisation and profile",
-    ...authUser(ADMIN_ID, ADMIN_EMAIL, { username: "hyderabad_admin", nickname: "Kavitha Facilitator" }),
+    ...authUser(ADMIN_ID, ADMIN_EMAIL, {
+      username: "hyderabad_admin",
+      nickname: "Kavitha Facilitator",
+    }),
     `INSERT INTO public.organizations (id, name, admin_user_id, settings)`,
     `VALUES ('${ORG_ID}', 'Hyderabad Youth Empowerment Trust', '${ADMIN_ID}', '{"codeExpiryDays": 30}'::jsonb);`,
     `INSERT INTO public.profiles (user_id, role, org_id, username, nickname, player_id, locale, has_recovery_email)`,
     `VALUES ('${ADMIN_ID}', 'ngo_admin', '${ORG_ID}', 'hyderabad_admin', 'Kavitha Facilitator', 'TL-ADMIN', 'en', true);`,
     ...GROUPS.map(
-      (g) => `INSERT INTO public.groups (id, org_id, name) VALUES ('${g.id}', '${ORG_ID}', ${q(g.name)});`,
+      (g) =>
+        `INSERT INTO public.groups (id, org_id, name) VALUES ('${g.id}', '${ORG_ID}', ${q(g.name)});`,
     ),
     "",
   ];
@@ -153,7 +213,9 @@ export function buildSeedSql(content: ContentBundle): string {
     const preResult = scoreMindset(pre, content);
     const strategy = STRATEGIES[i % STRATEGIES.length]!;
 
-    sql.push(`-- Student ${n}: ${nickname} (${preResult.personaId}, ${strategy}, code ${codeStatus})`);
+    sql.push(
+      `-- Student ${n}: ${nickname} (${preResult.personaId}, ${strategy}, code ${codeStatus})`,
+    );
     const codeRow = [
       `INSERT INTO public.student_codes (id, org_id, code_hash, code_last4, label, group_id, status, expires_at, created_by, redeemed_by, redeemed_at)`,
       `VALUES ('${uuid(2, n)}', '${ORG_ID}', 'demo_hash_${n}', '${last4}', ${q(`${group.name} - seat ${n}`)}, '${group.id}', '${codeStatus}', ${codeStatus === "expired" ? "NOW() - interval '1 day'" : "NOW() + interval '30 days'"}, '${ADMIN_ID}', ${codeStatus === "active" ? `'${userId}'` : "NULL"}, ${codeStatus === "active" ? "NOW()" : "NULL"});`,
@@ -220,5 +282,7 @@ if (process.argv[1]?.endsWith("seed.ts")) {
   }
   const outputPath = resolve(here, "../supabase/seed.sql");
   writeFileSync(outputPath, buildSeedSql(loaded.bundle), "utf-8");
-  console.log(`✔ Demo seed written to ${outputPath} (password for all demo logins: ${DEMO_PASSWORD})`);
+  console.log(
+    `✔ Demo seed written to ${outputPath} (password for all demo logins: ${DEMO_PASSWORD})`,
+  );
 }

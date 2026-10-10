@@ -101,25 +101,27 @@ function ReportContent() {
           <div className="space-y-1.5">
             {/* Only parts that count (e.g. Trust Score is multiplayer-only); weights are
                 redistributed by the engine, so round them for display. */}
-            {result.breakdown.filter((b) => b.applicable).map((b) => {
-              const compDef = content.healthScore.components.find((c) => c.id === b.componentId);
-              return (
-                <div key={b.componentId} className="space-y-0.5">
-                  <div className="flex justify-between text-xs font-semibold">
-                    <span>{compDef ? l(compDef.label) : b.componentId}</span>
-                    <span className="tabular-nums">
-                      {Math.round(b.points)} / {Math.round(b.weight)} pts
-                    </span>
+            {result.breakdown
+              .filter((b) => b.applicable)
+              .map((b) => {
+                const compDef = content.healthScore.components.find((c) => c.id === b.componentId);
+                return (
+                  <div key={b.componentId} className="space-y-0.5">
+                    <div className="flex justify-between text-xs font-semibold">
+                      <span>{compDef ? l(compDef.label) : b.componentId}</span>
+                      <span className="tabular-nums">
+                        {Math.round(b.points)} / {Math.round(b.weight)} pts
+                      </span>
+                    </div>
+                    <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-primary"
+                        style={{ width: `${Math.min(100, Math.round(b.fraction * 100))}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-primary"
-                      style={{ width: `${Math.min(100, Math.round(b.fraction * 100))}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         </div>
       </Card>
