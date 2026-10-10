@@ -2,7 +2,7 @@
 import type { ContentBundle } from "@toss/content";
 import { EngineError } from "./errors";
 import { respondToScam } from "./events";
-import { clone, getChapter, optionMap, unlockedOptions } from "./helpers";
+import { allowedOptions, clone, getChapter, optionMap, unlockedOptions } from "./helpers";
 import { rupeesToPaise } from "./money";
 import { buy, isLocked, sell, withdrawalPenalty } from "./portfolio";
 import { payTask } from "./tasks";
@@ -42,10 +42,15 @@ export function getAvailableActions(state: GameState, content: ContentBundle): A
   }
 
   const lastToss = state.tosses.at(-1);
+  // New money only goes into options the persona's level allows; anything already held can
+  // always be withdrawn and running SIPs stopped.
+  const allowed = new Set(
+    allowedOptions(content, state.chapterId, state.personaId).map((o) => o.id),
+  );
   for (const o of unlockedOptions(content, state.chapterId)) {
     if (o.category === "cash") continue; // the wallet *is* cash
     const min = rupeesToPaise(o.minAmount);
-    if (!o.monthlyDepositOnly) {
+    if (!o.monthlyDepositOnly && allowed.has(o.id)) {
       out.push({
         type: "invest",
         targetId: o.id,
@@ -79,11 +84,10 @@ export function getAvailableActions(state: GameState, content: ContentBundle): A
     // SIPs, and recurring deposits (monthly-only options) use the same monthly instalment.
     if (o.sipAllowed || o.monthlyDepositOnly) {
       const running = state.sips.find((s) => s.optionId === o.id && s.stoppedTurn === undefined);
-      out.push(
-        running
-          ? { type: "sip_stop", targetId: o.id, label: o.name }
-          : { type: "sip_start", targetId: o.id, label: o.name, minAmount: min },
-      );
+      if (running) out.push({ type: "sip_stop", targetId: o.id, label: o.name });
+      else if (allowed.has(o.id)) {
+        out.push({ type: "sip_start", targetId: o.id, label: o.name, minAmount: min });
+      }
     }
   }
   return out;
@@ -113,6 +117,7 @@ export function applyAction(state: GameState, action: Action, content: ContentBu
     case "invest": {
       const opt = options.get(action.optionId);
       if (!opt) throw new EngineError("bad_option", `unknown option ${action.optionId}`);
+      assertAllowed(next, opt.id, content);
       if (opt.monthlyDepositOnly) throw new EngineError("monthly_only", "use a monthly deposit");
       if (action.amount <= 0 || action.amount > next.cash) {
         throw new EngineError("insufficient_cash", "not enough cash");
@@ -141,6 +146,7 @@ export function applyAction(state: GameState, action: Action, content: ContentBu
       if (!opt || !(opt.sipAllowed || opt.monthlyDepositOnly)) {
         throw new EngineError("bad_option", "monthly investing not allowed for this option");
       }
+      assertAllowed(next, opt.id, content);
       if (next.sips.some((s) => s.optionId === opt.id && s.stoppedTurn === undefined)) {
         throw new EngineError("already_running", "SIP already running");
       }
@@ -172,4 +178,11 @@ export function applyAction(state: GameState, action: Action, content: ContentBu
   }
   next.actionLog.push({ turn: state.turn + 1, action });
   return next;
+}
+
+/** New money may only go into options unlocked in this chapter AND allowed by the persona. */
+function assertAllowed(state: GameState, optionId: string, content: ContentBundle): void {
+  if (!allowedOptions(content, state.chapterId, state.personaId).some((o) => o.id === optionId)) {
+    throw new EngineError("option_locked", `${optionId} isn't available at this level`);
+  }
 }

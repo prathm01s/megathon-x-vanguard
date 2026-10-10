@@ -6,7 +6,7 @@
 import { createClient } from "@/lib/supabase/client";
 import { content } from "@/lib/content";
 import { createPlaythrough, startChapterFor } from "@toss/engine";
-import type { PersistenceApi, PlaythroughId } from "./types";
+import type { PersistenceApi, PlaythroughId, SavedProgress } from "./types";
 import type { Json } from "@toss/db-types";
 import type {
   ChapterResult,
@@ -178,6 +178,65 @@ export const supabasePersistence: PersistenceApi = {
       });
     } catch (e) {
       console.warn("Failed to save mindset to remote DB, stored locally:", e);
+    }
+  },
+
+  async loadProgress(): Promise<SavedProgress> {
+    const empty: SavedProgress = { pre: null, post: null, personaId: null, chapters: {} };
+    try {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return empty;
+
+      const [mindset, games, results] = await Promise.all([
+        supabase
+          .from("mindset_responses")
+          .select("phase, answers, scores, persona_id")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("playthroughs")
+          .select("persona_id")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(1),
+        // RLS: a student only sees their own results.
+        supabase.from("chapter_results").select("chapter_id, passed, health_score"),
+      ]);
+
+      const record = (phase: "pre" | "post") => {
+        const row = mindset.data?.find((r) => r.phase === phase);
+        if (!row) return null;
+        return {
+          answers: row.answers as unknown as MindsetAnswers,
+          result: {
+            scores: row.scores as unknown as MindsetResult["scores"],
+            personaId: row.persona_id,
+          } as MindsetResult,
+        };
+      };
+      const chapters: SavedProgress["chapters"] = {};
+      for (const r of results.data ?? []) {
+        const best = chapters[r.chapter_id];
+        if (!best || (r.passed && !best.passed) || r.health_score > best.healthScore) {
+          chapters[r.chapter_id] = {
+            passed: r.passed || Boolean(best?.passed),
+            healthScore: Math.max(r.health_score, best?.healthScore ?? 0),
+          };
+        }
+      }
+      const pre = record("pre");
+      return {
+        pre,
+        post: record("post"),
+        personaId: games.data?.[0]?.persona_id ?? pre?.result.personaId ?? null,
+        chapters,
+      };
+    } catch (e) {
+      console.warn("Could not load saved progress:", e);
+      return empty;
     }
   },
 

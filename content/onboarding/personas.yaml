@@ -16,6 +16,14 @@ personas:
     mentorTips:
       - { en: "Before you spend, put a little aside for surprises." }
       - { en: "An emergency fund turns a bad toss into a small bump." }
+    difficulty:
+      tier: rookie
+      label: { en: "Rookie" }
+      stars: 1
+      summary: { en: "Simple bank options, a bigger starting cushion and an easier pass mark." }
+      optionIds: [cash, savings, rd, fd]
+      startingBonus: 0.5
+      passThresholdOffset: -5
   - id: safe-keeper
     name: { en: "Safe Keeper" }
     strength: { en: "Disciplined saver" }
@@ -29,6 +37,14 @@ personas:
     mentorTips:
       - { en: "Watch the Real Value number, not just the Amount." }
       - { en: "For goals many years away, a small SIP can do a lot of work." }
+    difficulty:
+      tier: builder
+      label: { en: "Builder" }
+      stars: 2
+      summary: { en: "Bank options plus funds and SIPs. A small starting cushion." }
+      optionIds: [cash, savings, rd, fd, equity-fund, debt-fund, index-fund]
+      startingBonus: 0.2
+      passThresholdOffset: 0
   - id: thrill-seeker
     name: { en: "Thrill Seeker" }
     strength: { en: "Bold, open to investing" }
@@ -42,6 +58,13 @@ personas:
     mentorTips:
       - { en: "Guaranteed high returns are a red flag, not an opportunity." }
       - { en: "Spread your money so one bad toss can't sink you." }
+    difficulty:
+      tier: challenger
+      label: { en: "Challenger" }
+      stars: 3
+      summary: { en: "Every investment, more scam offers, no cushion." }
+      startingBonus: 0
+      passThresholdOffset: 0
   - id: smart-planner
     name: { en: "Smart Planner" }
     strength: { en: "Patient and informed" }
@@ -49,11 +72,18 @@ personas:
     avatarHint: compass
     startChapter: ch2-first-job
     guidedFirstTurn: false
-    eventMultipliers: {}
+    eventMultipliers: { health: 1.2, family: 1.2, work: 1.2 } # Master: tougher luck
     scamMultiplier: 1.0
     highlightTechniques: [goal-based-investing, diversification]
     mentorTips:
       - { en: "A good plan leaves room to act when a real opportunity appears." }
+    difficulty:
+      tier: master
+      label: { en: "Master" }
+      stars: 4
+      summary: { en: "Every investment, tougher luck and a higher pass mark." }
+      startingBonus: 0
+      passThresholdOffset: 5
 
 assignmentRules:
   - personaId: thrill-seeker

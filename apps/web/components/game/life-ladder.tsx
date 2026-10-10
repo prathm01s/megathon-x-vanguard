@@ -41,6 +41,7 @@ function Ladder() {
   const l = useLocalize();
   const personaId = useGameStore((s) => s.personaId);
   const results = useGameStore((s) => s.results);
+  const saved = useGameStore((s) => s.savedChapters);
   const state = useGameStore((s) => s.state);
   const persona = content.personas.personas.find((p) => p.id === personaId);
 
@@ -48,7 +49,8 @@ function Ladder() {
   const first = startChapterFor(personaId);
   if (first) unlocked.add(first);
   for (const c of content.chapters) {
-    if (!results[c.id]?.passed) continue;
+    if (!results[c.id]?.passed && !saved[c.id]?.passed) continue;
+    unlocked.add(c.id); // a passed chapter can always be replayed
     const nextIds = c.next === "end" ? [] : typeof c.next === "string" ? [c.next] : c.next.choice;
     nextIds.forEach((id) => unlocked.add(id));
   }
@@ -132,7 +134,9 @@ function ChapterRung({
 }) {
   const t = useTranslations("ladder");
   const l = useLocalize();
-  const result = useGameStore((s) => s.results[chapter.id]);
+  const local = useGameStore((s) => s.results[chapter.id]);
+  const saved = useGameStore((s) => s.savedChapters[chapter.id]);
+  const result = local ?? saved;
   const playable = chapter.enabled && unlocked;
   const [from, to] = chapter.ageRange;
 

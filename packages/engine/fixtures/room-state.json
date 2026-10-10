@@ -17,7 +17,7 @@
       "ready": false,
       "state": {
         "schemaVersion": 2,
-        "contentVersion": "e3ef7d69dec5",
+        "contentVersion": "ed1c9afbf7a8",
         "seed": "room-fixture:m1",
         "personaId": "safe-keeper",
         "chapterId": "ch2-first-job",
@@ -25,7 +25,7 @@
         "totalTurns": 5,
         "turnUnit": "year",
         "status": "playing",
-        "cash": 46887225,
+        "cash": 47187225,
         "debt": 0,
         "incomePerMonth": 3779136,
         "incomeModifiers": [],
@@ -123,26 +123,26 @@
         "history": [
           {
             "turn": 0,
-            "amount": 1500000,
-            "realValue": 1500000,
+            "amount": 1800000,
+            "realValue": 1800000,
             "inflationIndex": 1
           },
           {
             "turn": 1,
-            "amount": 15204249,
-            "realValue": 14343631,
+            "amount": 15504249,
+            "realValue": 14626650,
             "inflationIndex": 1.0600000000000003
           },
           {
             "turn": 2,
-            "amount": 32250757,
-            "realValue": 28703059,
+            "amount": 32550757,
+            "realValue": 28970058,
             "inflationIndex": 1.1236000000000006
           },
           {
             "turn": 3,
-            "amount": 46887225,
-            "realValue": 39367418,
+            "amount": 47187225,
+            "realValue": 39619304,
             "inflationIndex": 1.191016000000001
           }
         ],
@@ -200,7 +200,7 @@
       "ready": true,
       "state": {
         "schemaVersion": 2,
-        "contentVersion": "e3ef7d69dec5",
+        "contentVersion": "ed1c9afbf7a8",
         "seed": "room-fixture:m2",
         "personaId": "safe-keeper",
         "chapterId": "ch2-first-job",
@@ -208,7 +208,7 @@
         "totalTurns": 5,
         "turnUnit": "year",
         "status": "playing",
-        "cash": 22357190,
+        "cash": 22417190,
         "debt": 0,
         "incomePerMonth": 3968093,
         "incomeModifiers": [],
@@ -228,31 +228,24 @@
           {
             "optionId": "savings",
             "invested": 5400000,
-            "investedReal": 5179245,
-            "value": 5776601,
-            "units": 5286.407766990288
+            "investedReal": 5196226,
+            "value": 5786149,
+            "units": 5295.145631067959
           },
           {
             "optionId": "equity-fund",
-            "invested": 12755413,
-            "investedReal": 11625003,
-            "value": 10146595,
-            "units": 13473.318777938242
+            "invested": 13730590,
+            "investedReal": 12492907,
+            "value": 10946240,
+            "units": 14535.140424279705
           },
           {
             "optionId": "fd",
-            "invested": 1466560,
-            "investedReal": 1305233,
-            "value": 1565553,
-            "units": 1286.9570940442793,
+            "invested": 2197943,
+            "investedReal": 1956161,
+            "value": 2346304,
+            "units": 1928.7709579935124,
             "maturesAtTurn": 5
-          },
-          {
-            "optionId": "gold",
-            "invested": 1466560,
-            "investedReal": 1305233,
-            "value": 1437229,
-            "units": 1527.0304039983355
           }
         ],
         "sips": [
@@ -346,26 +339,26 @@
         "history": [
           {
             "turn": 0,
-            "amount": 1500000,
-            "realValue": 1500000,
+            "amount": 1800000,
+            "realValue": 1800000,
             "inflationIndex": 1
           },
           {
             "turn": 1,
-            "amount": 14225589,
-            "realValue": 13420367,
+            "amount": 14534589,
+            "realValue": 13711876,
             "inflationIndex": 1.0600000000000003
           },
           {
             "turn": 2,
-            "amount": 24144902,
-            "realValue": 21488877,
+            "amount": 24454172,
+            "realValue": 21764126,
             "inflationIndex": 1.1236000000000006
           },
           {
             "turn": 3,
-            "amount": 41283168,
-            "realValue": 34662144,
+            "amount": 41495883,
+            "realValue": 34840744,
             "inflationIndex": 1.191016000000001
           }
         ],
@@ -375,7 +368,7 @@
             "action": {
               "type": "pay_task",
               "taskId": "ch2-emergency-fund",
-              "amount": 1500000
+              "amount": 1800000
             }
           },
           {
@@ -399,7 +392,7 @@
             "action": {
               "type": "pay_task",
               "taskId": "ch2-emergency-fund",
-              "amount": 3900000
+              "amount": 3600000
             }
           },
           {
@@ -423,7 +416,7 @@
             "action": {
               "type": "invest",
               "optionId": "equity-fund",
-              "amount": 1955413
+              "amount": 2930590
             }
           },
           {
@@ -431,15 +424,7 @@
             "action": {
               "type": "invest",
               "optionId": "fd",
-              "amount": 1466560
-            }
-          },
-          {
-            "turn": 3,
-            "action": {
-              "type": "invest",
-              "optionId": "gold",
-              "amount": 1466560
+              "amount": 2197943
             }
           }
         ],
@@ -489,7 +474,7 @@
       "ready": true,
       "state": {
         "schemaVersion": 2,
-        "contentVersion": "e3ef7d69dec5",
+        "contentVersion": "ed1c9afbf7a8",
         "seed": "room-fixture:m3",
         "personaId": "thrill-seeker",
         "chapterId": "ch2-first-job",

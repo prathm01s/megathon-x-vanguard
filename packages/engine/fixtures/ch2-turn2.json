@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "contentVersion": "e3ef7d69dec5",
+  "contentVersion": "ed1c9afbf7a8",
   "seed": "fixture-seed-ch2",
   "personaId": "safe-keeper",
   "chapterId": "ch2-first-job",
@@ -28,9 +28,9 @@
     {
       "optionId": "savings",
       "invested": 5900000,
-      "investedReal": 5622642,
-      "value": 6107900,
-      "units": 5757.281553398054
+      "investedReal": 5639623,
+      "value": 6117170,
+      "units": 5766.019417475724
     },
     {
       "optionId": "equity-fund",
@@ -83,7 +83,7 @@
     {
       "taskId": "ch2-two-wheeler",
       "amount": 7865200,
-      "paid": 2904249,
+      "paid": 3204249,
       "dueTurn": 5,
       "status": "open"
     }
@@ -129,20 +129,20 @@
   "history": [
     {
       "turn": 0,
-      "amount": 1500000,
-      "realValue": 1500000,
+      "amount": 1800000,
+      "realValue": 1800000,
       "inflationIndex": 1
     },
     {
       "turn": 1,
-      "amount": 17863549,
-      "realValue": 16852405,
+      "amount": 18172549,
+      "realValue": 17143914,
       "inflationIndex": 1.0600000000000003
     },
     {
       "turn": 2,
-      "amount": 26260523,
-      "realValue": 23371772,
+      "amount": 26269793,
+      "realValue": 23380022,
       "inflationIndex": 1.1236000000000006
     }
   ],
@@ -176,7 +176,7 @@
       "action": {
         "type": "pay_task",
         "taskId": "ch2-emergency-fund",
-        "amount": 500000
+        "amount": 800000
       }
     },
     {
@@ -184,7 +184,7 @@
       "action": {
         "type": "pay_task",
         "taskId": "ch2-emergency-fund",
-        "amount": 4900000
+        "amount": 4600000
       }
     },
     {
@@ -208,7 +208,7 @@
       "action": {
         "type": "pay_task",
         "taskId": "ch2-two-wheeler",
-        "amount": 2904249
+        "amount": 3204249
       }
     }
   ],

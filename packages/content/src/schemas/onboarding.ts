@@ -40,6 +40,27 @@ export const mindsetQuestionsSchema = z.strictObject({
 export type MindsetQuestionsFile = z.infer<typeof mindsetQuestionsSchema>;
 
 // ── onboarding/personas.yaml ────────────────────────────────────────────────
+/**
+ * A persona is also a difficulty level (team decision 2026-10-11, docs/plan-v2.md D4–D6): it
+ * decides which investment options the player may use, how much cushion they start with and
+ * the pass mark. Rookies get a simpler board and more help; Masters get every tool.
+ */
+export const difficultySchema = z.strictObject({
+  tier: z.enum(["rookie", "builder", "challenger", "master"]),
+  label: localizedStringSchema,
+  /** 1–4, shown as stars. */
+  stars: z.number().int().min(1).max(4),
+  /** One line for the persona and chapter screens. */
+  summary: localizedStringSchema,
+  /** Options this persona may use (each chapter's unlocks still apply). Omit for all. */
+  optionIds: z.array(idSchema).optional(),
+  /** Extra starting cash as a share of the chapter's starting balance (0.5 = +50%). */
+  startingBonus: z.number().min(0).max(2).default(0),
+  /** Added to the chapter's pass mark (negative = easier). */
+  passThresholdOffset: z.number().min(-30).max(30).default(0),
+});
+export type Difficulty = z.infer<typeof difficultySchema>;
+
 export const personaSchema = z.strictObject({
   id: idSchema,
   enabled: z.boolean().default(true),
@@ -54,6 +75,7 @@ export const personaSchema = z.strictObject({
   scamMultiplier: z.number().nonnegative(),
   highlightTechniques: z.array(idSchema),
   mentorTips: z.array(localizedStringSchema),
+  difficulty: difficultySchema,
 });
 export type Persona = z.infer<typeof personaSchema>;
 

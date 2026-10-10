@@ -1,7 +1,13 @@
 import type { ReactNode } from "react";
+import { ProgressSync } from "@/components/game/progress-sync";
 import { AccountGate } from "@/components/ui/account-gate";
 
-// Every student screen needs a signed-in student with a profile (redirects otherwise).
+// Every student screen needs a signed-in student with a profile (redirects otherwise), and
+// restores their progress from the server before showing anything.
 export default function StudentLayout({ children }: { children: ReactNode }) {
-  return <AccountGate role="student">{children}</AccountGate>;
+  return (
+    <AccountGate role="student">
+      <ProgressSync>{children}</ProgressSync>
+    </AccountGate>
+  );
 }

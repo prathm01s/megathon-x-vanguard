@@ -13,7 +13,7 @@ import { applyAction } from "./actions";
 import { endChapter } from "./chapter";
 import { monthlyExpensesFor } from "./economy";
 import { EngineError } from "./errors";
-import { getChapter, unlockedOptions } from "./helpers";
+import { allowedOptions, getChapter } from "./helpers";
 import { rupeesToPaise } from "./money";
 import { createPlaythrough } from "./playthrough";
 import { createRng, type Rng } from "./rng";
@@ -57,7 +57,9 @@ function optionOfKind(
   content: ContentBundle,
   kind: OptionKind,
 ): string | undefined {
-  const opts = unlockedOptions(content, state.chapterId).filter((o) => o.category !== "cash");
+  const opts = allowedOptions(content, state.chapterId, state.personaId).filter(
+    (o) => o.category !== "cash",
+  );
   const match = opts.find((o) => {
     switch (kind) {
       case "growth":

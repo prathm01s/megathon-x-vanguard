@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "contentVersion": "e3ef7d69dec5",
+  "contentVersion": "ed1c9afbf7a8",
   "seed": "fixture-seed-ch2",
   "personaId": "safe-keeper",
   "chapterId": "ch2-first-job",
@@ -8,7 +8,7 @@
   "totalTurns": 5,
   "turnUnit": "year",
   "status": "playing",
-  "cash": 1500000,
+  "cash": 1800000,
   "debt": 0,
   "incomePerMonth": 3000000,
   "incomeModifiers": [],
@@ -102,8 +102,8 @@
   "history": [
     {
       "turn": 0,
-      "amount": 1500000,
-      "realValue": 1500000,
+      "amount": 1800000,
+      "realValue": 1800000,
       "inflationIndex": 1
     }
   ],

@@ -22,7 +22,7 @@ const ch2 = (seed = "test-seed") =>
 describe("chapter 2 setup", () => {
   it("starts with the chapter balance in paise and its tasks", () => {
     const s = ch2();
-    expect(s.cash).toBe(15000_00);
+    expect(s.cash).toBe(18000_00); // ₹15,000 + the Builder level's 20% cushion
     expect(s.turn).toBe(0);
     expect(s.tasks.map((t) => t.taskId)).toContain("ch2-sister-fees");
     // Emergency fund = 3 x (15,000 + 3,000) monthly expenses.
@@ -30,17 +30,60 @@ describe("chapter 2 setup", () => {
   });
 
   it("offers only options unlocked by ch2", () => {
-    const invest = getAvailableActions(ch2(), content())
+    // A Challenger may use every option, so this checks the chapter's unlocks alone.
+    const challenger = createPlaythrough({
+      content: content(),
+      personaId: "thrill-seeker",
+      seed: "test-seed",
+      chapterId: "ch2-first-job",
+    });
+    const invest = getAvailableActions(challenger, content())
       .filter((a) => a.type === "invest")
       .map((a) => a.targetId);
     expect(invest).toEqual(expect.arrayContaining(["savings", "fd", "gold", "equity-fund"]));
     expect(invest).not.toContain("index-fund");
     // The recurring deposit is monthly-only: offered as a monthly plan, not a lump sum.
     expect(invest).not.toContain("rd");
-    const monthly = getAvailableActions(ch2(), content())
+    const monthly = getAvailableActions(challenger, content())
       .filter((a) => a.type === "sip_start")
       .map((a) => a.targetId);
     expect(monthly).toEqual(expect.arrayContaining(["rd", "equity-fund"]));
+  });
+});
+
+describe("persona levels (difficulty)", () => {
+  const start = (personaId: string) =>
+    createPlaythrough({ content: content(), personaId, seed: "lvl", chapterId: "ch2-first-job" });
+  const investable = (s: ReturnType<typeof start>) =>
+    getAvailableActions(s, content())
+      .filter((a) => a.type === "invest" || a.type === "sip_start")
+      .map((a) => a.targetId);
+
+  it("a Rookie only gets bank options and a bigger cushion", () => {
+    const s = start("moment-maker");
+    expect(s.cash).toBe(22500_00); // +50%
+    expect(new Set(investable(s))).toEqual(new Set(["savings", "rd", "fd"]));
+  });
+
+  it("a Builder gets funds and SIPs but not gold", () => {
+    const opts = investable(start("safe-keeper"));
+    expect(opts).toContain("equity-fund");
+    expect(opts).not.toContain("gold");
+  });
+
+  it("refuses new money into an option the level doesn't allow", () => {
+    expect(() =>
+      applyAction(
+        start("moment-maker"),
+        { type: "invest", optionId: "equity-fund", amount: 100_00 },
+        content(),
+      ),
+    ).toThrow(EngineError);
+  });
+
+  it("a Master needs a higher score to pass", () => {
+    const master = content().personas.personas.find((p) => p.id === "smart-planner")!;
+    expect(master.difficulty.passThresholdOffset).toBeGreaterThan(0);
   });
 });
 

@@ -19,7 +19,7 @@ export { replayWithChange, replay, chooseWhatIf } from "./whatif";
 export { toDecisionLog } from "./decisions";
 export { migrateState } from "./migrate";
 export { tossFor } from "./market";
-export { unlockedOptions, startChapterFor } from "./helpers";
+export { allowedOptions, unlockedOptions, startChapterFor } from "./helpers";
 
 export function scoreMindset(answers: MindsetAnswers, content: ContentBundle): MindsetResult {
   return scoreMindsetImpl(answers, content);

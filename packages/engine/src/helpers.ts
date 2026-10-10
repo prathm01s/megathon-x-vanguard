@@ -27,6 +27,20 @@ export function unlockedOptions(content: ContentBundle, chapterId: string): Inve
 }
 
 /**
+ * Options a player may use: the chapter's unlocks, narrowed by the persona's difficulty level
+ * (`difficulty.optionIds`). Without a persona (or a level without a list) that's every unlock.
+ */
+export function allowedOptions(
+  content: ContentBundle,
+  chapterId: string,
+  personaId?: string,
+): InvestmentOption[] {
+  const list = content.personas.personas.find((p) => p.id === personaId)?.difficulty.optionIds;
+  const unlocked = unlockedOptions(content, chapterId);
+  return list ? unlocked.filter((o) => list.includes(o.id)) : unlocked;
+}
+
+/**
  * Chapter a persona starts in. Falls back to the first enabled chapter when the
  * persona's `startChapter` is still an outline (today ch1 is disabled, so everyone
  * starts in ch2, the hackathon prototype).

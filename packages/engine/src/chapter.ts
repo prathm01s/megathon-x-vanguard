@@ -20,7 +20,10 @@ export function endChapter(
     multiplayer: opts.multiplayer ?? false,
   });
   metrics.healthScore = score;
-  const threshold = chapter.passThreshold ?? content.healthScore.passThreshold;
+  const level = content.personas.personas.find((p) => p.id === state.personaId)?.difficulty;
+  const threshold =
+    (chapter.passThreshold ?? content.healthScore.passThreshold) +
+    (level?.passThresholdOffset ?? 0);
 
   const lastCovered = state.stats.badEventsCoveredByFund.at(-1);
   const eventTitle = lastCovered

@@ -46,7 +46,18 @@ export interface Session {
   org: Org | null;
 }
 
+/** What a student has done on any device: restored when they sign in on a new one. */
+export interface SavedProgress {
+  pre: { answers: MindsetAnswers; result: MindsetResult } | null;
+  post: { answers: MindsetAnswers; result: MindsetResult } | null;
+  /** Latest persona (the newest game's, which includes persona shifts), else the pre-check's. */
+  personaId: string | null;
+  /** Best result per chapter. */
+  chapters: Record<string, { passed: boolean; healthScore: number }>;
+}
+
 export interface PersistenceApi {
+  loadProgress(): Promise<SavedProgress>;
   saveMindset(phase: "pre" | "post", answers: MindsetAnswers, result: MindsetResult): Promise<void>;
   startPlaythrough(
     personaId: string,

@@ -33,6 +33,7 @@ import {
   saveMindset,
   savePlaythroughState,
   startPlaythrough,
+  type SavedProgress,
 } from "@/lib/data";
 
 export interface MindsetRecord {
@@ -59,6 +60,10 @@ interface GameStore {
   attempts: Record<string, number>;
   /** Guided-turn tips the player already dismissed. */
   dismissedGuide: boolean;
+  /** Account this saved game belongs to (the save lives on the device). */
+  ownerId: string | null;
+  /** Results restored from the server (games played on another device). */
+  savedChapters: SavedProgress["chapters"];
 
   completeMindset(phase: "pre" | "post", answers: MindsetAnswers, result: MindsetResult): void;
   startChapter(chapterId: string): Promise<void>;
@@ -68,6 +73,8 @@ interface GameStore {
   clearLastTurn(): void;
   finishChapter(): ChapterResult | null;
   dismissGuide(): void;
+  /** Adopts what the account did elsewhere; keeps anything newer on this device. */
+  restoreProgress(ownerId: string, progress: SavedProgress): void;
   reset(): void;
 }
 
@@ -81,6 +88,8 @@ const initial = {
   results: {},
   attempts: {},
   dismissedGuide: false,
+  ownerId: null,
+  savedChapters: {},
 } satisfies Partial<GameStore>;
 
 /** Fire-and-forget persistence: the real implementation queues offline (§9.4). */
@@ -179,6 +188,17 @@ export const useGameStore = create<GameStore>()(
 
       dismissGuide() {
         set({ dismissedGuide: true });
+      },
+
+      restoreProgress(ownerId, progress) {
+        const s = get();
+        set({
+          ownerId,
+          pre: s.pre ?? progress.pre,
+          post: s.post ?? progress.post,
+          personaId: s.personaId ?? progress.personaId,
+          savedChapters: progress.chapters,
+        });
       },
 
       reset() {

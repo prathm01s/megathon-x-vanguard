@@ -1,6 +1,6 @@
 // localStorage-backed mock of the Persistence API so every screen can be built and
 // tested before Supabase is wired up (§15.4 D). Browser only.
-import type { PersistenceApi, PlaythroughId, Session } from "./types";
+import type { PersistenceApi, PlaythroughId, SavedProgress, Session } from "./types";
 import { uuid } from "@/lib/uuid";
 
 const KEY = "toss-life:mock-db:v1";
@@ -59,6 +59,15 @@ export const mockPersistence: PersistenceApi = {
     const db = read();
     db.mindset.push({ phase, answers, result, at: new Date().toISOString() });
     write(db);
+  },
+  async loadProgress() {
+    const db = read();
+    const latest = (phase: string) => {
+      const row = [...db.mindset].reverse().find((m) => m.phase === phase);
+      return row ? ({ answers: row.answers, result: row.result } as SavedProgress["pre"]) : null;
+    };
+    const pre = latest("pre");
+    return { pre, post: latest("post"), personaId: pre?.result.personaId ?? null, chapters: {} };
   },
   async startPlaythrough(personaId, seed, initialState) {
     const db = read();

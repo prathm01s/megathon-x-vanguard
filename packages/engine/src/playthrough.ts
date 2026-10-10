@@ -27,7 +27,13 @@ export function createPlaythrough(args: {
     totalTurns: chapter.turns,
     turnUnit: chapter.turnUnit,
     status: "playing",
-    cash: rupeesToPaise(chapter.startingBalance),
+    // The persona's level can add a starting cushion (Rookie +50%, Builder +20%).
+    cash: Math.round(
+      rupeesToPaise(chapter.startingBalance) *
+        (1 +
+          (content.personas.personas.find((p) => p.id === personaId)?.difficulty.startingBonus ??
+            0)),
+    ),
     debt: 0,
     incomePerMonth: Math.round(
       rupeesToPaise(chapter.income.amountPerMonth) * (1 + carriedIn.salaryBonusRate),

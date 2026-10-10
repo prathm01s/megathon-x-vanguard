@@ -174,6 +174,7 @@ export function checkBundle(bundle: ContentBundle): CheckReport {
   for (const p of bundle.personas.personas) {
     ref(`personas/${p.id} startChapter`, "chapters", p.startChapter);
     p.highlightTechniques.forEach((id) => ref(`personas/${p.id} highlightTechniques`, "techniques", id));
+    p.difficulty.optionIds?.forEach((id) => ref(`personas/${p.id} difficulty.optionIds`, "options", id));
   }
   bundle.personas.assignmentRules.forEach((r, i) => ref(`personas.assignmentRules[${i}]`, "personas", r.personaId));
   for (const r of bundle.personas.shiftRules) {
