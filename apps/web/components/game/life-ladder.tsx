@@ -1,7 +1,7 @@
 "use client";
 
 import type { Chapter } from "@toss/content";
-import { CheckCircle2, Lock, Play, RotateCcw } from "lucide-react";
+import { CheckCircle2, Lock, Play, RotateCcw, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -65,6 +65,22 @@ function Ladder() {
         </div>
       </header>
       <p className="text-muted-foreground">{t("subtitle")}</p>
+
+      {/* Friends' Room Classroom Multiplayer Entry */}
+      <Card className="flex items-center justify-between p-3.5 border-2 border-primary/40 bg-primary/5">
+        <div className="flex items-center gap-3">
+          <span className="grid size-10 place-items-center rounded-xl bg-primary text-primary-foreground">
+            <Users className="size-5" />
+          </span>
+          <div>
+            <h2 className="text-sm font-extrabold text-foreground">Friends&apos; Room</h2>
+            <p className="text-xs text-muted-foreground">Play with classmates in lockstep turns</p>
+          </div>
+        </div>
+        <Link href="/room" className={cn(buttonVariants({ size: "default" }), "font-extrabold text-xs")}>
+          Join Room
+        </Link>
+      </Card>
 
       <ol className="relative flex flex-col gap-4 before:absolute before:inset-y-4 before:start-6 before:w-1 before:rounded-full before:bg-border">
         {rows.map((row, i) => (
@@ -159,20 +175,34 @@ function ChapterRung({
               : t("notPassed", { score: result.healthScore })}
           </p>
         )}
-        {playable &&
-          (inProgress ? (
-            <Link href="/play" className={cn(buttonVariants(), "w-full")}>
-              <Play aria-hidden /> {t("continue")}
-            </Link>
-          ) : (
-            <Link
-              href={`/chapter/${chapter.id}`}
-              className={cn(buttonVariants({ variant: result ? "outline" : "default" }), "w-full")}
-            >
-              {result ? <RotateCcw aria-hidden /> : <Play aria-hidden />}
-              {result ? t("replay") : t("play")}
-            </Link>
-          ))}
+        {playable && (
+          <div className="space-y-1.5 pt-1">
+            {inProgress ? (
+              <Link href="/play" className={cn(buttonVariants(), "w-full")}>
+                <Play aria-hidden /> {t("continue")}
+              </Link>
+            ) : (
+              <Link
+                href={`/chapter/${chapter.id}`}
+                className={cn(buttonVariants({ variant: result ? "outline" : "default" }), "w-full")}
+              >
+                {result ? <RotateCcw aria-hidden /> : <Play aria-hidden />}
+                {result ? t("replay") : t("play")}
+              </Link>
+            )}
+            {chapter.id === "ch2-first-job" && (
+              <Link
+                href="/room"
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  "w-full text-xs font-bold border-primary/40 text-primary hover:bg-primary/5",
+                )}
+              >
+                <Users aria-hidden className="size-3.5" /> Friends&apos; Room (Multiplayer)
+              </Link>
+            )}
+          </div>
+        )}
       </Card>
     </div>
   );
