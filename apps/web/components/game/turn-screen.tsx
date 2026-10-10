@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Coins, Lightbulb, X } from "lucide-react";
+import { ArrowRight, Coins, FastForward, Lightbulb, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -14,11 +14,12 @@ import { GameGate } from "./game-gate";
 import { PersonaAvatar } from "./persona-reveal";
 import { ScamModal } from "./scam-modal";
 import { ShopModal } from "./shop-modal";
-import { useGameStore } from "./store";
+import { useGameStore, type FastForwardSummary } from "./store";
 import { TossModal } from "./toss-modal";
 import { useLocalize } from "./use-localize";
-import { InvestRail, SideStats, TaskSheet, VillageGround } from "./village/village";
-import { GAME_TEXT } from "@/lib/game-style";
+import { FastForwardModal } from "./village/fast-forward";
+import { InvestRail, isBuilt, SideStats, TaskSheet, VillageGround } from "./village/village";
+import { GAME_TEXT, INK } from "@/lib/game-style";
 import { cn } from "@/lib/utils";
 
 export function TurnScreen() {
@@ -40,6 +41,7 @@ function Screen() {
   const dismissedGuide = useGameStore((s) => s.dismissedGuide);
   const act = useGameStore((s) => s.act);
   const advance = useGameStore((s) => s.advance);
+  const fastForward = useGameStore((s) => s.fastForward);
   const clearLastTurn = useGameStore((s) => s.clearLastTurn);
   const finishChapter = useGameStore((s) => s.finishChapter);
   const dismissGuide = useGameStore((s) => s.dismissGuide);
@@ -50,6 +52,7 @@ function Screen() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [openTaskId, setOpenTaskId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [ffSummary, setFfSummary] = useState<FastForwardSummary | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   function showToast(text: string) {
     setToast(text);
@@ -126,6 +129,22 @@ function Screen() {
     (a) => a.type === "pay_task" && a.targetId === openTaskId,
   );
   const level = persona?.difficulty;
+  // Nothing left to build (everything built, or missed): offer to jump to the end.
+  const villageDone = state.tasks.every(
+    (x) => isBuilt(x) || x.status === "missed" || x.status === "blocked",
+  );
+
+  function handleFastForward() {
+    setErrorMsg(null);
+    const summary = fastForward();
+    if (summary) setFfSummary(summary);
+  }
+
+  function handleSummaryContinue() {
+    const done = ffSummary?.completed;
+    setFfSummary(null);
+    if (done) handleFinishChapter();
+  }
 
   return (
     <div className="flex flex-col gap-3 pb-6">
@@ -150,7 +169,7 @@ function Screen() {
 
       {/* One-line builder tip on the first turn */}
       {showGuide && (
-        <div className="relative flex items-center gap-2 rounded-2xl border-2 border-[#2b1d12]/60 bg-[#fff3b0] p-2.5 pe-9 text-sm font-semibold">
+        <div className="relative flex items-center gap-2 rounded-2xl border-2 border-[#1e2a4a]/60 bg-[#fff3b0] p-2.5 pe-9 text-sm font-semibold">
           <Lightbulb className="size-5 shrink-0 text-[#b86e0a]" aria-hidden />
           {tv("tip")}
           <button
@@ -182,7 +201,7 @@ function Screen() {
           role="status"
           className={cn(
             GAME_TEXT,
-            "pointer-events-none fixed inset-x-0 top-[38%] z-40 mx-auto w-fit rounded-full border-2 border-[#2b1d12]/70 bg-[#fff3b0] px-5 py-2 text-lg text-[#2b1d12] shadow-lg",
+            "pointer-events-none fixed inset-x-0 top-[38%] z-40 mx-auto w-fit rounded-full border-2 border-[#1e2a4a]/70 bg-[#fff3b0] px-5 py-2 text-lg text-[#1e2a4a] shadow-lg",
           )}
         >
           {toast}
@@ -195,6 +214,22 @@ function Screen() {
           <GameButton tone="green" className="w-full" onClick={handleFinishChapter}>
             {t("seeResults")} <ArrowRight aria-hidden />
           </GameButton>
+        ) : villageDone ? (
+          <div className="flex flex-col gap-2">
+            <p
+              className={cn(
+                GAME_TEXT,
+                "rounded-2xl border-2 bg-[#fff3b0] px-3 py-2 text-center text-lg",
+              )}
+              style={{ borderColor: INK, color: INK }}
+            >
+              {tv("allBuilt")}
+            </p>
+            <GameButton tone="green" className="w-full" onClick={handleFastForward}>
+              <FastForward aria-hidden />
+              {tv("fastForward")}
+            </GameButton>
+          </div>
         ) : (
           <GameButton tone="gold" className="w-full" onClick={handleToss}>
             <Coins aria-hidden />
@@ -252,8 +287,16 @@ function Screen() {
 
       {/* Scam card trigger if pending */}
       {/* A scam arrives during the year: show it once the toss summary has been read. */}
-      {pendingScam && !lastTurn && (
+      {pendingScam && !lastTurn && !ffSummary && (
         <ScamModal pendingScam={pendingScam} state={state} onRespond={handleScamResponse} />
+      )}
+
+      {ffSummary && (
+        <FastForwardModal
+          summary={ffSummary}
+          unit={state.turnUnit}
+          onContinue={handleSummaryContinue}
+        />
       )}
 
       {/* Toss outcome modal */}

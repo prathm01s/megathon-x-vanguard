@@ -24,7 +24,7 @@ import { formatPaise, formatShort } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { ContentIcon } from "../icon";
 import { useLocalize } from "../use-localize";
-import { PlotArt, TownHallArt, type PlotStage } from "./art";
+import { PlotArt, LevelBaseArt, type PlotStage } from "./art";
 import { GAME_TEXT, GRASS_STYLE } from "@/lib/game-style";
 
 /** Fully paid counts as built, even if it was paid late (the engine keeps "late" for scoring). */
@@ -61,7 +61,7 @@ function RailStat({
         aria-expanded={open}
         aria-label={`${label}: ${value}. ${help}`}
         className={cn(
-          "flex w-full flex-col items-center gap-0.5 rounded-2xl border-2 border-b-4 border-[#2b1d12]/70 bg-[#fff8e7] px-1 py-2 text-[#2b1d12] shadow-sm",
+          "flex w-full flex-col items-center gap-0.5 rounded-2xl border-2 border-b-4 border-[#1e2a4a]/70 bg-[#f5f9ff] px-1 py-2 text-[#1e2a4a] shadow-sm",
           tone === "loss" && "bg-red-50",
         )}
       >
@@ -71,12 +71,12 @@ function RailStat({
         >
           {value}
         </span>
-        <span className="text-[10px] font-bold uppercase leading-none text-[#6b5a45]">{label}</span>
+        <span className="text-[10px] font-bold uppercase leading-none text-[#55658a]">{label}</span>
       </button>
       {open && (
         <p
           role="note"
-          className="absolute start-full top-0 z-30 ms-2 w-44 rounded-xl border-2 border-[#2b1d12]/70 bg-white p-2 text-xs font-semibold text-[#2b1d12] shadow-lg"
+          className="absolute start-full top-0 z-30 ms-2 w-44 rounded-xl border-2 border-[#1e2a4a]/70 bg-white p-2 text-xs font-semibold text-[#1e2a4a] shadow-lg"
         >
           {help}
         </p>
@@ -146,7 +146,7 @@ export function InvestRail({ state, onOpenShop }: { state: GameState; onOpenShop
         <span className={cn(GAME_TEXT, "text-[13px] leading-none")}>{t("invest")}</span>
       </button>
       {state.holdings.length === 0 && running.length === 0 && (
-        <p className="rounded-xl bg-white/80 p-1.5 text-center text-[10px] font-semibold text-[#6b5a45]">
+        <p className="rounded-xl bg-white/80 p-1.5 text-center text-[10px] font-semibold text-[#55658a]">
           {t("noInvestments")}
         </p>
       )}
@@ -167,9 +167,9 @@ export function InvestRail({ state, onOpenShop }: { state: GameState; onOpenShop
               value: formatPaise(h.value),
               change: `${up ? "+" : "−"}${Math.abs(Math.round(pct * 100))}%`,
             })}
-            className="flex flex-col items-center gap-0.5 rounded-2xl border-2 border-[#2b1d12]/60 bg-[#fff8e7] px-1 py-1.5 text-[#2b1d12] shadow-sm"
+            className="flex flex-col items-center gap-0.5 rounded-2xl border-2 border-[#1e2a4a]/60 bg-[#f5f9ff] px-1 py-1.5 text-[#1e2a4a] shadow-sm"
           >
-            <span className="grid size-8 place-items-center rounded-full bg-[#f6e6c3]">
+            <span className="grid size-8 place-items-center rounded-full bg-[#e2ecff]">
               <ContentIcon name={opt.icon} className="size-4" />
             </span>
             <span className={cn(GAME_TEXT, "text-[13px] leading-none")}>
@@ -196,7 +196,7 @@ export function InvestRail({ state, onOpenShop }: { state: GameState; onOpenShop
   );
 }
 
-/** The ground: the Town Hall and one plot per task. */
+/** The ground: the level base and one plot per task. */
 export function VillageGround({
   state,
   chapter,
@@ -212,15 +212,15 @@ export function VillageGround({
   return (
     <section
       aria-label={t("groundLabel")}
-      className="relative min-w-0 flex-1 rounded-3xl border-[3px] border-[#2b1d12]/70 p-2 shadow-inner"
+      className="relative min-w-0 flex-1 rounded-3xl border-[3px] border-[#1e2a4a]/70 p-2 shadow-inner"
       style={GRASS_STYLE}
     >
       <div className="mx-auto flex w-[150px] flex-col items-center">
-        <TownHallArt className="h-20 w-full drop-shadow" />
+        <LevelBaseArt className="h-20 w-full drop-shadow" />
         <span
           className={cn(
             GAME_TEXT,
-            "-mt-1 rounded-full border-2 border-[#2b1d12]/70 bg-[#7c3aed] px-2 text-xs text-white",
+            "-mt-1 rounded-full border-2 border-[#1e2a4a]/70 bg-[#7c3aed] px-2 text-xs text-white",
           )}
         >
           {t("townHall", { level: chapter?.order ?? 1 })}
@@ -257,7 +257,7 @@ export function VillageGround({
                     )}
                   />
                   {(stage === "building" || stage === "scaffold") && (
-                    <span className="absolute start-1/2 top-[38%] grid size-6 -translate-x-1/2 place-items-center rounded-full border-2 border-[#2b1d12]/70 bg-white">
+                    <span className="absolute start-1/2 top-[38%] grid size-6 -translate-x-1/2 place-items-center rounded-full border-2 border-[#1e2a4a]/70 bg-white">
                       <ContentIcon name={def.icon} className="size-3.5" />
                     </span>
                   )}
@@ -270,7 +270,7 @@ export function VillageGround({
                 <span
                   className={cn(
                     GAME_TEXT,
-                    "w-full truncate text-center text-[12px] leading-tight text-white drop-shadow-[0_1px_0_rgb(43_29_18)]",
+                    "w-full truncate text-center text-[12px] leading-tight text-white drop-shadow-[0_1px_0_rgb(30_42_74)]",
                   )}
                 >
                   {l(def.shortTitle ?? def.title)}
@@ -288,7 +288,7 @@ export function VillageGround({
 function PlotChip({ task, state, dueNow }: { task: TaskState; state: GameState; dueNow: boolean }) {
   const t = useTranslations("village");
   const base =
-    "mt-0.5 rounded-full border-2 border-[#2b1d12]/60 px-1.5 text-[10px] font-extrabold leading-4 text-[#2b1d12]";
+    "mt-0.5 rounded-full border-2 border-[#1e2a4a]/60 px-1.5 text-[10px] font-extrabold leading-4 text-[#1e2a4a]";
   if (isBuilt(task)) return <span className={cn(base, "bg-[#fff3b0]")}>{t("stage.building")}</span>;
   if (task.status === "missed" || task.status === "blocked") {
     return <span className={cn(base, "bg-gray-200")}>{t("stage.ruins")}</span>;
@@ -339,7 +339,7 @@ export function TaskSheet({
       aria-label={l(def.title)}
     >
       <div
-        className="w-full max-w-md rounded-3xl border-[3px] border-[#2b1d12]/80 bg-[#fff8e7] p-4 text-[#2b1d12] shadow-2xl"
+        className="w-full max-w-md rounded-3xl border-[3px] border-[#1e2a4a]/80 bg-[#f5f9ff] p-4 text-[#1e2a4a] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start gap-3">
@@ -352,7 +352,7 @@ export function TaskSheet({
           <div className="min-w-0 flex-1">
             <h2 className={cn(GAME_TEXT, "text-xl leading-tight")}>{l(def.title)}</h2>
             <div className="mt-1 flex flex-wrap gap-1 text-[11px] font-bold">
-              <span className="rounded-full bg-[#f6e6c3] px-2">{tp(`kind.${def.kind}`)}</span>
+              <span className="rounded-full bg-[#e2ecff] px-2">{tp(`kind.${def.kind}`)}</span>
               {def.required && (
                 <span className="rounded-full bg-[#fde3cf] px-2 text-[#b4470c]">
                   {tp("required")}
@@ -375,7 +375,7 @@ export function TaskSheet({
             </span>
             <span>{pct}%</span>
           </div>
-          <div className="mt-1 h-3 overflow-hidden rounded-full border-2 border-[#2b1d12]/60 bg-white">
+          <div className="mt-1 h-3 overflow-hidden rounded-full border-2 border-[#1e2a4a]/60 bg-white">
             <div className="h-full bg-[#7ee04f]" style={{ width: `${pct}%` }} />
           </div>
         </div>
@@ -384,7 +384,7 @@ export function TaskSheet({
             {t("builtDone")}
           </p>
         ) : stage === "ruins" ? (
-          <p className="mt-4 text-center text-sm font-semibold text-[#6b5a45]">{t("ruinsHelp")}</p>
+          <p className="mt-4 text-center text-sm font-semibold text-[#55658a]">{t("ruinsHelp")}</p>
         ) : (
           <GameButton
             tone="green"

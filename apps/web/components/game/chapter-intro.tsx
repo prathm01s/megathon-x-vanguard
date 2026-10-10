@@ -16,7 +16,7 @@ import { GameGate } from "./game-gate";
 import { ContentIcon } from "./icon";
 import { useGameStore } from "./store";
 import { useLocalize } from "./use-localize";
-import { PlotArt, TownHallArt } from "./village/art";
+import { PlotArt, LevelBaseArt } from "./village/art";
 
 /** Chapter intro (§9.2 #9), village style: numbers as tiles, tasks as flags, little text. */
 export function ChapterIntro({ chapterId }: { chapterId: string }) {
@@ -29,10 +29,10 @@ export function ChapterIntro({ chapterId }: { chapterId: string }) {
 
 function StatTile({ icon, value, label }: { icon: ReactNode; value: string; label: string }) {
   return (
-    <div className="flex flex-col items-center gap-0.5 rounded-2xl border-2 border-b-4 border-[#2b1d12]/60 bg-[#fff8e7] px-1 py-2 text-center text-[#2b1d12]">
+    <div className="flex flex-col items-center gap-0.5 rounded-2xl border-2 border-b-4 border-[#1e2a4a]/60 bg-[#f5f9ff] px-1 py-2 text-center text-[#1e2a4a]">
       {icon}
       <span className={cn(GAME_TEXT, "text-lg leading-none")}>{value}</span>
-      <span className="text-[11px] font-bold leading-tight text-[#6b5a45]">{label}</span>
+      <span className="text-[11px] font-bold leading-tight text-[#55658a]">{label}</span>
     </div>
   );
 }
@@ -77,7 +77,7 @@ function Intro({ chapterId }: { chapterId: string }) {
   return (
     <section className="flex flex-col gap-4 py-3">
       <header className="flex items-center gap-3">
-        <TownHallArt className="h-20 w-24 shrink-0" />
+        <LevelBaseArt className="h-20 w-24 shrink-0" />
         <div className="min-w-0">
           <p className="text-xs font-extrabold uppercase tracking-wide text-secondary">
             {tv("townHall", { level: chapter.order })} · {chapter.ageRange[0]}–{chapter.ageRange[1]}
@@ -86,7 +86,7 @@ function Intro({ chapterId }: { chapterId: string }) {
         </div>
       </header>
 
-      <p className="rounded-2xl border-2 border-[#2b1d12]/30 bg-white px-3 py-2 text-sm text-[#2b1d12]">
+      <p className="rounded-2xl border-2 border-[#1e2a4a]/30 bg-white px-3 py-2 text-sm text-[#1e2a4a]">
         {l(chapter.intro)}
       </p>
 
@@ -109,7 +109,7 @@ function Intro({ chapterId }: { chapterId: string }) {
       </div>
 
       {level && (
-        <div className="rounded-2xl border-2 border-[#2b1d12]/60 bg-[#efe6ff] p-3 text-[#2b1d12]">
+        <div className="rounded-2xl border-2 border-[#1e2a4a]/60 bg-[#efe6ff] p-3 text-[#1e2a4a]">
           <p className={cn(GAME_TEXT, "text-lg leading-tight")}>
             <span className="text-[#d4a017]" aria-hidden>
               {"★".repeat(level.stars)}
@@ -123,7 +123,7 @@ function Intro({ chapterId }: { chapterId: string }) {
               {options.map((o) => (
                 <li
                   key={o.id}
-                  className="flex items-center gap-1 rounded-full border border-[#2b1d12]/30 bg-white px-2 py-0.5 text-xs font-bold"
+                  className="flex items-center gap-1 rounded-full border border-[#1e2a4a]/30 bg-white px-2 py-0.5 text-xs font-bold"
                 >
                   <ContentIcon name={o.icon} className="size-3.5" />
                   {l(o.name)}
@@ -134,15 +134,15 @@ function Intro({ chapterId }: { chapterId: string }) {
         </div>
       )}
 
-      <div className="rounded-3xl border-[3px] border-[#2b1d12]/70 bg-[#6cbf4a] p-3">
-        <p className={cn(GAME_TEXT, "mb-1 text-white drop-shadow-[0_1px_0_rgb(43_29_18)]")}>
+      <div className="rounded-3xl border-[3px] border-[#1e2a4a]/70 bg-[#6cbf4a] p-3">
+        <p className={cn(GAME_TEXT, "mb-1 text-white drop-shadow-[0_1px_0_rgb(30_42_74)]")}>
           {t("toBuild", { count: chapter.tasks.length })}
         </p>
         <ul className="grid grid-cols-3 gap-1">
           {chapter.tasks.map((task) => (
             <li key={task.id} className="flex flex-col items-center">
               <PlotArt stage="flag" kind={task.kind} className="h-12 w-full" />
-              <span className="w-full truncate text-center text-[11px] font-extrabold text-white drop-shadow-[0_1px_0_rgb(43_29_18)]">
+              <span className="w-full truncate text-center text-[11px] font-extrabold text-white drop-shadow-[0_1px_0_rgb(30_42_74)]">
                 {l(task.shortTitle ?? task.title)}
               </span>
             </li>

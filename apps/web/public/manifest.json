@@ -4,8 +4,8 @@
   "description": "Deterministic life simulation teaching financial literacy to youth across India.",
   "start_url": "/en",
   "display": "standalone",
-  "background_color": "#f6efe2",
-  "theme_color": "#f6efe2",
+  "background_color": "#eaf4ff",
+  "theme_color": "#4f46e5",
   "orientation": "portrait",
   "icons": [
     {

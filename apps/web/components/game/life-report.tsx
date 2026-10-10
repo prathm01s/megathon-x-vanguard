@@ -13,6 +13,7 @@ import {
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { GameButton } from "@/components/ui/game-button";
 import { Card } from "@/components/ui/card";
 import { Link, useRouter } from "@/i18n/navigation";
 import { content } from "@/lib/content";
@@ -60,6 +61,13 @@ function ReportContent() {
   const gyaanQuestions = content.gyaan.questions.filter((q) =>
     result.report.gyaanQuestionIds.includes(q.id),
   );
+
+  const nextIds =
+    !chapter || chapter.next === "end"
+      ? []
+      : typeof chapter.next === "string"
+        ? [chapter.next]
+        : chapter.next.choice;
 
   async function handleReplay() {
     await startChapter(chapterId);
@@ -320,18 +328,52 @@ function ReportContent() {
         </Card>
       )}
 
-      {/* Navigation Buttons */}
+      {/* What next: the next level when passed, otherwise try again */}
       <div className="flex flex-col gap-2 pt-2">
-        {/* Next chapter / career choice or ladder */}
+        {result.passed && nextIds.length > 0 && (
+          <>
+            {nextIds.length > 1 && (
+              <p className="text-center text-sm font-bold text-muted-foreground">
+                {t("choosePath")}
+              </p>
+            )}
+            {nextIds.map((id) => {
+              const next = content.chapters.find((c) => c.id === id);
+              return (
+                <GameButton
+                  key={id}
+                  tone="green"
+                  className="w-full"
+                  onClick={() => router.push(`/chapter/${id}`)}
+                >
+                  {t("nextLevel", { title: next ? l(next.title) : id })}
+                  <ChevronRight aria-hidden />
+                </GameButton>
+              );
+            })}
+          </>
+        )}
+        {result.passed && nextIds.length === 0 && (
+          <GameButton tone="green" className="w-full" onClick={() => router.push("/mindset/post")}>
+            {t("finale")} <ChevronRight aria-hidden />
+          </GameButton>
+        )}
+        {!result.passed && (
+          <GameButton tone="gold" className="w-full" onClick={handleReplay}>
+            <RotateCcw aria-hidden /> {t("tryAgain")}
+          </GameButton>
+        )}
+
         <Link href="/ladder" className="w-full">
-          <Button size="lg" className="w-full font-extrabold shadow-md">
-            {t("backToLadder")} <ChevronRight className="size-5" />
+          <Button size="lg" variant="outline" className="w-full font-bold">
+            {t("backToLadder")}
           </Button>
         </Link>
-
-        <Button size="lg" variant="outline" className="w-full font-bold" onClick={handleReplay}>
-          <RotateCcw className="size-4" /> {t("replay")}
-        </Button>
+        {result.passed && (
+          <Button size="lg" variant="ghost" className="w-full font-bold" onClick={handleReplay}>
+            <RotateCcw className="size-4" /> {t("replay")}
+          </Button>
+        )}
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 // Village art for the turn screen: original flat SVGs in a chunky "strategy village" style
 // (thick dark outlines, bright fills). No third-party game art (docs/plan-v2.md, legal note).
 
-const INK = "#2b1d12";
+const INK = "#1e2a4a";
 
 export type PlotStage = "flag" | "scaffold" | "building" | "ruins";
 export type TaskKind = "need" | "goal" | "want" | "safety";
@@ -220,19 +220,19 @@ export function PlotArt({
   );
 }
 
-/** The chapter's Town Hall; its level is the chapter number. */
-export function TownHallArt({ className }: { className?: string }) {
+/** The chapter's home base; its level is the chapter number. */
+export function LevelBaseArt({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 140 110" className={className} aria-hidden>
       <ellipse cx="70" cy="96" rx="62" ry="12" fill="#a8743f" stroke={INK} strokeWidth="2.5" />
       <path
         d="M22 94 V48 H32 V40 H44 V48 H96 V40 H108 V48 H118 V94 Z"
-        fill="#d9c7a3"
+        fill="#e6ebf7"
         stroke={INK}
         strokeWidth="3"
         strokeLinejoin="round"
       />
-      <path d="M22 64 H118 M22 80 H118" stroke="#b9a37c" strokeWidth="2" />
+      <path d="M22 64 H118 M22 80 H118" stroke="#c3cbe0" strokeWidth="2" />
       <path
         d="M40 50 L70 18 L100 50 Z"
         fill="#7c3aed"

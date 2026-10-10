@@ -186,7 +186,8 @@
       "monthly5": "Small",
       "monthly10": "Medium",
       "monthly20": "Big"
-    }
+    },
+    "confirmAmount": "Confirm · {amount}"
   },
   "shop": {
     "title": "Save and invest",
@@ -253,7 +254,11 @@
     "personaShift": "Your money style has grown",
     "backToLadder": "Back to my Life Ladder",
     "replay": "Replay chapter",
-    "fullReportSoon": "The full Life Report with charts and Gyaan Check is coming next."
+    "fullReportSoon": "The full Life Report with charts and Gyaan Check is coming next.",
+    "choosePath": "Choose your next path",
+    "nextLevel": "Next level: {title}",
+    "finale": "See how your thinking changed",
+    "tryAgain": "Try again"
   },
   "profile": {
     "title": "My Profile",
@@ -381,7 +386,7 @@
     "holdingLabel": "{name}: {value}, {change} since you put money in",
     "sipTag": "SIP {amount}",
     "groundLabel": "Your village: one plot per task",
-    "townHall": "Town Hall {level}",
+    "townHall": "Level {level}",
     "stage": {
       "flag": "To build",
       "scaffold": "Building…",
@@ -400,6 +405,17 @@
     "payPart": "Pay {amount} now",
     "toastBuilt": "Built! ⭐",
     "toastPart": "Construction started 🔨",
-    "toastDone": "Done! ✅"
+    "toastDone": "Done! ✅",
+    "allBuilt": "Village complete! 🎉",
+    "fastForward": "Fast-forward to the end",
+    "ffTitle": "{count} {unit, select, month {{count, plural, one {month} other {months}}} other {{count, plural, one {year} other {years}}}} later",
+    "ffIncome": "Money earned",
+    "ffCosts": "Living costs",
+    "ffReturns": "Investments",
+    "ffBorrowed": "Had to borrow",
+    "ffScam": "A message arrived. Answer it, then keep going.",
+    "ffReport": "See my Life Report",
+    "ffAnswer": "Answer the message",
+    "ffContinue": "Continue"
   }
 }

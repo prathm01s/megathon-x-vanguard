@@ -7,7 +7,7 @@ const TONES = {
   gold: "bg-gradient-to-b from-[#ffd84d] to-[#f5a524] text-[#4a2b05] border-[#b86e0a]",
   green: "bg-gradient-to-b from-[#7ee04f] to-[#3fa52a] text-white border-[#2a7419]",
   blue: "bg-gradient-to-b from-[#5cb8ff] to-[#2d7fe0] text-white border-[#1d5aa6]",
-  stone: "bg-gradient-to-b from-[#f2ece0] to-[#d8cdb8] text-[#3b2a1a] border-[#a8987c]",
+  stone: "bg-gradient-to-b from-[#f2ece0] to-[#d8cdb8] text-[#1e2a4a] border-[#a8987c]",
 } as const;
 
 export function GameButton({

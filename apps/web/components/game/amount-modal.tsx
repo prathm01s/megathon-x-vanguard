@@ -1,10 +1,11 @@
 "use client";
 
-// Quick-pick amounts (team feedback 2026-10-11: no money slider). Three big buttons with
-// ready-made amounts; one tap does the action. Paying for a task doesn't use this at all: the
-// village's Build button pays in one tap.
+// Choose an amount to invest, take out or put in monthly: drag the slider to any amount, or tap
+// a ready-made one (a little / half / all). Paying for a task doesn't use this: the village's
+// Build button pays in one tap.
 import { AlertTriangle, X } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useState } from "react";
 import type { ActionOption } from "@toss/engine";
 import { formatPaise, formatShort } from "@/lib/format";
 import { GAME_TEXT } from "@/lib/game-style";
@@ -66,6 +67,15 @@ export function AmountModal({
   const l = useLocalize();
   const name = l(option.label);
   const picks = quickPicks(option, availableCash, incomePerMonth);
+  const min = option.minAmount ?? ROUND;
+  // Monthly plans can be up to half the monthly income; everything else up to the action's max.
+  const max =
+    option.type === "sip_start"
+      ? Math.max(min, Math.floor(((incomePerMonth ?? 0) * 0.5) / ROUND) * ROUND)
+      : (option.maxAmount ?? availableCash);
+  const step = Math.max(ROUND, Math.round((max - min) / 100 / ROUND) * ROUND);
+  const [amount, setAmount] = useState(() => picks[1]?.amount ?? picks[0]?.amount ?? min);
+  const valid = amount >= min && amount <= max && max >= min;
 
   const title =
     option.type === "invest"
@@ -85,7 +95,7 @@ export function AmountModal({
       aria-label={title}
     >
       <div
-        className="w-full max-w-md rounded-3xl border-[3px] border-[#2b1d12]/80 bg-[#fff8e7] p-4 text-[#2b1d12] shadow-2xl"
+        className="w-full max-w-md rounded-3xl border-[3px] border-[#1e2a4a]/80 bg-[#f5f9ff] p-4 text-[#1e2a4a] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-2">
@@ -94,7 +104,7 @@ export function AmountModal({
             <X className="size-5" />
           </button>
         </div>
-        <p className="mt-0.5 text-sm font-semibold text-[#6b5a45]">
+        <p className="mt-0.5 text-sm font-semibold text-[#55658a]">
           {option.type === "sip_start"
             ? t("sipHint")
             : t("available", { amount: formatPaise(availableCash) })}
@@ -109,28 +119,58 @@ export function AmountModal({
           </p>
         )}
 
-        <div className="mt-3 grid gap-2">
-          {picks.length === 0 && (
-            <p className="text-center text-sm font-semibold text-[#6b5a45]">{t("notEnough")}</p>
-          )}
-          {picks.map((p) => (
+        {max < min ? (
+          <p className="mt-4 text-center text-sm font-semibold text-[#55658a]">{t("notEnough")}</p>
+        ) : (
+          <>
+            <p className={cn(GAME_TEXT, "mt-3 text-center text-4xl")}>
+              {formatPaise(amount)}
+              {option.type === "sip_start" && <span className="text-lg">{t("perMonth")}</span>}
+            </p>
+            <input
+              type="range"
+              min={min}
+              max={max}
+              step={step}
+              value={amount}
+              onChange={(e) => setAmount(Number(e.target.value))}
+              aria-label={t("label")}
+              className="mt-2 h-3 w-full cursor-pointer accent-[#3fa52a]"
+            />
+            <div className="mt-1 flex justify-between text-xs font-bold text-[#55658a]">
+              <span>{formatShort(min)}</span>
+              <span>{formatShort(max)}</span>
+            </div>
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              {picks.map((p) => (
+                <button
+                  key={p.key}
+                  type="button"
+                  onClick={() => setAmount(p.amount)}
+                  className={cn(
+                    "min-h-11 rounded-xl border-2 px-1 text-sm font-extrabold",
+                    amount === p.amount
+                      ? "border-[#2a7419] bg-[#dff7cf]"
+                      : "border-[#1e2a4a]/30 bg-white",
+                  )}
+                >
+                  {t(`pick.${p.key}`)}
+                </button>
+              ))}
+            </div>
             <button
-              key={p.key}
               type="button"
-              onClick={() => onConfirm(p.amount)}
+              disabled={!valid}
+              onClick={() => onConfirm(amount)}
               className={cn(
                 GAME_TEXT,
-                "flex min-h-14 items-center justify-between rounded-2xl border-2 border-b-[5px] border-[#2a7419] bg-gradient-to-b from-[#7ee04f] to-[#3fa52a] px-4 text-lg text-white active:translate-y-[2px] active:border-b-[3px]",
+                "mt-4 flex min-h-14 w-full items-center justify-center rounded-2xl border-2 border-b-[5px] border-[#2a7419] bg-gradient-to-b from-[#7ee04f] to-[#3fa52a] px-4 text-xl text-white active:translate-y-[2px] active:border-b-[3px] disabled:opacity-50",
               )}
             >
-              <span>{t(`pick.${p.key}`)}</span>
-              <span>
-                {formatShort(p.amount)}
-                {option.type === "sip_start" ? t("perMonth") : ""}
-              </span>
+              {t("confirmAmount", { amount: formatShort(amount) })}
             </button>
-          ))}
-        </div>
+          </>
+        )}
       </div>
     </div>
   );

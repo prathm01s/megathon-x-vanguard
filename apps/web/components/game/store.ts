@@ -46,6 +46,20 @@ export interface TurnOutcome {
   events: GameEvent[];
 }
 
+/** What happened while fast-forwarding to the end of a chapter. */
+export interface FastForwardSummary {
+  turns: number;
+  income: number;
+  costs: number;
+  /** Net change of investments from market returns. */
+  returns: number;
+  lifeEvents: { eventId: string; amount: number }[];
+  borrowed: number;
+  /** Stopped early because a scam is waiting for an answer. */
+  stoppedForScam: boolean;
+  completed: boolean;
+}
+
 interface GameStore {
   pre: MindsetRecord | null;
   post: MindsetRecord | null;
@@ -70,6 +84,8 @@ interface GameStore {
   /** Applies an action. Returns an error code when the engine rejects it. */
   act(action: Action): string | null;
   advance(): TurnOutcome | null;
+  /** Plays the remaining turns in one go (stops at a scam that needs an answer). */
+  fastForward(): FastForwardSummary | null;
   clearLastTurn(): void;
   finishChapter(): ChapterResult | null;
   dismissGuide(): void;
@@ -164,6 +180,43 @@ export const useGameStore = create<GameStore>()(
           .filter((r): r is DecisionRecord => r !== null && r.type !== "chapter_end");
         persistTurn(playthroughId, next, records);
         return outcome;
+      },
+
+      fastForward() {
+        const { state: start, playthroughId } = get();
+        if (!start || start.status !== "playing") return null;
+        const summary: FastForwardSummary = {
+          turns: 0,
+          income: 0,
+          costs: 0,
+          returns: 0,
+          lifeEvents: [],
+          borrowed: 0,
+          stoppedForScam: false,
+          completed: false,
+        };
+        let s = start;
+        const records: DecisionRecord[] = [];
+        while (s.status === "playing") {
+          const { state: next, events } = advanceTurn(s, content);
+          summary.turns += 1;
+          for (const e of events) {
+            if (e.type === "income") summary.income += e.amount;
+            else if (e.type === "fixed_expenses") summary.costs += e.amount;
+            else if (e.type === "returns") summary.returns += e.change;
+            else if (e.type === "life_event") {
+              summary.lifeEvents.push({ eventId: e.eventId, amount: e.amount });
+            } else if (e.type === "forced_borrowing") summary.borrowed += e.amount;
+            const record = toDecisionLog(e, { chapterId: next.chapterId, turn: next.turn });
+            if (record && record.type !== "chapter_end") records.push(record);
+          }
+          s = next;
+        }
+        summary.stoppedForScam = s.status === "awaiting_scam_response";
+        summary.completed = s.status === "chapter_complete";
+        set({ state: s, lastTurn: null });
+        persistTurn(playthroughId, s, records);
+        return summary;
       },
 
       clearLastTurn() {
