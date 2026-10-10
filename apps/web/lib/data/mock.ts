@@ -64,8 +64,8 @@ export const mockPersistence: PersistenceApi = {
     db.playthroughs[id] = {
       personaId,
       seed,
-      state: initialState,
-      contentVersion: initialState.contentVersion,
+      state: initialState ?? null,
+      contentVersion: initialState?.contentVersion ?? "v1",
     };
     write(db);
     return id;

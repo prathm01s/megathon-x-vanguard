@@ -40,7 +40,7 @@ export interface PersistenceApi {
   startPlaythrough(
     personaId: string,
     seed: string,
-    initialState: GameState,
+    initialState?: GameState,
   ): Promise<PlaythroughId>;
   loadPlaythrough(id: PlaythroughId): Promise<{ state: GameState; contentVersion: string } | null>;
   /** Saves the latest engine snapshot (called after each turn). */
