@@ -12,3 +12,4 @@ content/
 packages/engine/fixtures/*.json
 apps/web/AGENTS.md
 supabase/
+.github/workflows/
