@@ -378,8 +378,330 @@ export type Database = {
         };
         Relationships: [];
       };
+      code_redemption_attempts: {
+        Row: {
+          id: string;
+          ip: string;
+          attempted_at: string;
+        };
+        Insert: {
+          id?: string;
+          ip: string;
+          attempted_at?: string;
+        };
+        Update: {
+          id?: string;
+          ip?: string;
+          attempted_at?: string;
+        };
+        Relationships: [];
+      };
+      rooms: {
+        Row: {
+          id: string;
+          created_at: string;
+          updated_at: string;
+          code: string;
+          org_id: string | null;
+          host_user_id: string;
+          chapter_id: string;
+          status: "lobby" | "playing" | "finished";
+          turn: number;
+          seed: string;
+          state: Json;
+          version: number;
+          turn_deadline: string | null;
+          content_version: string;
+        };
+        Insert: {
+          id?: string;
+          created_at?: string;
+          updated_at?: string;
+          code: string;
+          org_id?: string | null;
+          host_user_id: string;
+          chapter_id: string;
+          status?: "lobby" | "playing" | "finished";
+          turn?: number;
+          seed: string;
+          state: Json;
+          version?: number;
+          turn_deadline?: string | null;
+          content_version: string;
+        };
+        Update: {
+          id?: string;
+          created_at?: string;
+          updated_at?: string;
+          code?: string;
+          org_id?: string | null;
+          host_user_id?: string;
+          chapter_id?: string;
+          status?: "lobby" | "playing" | "finished";
+          turn?: number;
+          seed?: string;
+          state?: Json;
+          version?: number;
+          turn_deadline?: string | null;
+          content_version?: string;
+        };
+        Relationships: [];
+      };
+      room_members: {
+        Row: {
+          id: string;
+          created_at: string;
+          room_id: string;
+          member_key: string;
+          user_id: string | null;
+          is_bot: boolean;
+          bot_strategy: string | null;
+          seat: number;
+          nickname: string;
+          trust_score: number;
+          playthrough_id: string | null;
+        };
+        Insert: {
+          id?: string;
+          created_at?: string;
+          room_id: string;
+          member_key: string;
+          user_id?: string | null;
+          is_bot: boolean;
+          bot_strategy?: string | null;
+          seat: number;
+          nickname: string;
+          trust_score: number;
+          playthrough_id?: string | null;
+        };
+        Update: {
+          id?: string;
+          created_at?: string;
+          room_id?: string;
+          member_key?: string;
+          user_id?: string | null;
+          is_bot?: boolean;
+          bot_strategy?: string | null;
+          seat?: number;
+          nickname?: string;
+          trust_score?: number;
+          playthrough_id?: string | null;
+        };
+        Relationships: [];
+      };
+      room_views: {
+        Row: {
+          id: string;
+          created_at: string;
+          updated_at: string;
+          room_id: string;
+          room_code: string;
+          user_id: string;
+          view: Json;
+          version: number;
+        };
+        Insert: {
+          id?: string;
+          created_at?: string;
+          updated_at?: string;
+          room_id: string;
+          room_code: string;
+          user_id: string;
+          view: Json;
+          version: number;
+        };
+        Update: {
+          id?: string;
+          created_at?: string;
+          updated_at?: string;
+          room_id?: string;
+          room_code?: string;
+          user_id?: string;
+          view?: Json;
+          version?: number;
+        };
+        Relationships: [];
+      };
+      loans: {
+        Row: {
+          id: string;
+          created_at: string;
+          room_id: string;
+          loan_key: string;
+          request_key: string | null;
+          lender_kind: "member" | "bank" | "loan_app" | null;
+          lender_member_id: string | null;
+          borrower_member_id: string;
+          principal: number;
+          rate_per_turn: number;
+          interest_type: "simple" | "compound";
+          start_turn: number;
+          due_turn: number;
+          status: "requested" | "offered" | "active" | "repaid" | "late" | "defaulted" | "declined";
+          repaid_amount: number;
+        };
+        Insert: {
+          id?: string;
+          created_at?: string;
+          room_id: string;
+          loan_key: string;
+          request_key?: string | null;
+          lender_kind?: "member" | "bank" | "loan_app" | null;
+          lender_member_id?: string | null;
+          borrower_member_id: string;
+          principal: number;
+          rate_per_turn: number;
+          interest_type: "simple" | "compound";
+          start_turn: number;
+          due_turn: number;
+          status: "requested" | "offered" | "active" | "repaid" | "late" | "defaulted" | "declined";
+          repaid_amount?: number;
+        };
+        Update: {
+          id?: string;
+          created_at?: string;
+          room_id?: string;
+          loan_key?: string;
+          request_key?: string | null;
+          lender_kind?: "member" | "bank" | "loan_app" | null;
+          lender_member_id?: string | null;
+          borrower_member_id?: string;
+          principal?: number;
+          rate_per_turn?: number;
+          interest_type?: "simple" | "compound";
+          start_turn?: number;
+          due_turn?: number;
+          status?: "requested" | "offered" | "active" | "repaid" | "late" | "defaulted" | "declined";
+          repaid_amount?: number;
+        };
+        Relationships: [];
+      };
+      auctions: {
+        Row: {
+          id: string;
+          created_at: string;
+          room_id: string;
+          auction_def_id: string;
+          turn: number;
+          status: "open" | "closed";
+          winner_member_id: string | null;
+          winner_pool_key: string | null;
+          winning_bid: number | null;
+          true_value: number | null;
+        };
+        Insert: {
+          id?: string;
+          created_at?: string;
+          room_id: string;
+          auction_def_id: string;
+          turn: number;
+          status: "open" | "closed";
+          winner_member_id?: string | null;
+          winner_pool_key?: string | null;
+          winning_bid?: number | null;
+          true_value?: number | null;
+        };
+        Update: {
+          id?: string;
+          created_at?: string;
+          room_id?: string;
+          auction_def_id?: string;
+          turn?: number;
+          status?: "open" | "closed";
+          winner_member_id?: string | null;
+          winner_pool_key?: string | null;
+          winning_bid?: number | null;
+          true_value?: number | null;
+        };
+        Relationships: [];
+      };
+      bid_pools: {
+        Row: {
+          id: string;
+          created_at: string;
+          auction_id: string;
+          pool_key: string;
+        };
+        Insert: {
+          id?: string;
+          created_at?: string;
+          auction_id: string;
+          pool_key: string;
+        };
+        Update: {
+          id?: string;
+          created_at?: string;
+          auction_id?: string;
+          pool_key?: string;
+        };
+        Relationships: [];
+      };
+      bid_pool_members: {
+        Row: {
+          id: string;
+          created_at: string;
+          pool_id: string;
+          member_id: string;
+          contribution: number;
+        };
+        Insert: {
+          id?: string;
+          created_at?: string;
+          pool_id: string;
+          member_id: string;
+          contribution: number;
+        };
+        Update: {
+          id?: string;
+          created_at?: string;
+          pool_id?: string;
+          member_id?: string;
+          contribution?: number;
+        };
+        Relationships: [];
+      };
+      bids: {
+        Row: {
+          id: string;
+          created_at: string;
+          auction_id: string;
+          member_id: string | null;
+          pool_id: string | null;
+          amount: number;
+        };
+        Insert: {
+          id?: string;
+          created_at?: string;
+          auction_id: string;
+          member_id?: string | null;
+          pool_id?: string | null;
+          amount: number;
+        };
+        Update: {
+          id?: string;
+          created_at?: string;
+          auction_id?: string;
+          member_id?: string | null;
+          pool_id?: string | null;
+          amount?: number;
+        };
+        Relationships: [];
+      };
     };
     Views: {
+      org_seats_v: {
+        Row: {
+          org_id: string;
+          total_codes_generated: number;
+          pending_codes: number;
+          active_codes: number;
+          expired_codes: number;
+          revoked_codes: number;
+          total_students: number;
+          linked_personal_learners: number;
+        };
+        Relationships: [];
+      };
       org_engagement_v: {
         Row: {
           org_id: string;
@@ -431,6 +753,25 @@ export type Database = {
         };
         Relationships: [];
       };
+      org_student_detail_v: {
+        Row: {
+          user_id: string;
+          org_id: string;
+          nickname: string;
+          username: string;
+          player_id: string;
+          avatar_id: string;
+          locale: "en" | "te" | "hi" | "ur";
+          code_label: string | null;
+          code_last4: string | null;
+          persona_id: string;
+          latest_chapter_id: string | null;
+          avg_health_score: number | null;
+          badges_count: number;
+          last_active_at: string | null;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
       random_code: {
@@ -463,6 +804,30 @@ export type Database = {
       playthrough_owner: {
         Args: { p_id: string };
         Returns: string;
+      };
+      redeem_student_code_claim: {
+        Args: {
+          p_code_hash: string;
+          p_ip: string;
+        };
+        Returns: {
+          code_id: string;
+          org_id: string;
+          group_id: string | null;
+        }[];
+      };
+      redeem_student_code_revert: {
+        Args: {
+          p_code_id: string;
+        };
+        Returns: undefined;
+      };
+      redeem_student_code_finalize: {
+        Args: {
+          p_code_id: string;
+          p_user_id: string;
+        };
+        Returns: undefined;
       };
     };
     Enums: {

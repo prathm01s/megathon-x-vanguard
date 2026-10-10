@@ -1,40 +1,22 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Supabase Edge Function: redeem-code (§4.3, §15.6 #5)
+// Supabase Edge Function: redeem-code (§4.3, §15.6 #5, Request 17, 20)
 // Owner: Prathmesh
 //
 // Single-use student code redemption:
 // 1. Verifies code format (XXXX-XXXX unambiguous alphabet)
 // 2. Hashes code with SHA-256
-// 3. Atomically checks pending status and expiration
-// 4. Creates student account with synthetic email if not logged in
+// 3. Atomically checks pending status, expiration, and rate limit via RPC
+// 4. Creates student account with synthetic email
 // 5. Creates profile linked to the NGO
-// 6. Adds student to NGO group if code has group_id
-// 7. Marks code as active/redeemed
+// 6. Finalizes code claim and adds to group if specified
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "@supabase/supabase-js";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-// In-memory rate limiting map: ip -> timestamps of attempts in the last 60 seconds
-const rateLimitMap = new Map<string, number[]>();
-const MAX_ATTEMPTS_PER_MINUTE = 5;
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const windowStart = now - 60_000;
-  const attempts = (rateLimitMap.get(ip) ?? []).filter((t) => t > windowStart);
-  if (attempts.length >= MAX_ATTEMPTS_PER_MINUTE) {
-    return true;
-  }
-  attempts.push(now);
-  rateLimitMap.set(ip, attempts);
-  return false;
-}
 
 async function sha256(text: string): Promise<string> {
   const encoder = new TextEncoder();
@@ -44,18 +26,15 @@ async function sha256(text: string): Promise<string> {
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-serve(async (req) => {
+Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
-  const clientIp = req.headers.get("x-forwarded-for") || req.headers.get("cf-connecting-ip") || "unknown";
-  if (isRateLimited(clientIp)) {
-    return new Response(
-      JSON.stringify({ error: "Too many attempts. Please wait a minute and try again." }),
-      { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
-  }
+  const clientIp =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    req.headers.get("cf-connecting-ip") ||
+    "127.0.0.1";
 
   try {
     const { code, username, nickname, avatarId, password } = await req.json();
@@ -80,7 +59,9 @@ serve(async (req) => {
     const normalizedUsername = String(username).toLowerCase().trim();
     if (!/^[a-z0-9_]{3,20}$/.test(normalizedUsername)) {
       return new Response(
-        JSON.stringify({ error: "Username must be 3-20 characters using only lowercase letters, numbers, and underscores." }),
+        JSON.stringify({
+          error: "Username must be 3-20 characters using only lowercase letters, numbers, and underscores.",
+        }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
@@ -95,38 +76,56 @@ serve(async (req) => {
       auth: { persistSession: false, autoRefreshToken: false },
     });
 
-    // 1. Fetch code record
-    const { data: codeRecord, error: codeFetchError } = await supabaseAdmin
-      .from("student_codes")
-      .select("id, org_id, group_id, status, expires_at")
-      .eq("code_hash", codeHash)
-      .maybeSingle();
+    // 1. Atomically claim code using SECURITY DEFINER RPC
+    const { data: claimData, error: claimErr } = await supabaseAdmin.rpc(
+      "redeem_student_code_claim",
+      {
+        p_code_hash: codeHash,
+        p_ip: clientIp,
+      },
+    );
 
-    if (codeFetchError || !codeRecord) {
+    if (claimErr) {
+      const msg = claimErr.message || "";
+      if (msg.includes("rate_limit_exceeded")) {
+        return new Response(
+          JSON.stringify({ error: "Too many attempts. Please wait 60 seconds and try again." }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      if (msg.includes("code_expired")) {
+        return new Response(
+          JSON.stringify({ error: "This student code has expired." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      if (msg.includes("code_already_used")) {
+        return new Response(
+          JSON.stringify({ error: "This student code has already been redeemed." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      if (msg.includes("code_revoked")) {
+        return new Response(
+          JSON.stringify({ error: "This student code has been revoked." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
       return new Response(
         JSON.stringify({ error: "Invalid code or code not found." }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    if (codeRecord.status !== "pending") {
+    const claimRows = (claimData as Array<{ code_id: string; org_id: string; group_id: string | null }>) || [];
+    if (!claimRows || claimRows.length === 0) {
       return new Response(
-        JSON.stringify({ error: `This code has already been ${codeRecord.status}.` }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        JSON.stringify({ error: "Invalid code or code not found." }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    if (codeRecord.expires_at && new Date(codeRecord.expires_at) < new Date()) {
-      await supabaseAdmin
-        .from("student_codes")
-        .update({ status: "expired" })
-        .eq("id", codeRecord.id);
-
-      return new Response(
-        JSON.stringify({ error: "This student code has expired." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
+    const { code_id: codeId, org_id: orgId, group_id: groupId } = claimRows[0]!;
 
     // 2. Create synthetic email user in Supabase Auth
     const syntheticEmail = `${normalizedUsername}@${studentDomain}`;
@@ -142,8 +141,11 @@ serve(async (req) => {
     });
 
     if (authError || !authUser.user) {
+      await supabaseAdmin.rpc("redeem_student_code_revert", { p_code_id: codeId });
       return new Response(
-        JSON.stringify({ error: authError?.message || "Failed to create user account. Username may be taken." }),
+        JSON.stringify({
+          error: authError?.message || "Failed to create user account. Username may be taken.",
+        }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
@@ -151,69 +153,54 @@ serve(async (req) => {
     const userId = authUser.user.id;
 
     // 3. Insert profile record
-    const { error: profileError } = await supabaseAdmin
-      .from("profiles")
-      .insert({
-        user_id: userId,
-        role: "student",
-        org_id: codeRecord.org_id,
-        username: normalizedUsername,
-        nickname: String(nickname).trim().slice(0, 30),
-        avatar_id: avatarId || "avatar-1",
-        locale: "en",
-        has_recovery_email: false,
-      });
+    const { error: profileError } = await supabaseAdmin.from("profiles").insert({
+      user_id: userId,
+      role: "student",
+      org_id: orgId,
+      username: normalizedUsername,
+      nickname: String(nickname).trim().slice(0, 30),
+      avatar_id: avatarId || "avatar-1",
+      locale: "en",
+      has_recovery_email: false,
+    });
 
     if (profileError) {
-      // Rollback user creation
       await supabaseAdmin.auth.admin.deleteUser(userId);
+      await supabaseAdmin.rpc("redeem_student_code_revert", { p_code_id: codeId });
       return new Response(
         JSON.stringify({ error: `Failed to create profile: ${profileError.message}` }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    // 4. Mark code as redeemed
-    const { error: codeUpdateError } = await supabaseAdmin
-      .from("student_codes")
-      .update({
-        status: "active",
-        redeemed_by: userId,
-        redeemed_at: new Date().toISOString(),
-      })
-      .eq("id", codeRecord.id);
-
-    if (codeUpdateError) {
-      console.error("Failed to update code status:", codeUpdateError);
-    }
+    // 4. Finalize code with redeemed user id
+    await supabaseAdmin.rpc("redeem_student_code_finalize", {
+      p_code_id: codeId,
+      p_user_id: userId,
+    });
 
     // 5. Add to group if specified
-    if (codeRecord.group_id) {
-      await supabaseAdmin
-        .from("group_members")
-        .insert({
-          group_id: codeRecord.group_id,
-          student_user_id: userId,
-        });
+    if (groupId) {
+      await supabaseAdmin.from("group_members").insert({
+        group_id: groupId,
+        student_user_id: userId,
+      });
     }
 
     return new Response(
       JSON.stringify({
         success: true,
-        user: {
-          id: userId,
-          username: normalizedUsername,
-          nickname: String(nickname).trim(),
-          email: syntheticEmail,
-        },
-        orgId: codeRecord.org_id,
+        userId,
+        orgId,
+        username: normalizedUsername,
+        nickname: String(nickname).trim(),
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Internal server error";
+  } catch (error) {
+    const err = error as Error;
     return new Response(
-      JSON.stringify({ error: message }),
+      JSON.stringify({ error: err.message || "Internal server error." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }

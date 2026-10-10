@@ -7,6 +7,7 @@
 
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 
 // Alphabet for student codes and player IDs (§4.3, no 0/O/1/I/L)
 const ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
@@ -35,7 +36,8 @@ export interface ActionResult<T = unknown> {
 }
 
 /**
- * Redeem a student code to create a student account linked to the NGO (§4.3)
+ * Redeem a student code to create a student account linked to the NGO (§4.3, Request 17)
+ * Uses atomic Postgres RPC to prevent race conditions and enforce 5 attempts/min rate limit.
  */
 export async function redeemStudentCode(formData: {
   code: string;
@@ -60,30 +62,57 @@ export async function redeemStudentCode(formData: {
       };
     }
 
+    // Extract client IP for persistent rate limiting (§4.3: 5 attempts/min)
+    let clientIp = "127.0.0.1";
+    try {
+      const headerList = await headers();
+      const forwarded = headerList.get("x-forwarded-for");
+      if (forwarded) {
+        clientIp = forwarded.split(",")[0]?.trim() || "127.0.0.1";
+      } else {
+        clientIp = headerList.get("x-real-ip") || "127.0.0.1";
+      }
+    } catch {
+      clientIp = "127.0.0.1";
+    }
+
     const codeHash = await hashString(cleanCode);
     const admin = createAdminClient();
 
-    // Verify code exists and is pending
-    const { data: codeRecord, error: codeErr } = await admin
-      .from("student_codes")
-      .select("id, org_id, group_id, status, expires_at")
-      .eq("code_hash", codeHash)
-      .maybeSingle();
+    // 1. Atomically claim code using SECURITY DEFINER stored procedure
+    const { data: claimData, error: claimErr } = await admin.rpc(
+      "redeem_student_code_claim",
+      {
+        p_code_hash: codeHash,
+        p_ip: clientIp,
+      },
+    );
 
-    if (codeErr || !codeRecord) {
+    if (claimErr) {
+      const msg = claimErr.message || "";
+      if (msg.includes("rate_limit_exceeded")) {
+        return { success: false, error: "Too many attempts. Please wait 60 seconds and try again." };
+      }
+      if (msg.includes("code_expired")) {
+        return { success: false, error: "This student code has expired." };
+      }
+      if (msg.includes("code_already_used")) {
+        return { success: false, error: "This student code has already been redeemed." };
+      }
+      if (msg.includes("code_revoked")) {
+        return { success: false, error: "This student code has been revoked." };
+      }
       return { success: false, error: "Student code not found or invalid." };
     }
 
-    if (codeRecord.status !== "pending") {
-      return { success: false, error: `This code has already been ${codeRecord.status}.` };
+    const claimRows = (claimData as Array<{ code_id: string; org_id: string; group_id: string | null }>) || [];
+    if (!claimRows || claimRows.length === 0) {
+      return { success: false, error: "Student code not found or invalid." };
     }
 
-    if (codeRecord.expires_at && new Date(codeRecord.expires_at) < new Date()) {
-      await admin.from("student_codes").update({ status: "expired" }).eq("id", codeRecord.id);
-      return { success: false, error: "This student code has expired." };
-    }
+    const { code_id: codeId, org_id: orgId, group_id: groupId } = claimRows[0]!;
 
-    // Create synthetic student email
+    // 2. Create synthetic student email
     const studentDomain = process.env.STUDENT_EMAIL_DOMAIN || "students.tosslife.invalid";
     const syntheticEmail = `${normalizedUsername}@${studentDomain}`;
 
@@ -98,6 +127,8 @@ export async function redeemStudentCode(formData: {
     });
 
     if (authErr || !authUser.user) {
+      // Rollback code claim if auth user creation fails
+      await admin.rpc("redeem_student_code_revert", { p_code_id: codeId });
       return {
         success: false,
         error: authErr?.message || "Could not create user account. Username may be taken.",
@@ -106,11 +137,11 @@ export async function redeemStudentCode(formData: {
 
     const userId = authUser.user.id;
 
-    // Create profile linked to NGO
+    // 3. Create profile linked to NGO
     const { error: profileErr } = await admin.from("profiles").insert({
       user_id: userId,
       role: "student",
-      org_id: codeRecord.org_id,
+      org_id: orgId,
       username: normalizedUsername,
       nickname: nickname.trim().slice(0, 30),
       avatar_id: avatarId,
@@ -120,28 +151,25 @@ export async function redeemStudentCode(formData: {
 
     if (profileErr) {
       await admin.auth.admin.deleteUser(userId);
+      await admin.rpc("redeem_student_code_revert", { p_code_id: codeId });
       return { success: false, error: `Failed to create student profile: ${profileErr.message}` };
     }
 
-    // Mark code as active/redeemed
-    await admin
-      .from("student_codes")
-      .update({
-        status: "active",
-        redeemed_by: userId,
-        redeemed_at: new Date().toISOString(),
-      })
-      .eq("id", codeRecord.id);
+    // 4. Finalize code with redeemed user id
+    await admin.rpc("redeem_student_code_finalize", {
+      p_code_id: codeId,
+      p_user_id: userId,
+    });
 
-    // Add to group if present
-    if (codeRecord.group_id) {
+    // 5. Add to group if specified
+    if (groupId) {
       await admin.from("group_members").insert({
-        group_id: codeRecord.group_id,
+        group_id: groupId,
         student_user_id: userId,
       });
     }
 
-    // Sign the user in
+    // 6. Sign the user in
     const client = await createClient();
     await client.auth.signInWithPassword({
       email: syntheticEmail,
@@ -260,7 +288,7 @@ export async function signUpPersonal(formData: {
 }
 
 /**
- * Universal Login for students (by username or email) and NGO admins (§4.2)
+ * Universal Login for students (by username or email) and NGO admins (§4.2, Requests 18 & 19)
  */
 export async function loginUser(formData: {
   identifier: string;
@@ -270,14 +298,34 @@ export async function loginUser(formData: {
     const { identifier, password } = formData;
     const studentDomain = process.env.STUDENT_EMAIL_DOMAIN || "students.tosslife.invalid";
 
-    // If identifier doesn't contain '@', it's a student username
-    const email = identifier.includes("@")
-      ? identifier.trim()
-      : `${identifier.toLowerCase().trim()}@${studentDomain}`;
+    let emailToUse = identifier.trim();
+
+    // If identifier doesn't contain '@', look up username in profiles
+    // This allows personal learners who signed up with a real email to log in via username (§4.5, Request 18)
+    if (!identifier.includes("@")) {
+      const normalizedUsername = identifier.toLowerCase().trim();
+      const admin = createAdminClient();
+      const { data: profile } = await admin
+        .from("profiles")
+        .select("user_id")
+        .eq("username", normalizedUsername)
+        .maybeSingle();
+
+      if (profile?.user_id) {
+        const { data: authUser } = await admin.auth.admin.getUserById(profile.user_id);
+        if (authUser?.user?.email) {
+          emailToUse = authUser.user.email;
+        } else {
+          emailToUse = `${normalizedUsername}@${studentDomain}`;
+        }
+      } else {
+        emailToUse = `${normalizedUsername}@${studentDomain}`;
+      }
+    }
 
     const client = await createClient();
     const { data, error } = await client.auth.signInWithPassword({
-      email,
+      email: emailToUse,
       password,
     });
 
@@ -293,7 +341,32 @@ export async function loginUser(formData: {
       .maybeSingle();
 
     const role = profile?.role || "student";
-    const redirect = role === "ngo_admin" ? "/admin" : "/play";
+
+    // Dynamic routing (§4.2, Request 19):
+    // NGO admins route to /admin
+    // Students without a completed mindset check or playthrough route to /mindset
+    let redirect = "/admin";
+    if (role === "student") {
+      const { data: mindset } = await client
+        .from("mindset_responses")
+        .select("id")
+        .eq("user_id", data.user.id)
+        .limit(1)
+        .maybeSingle();
+
+      if (!mindset) {
+        const { data: playthrough } = await client
+          .from("playthroughs")
+          .select("id")
+          .eq("user_id", data.user.id)
+          .limit(1)
+          .maybeSingle();
+
+        redirect = !playthrough ? "/mindset" : "/play";
+      } else {
+        redirect = "/play";
+      }
+    }
 
     return { success: true, data: { role, redirect } };
   } catch (err) {

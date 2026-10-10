@@ -29,16 +29,28 @@
   - Facilitator classroom discussion guides for Chapter 2.
 - **Demo Seed Script (`scripts/seed.ts`):** Implemented cohort simulation for 1 NGO and 40 students utilizing Samarth's engine and bot strategies (`balanced`, `all-cash`, `all-equity`). Generated `supabase/seed.sql` (1,700 lines of verified test data).
 
-- **Merged into `main`** (2026-10-10). Review fixes in your paths are listed in `docs/requests/prathmesh.md` ("From the merge review"); open items are 17–22.
+- **Merged into `main`** (2026-10-10).
+- **Atomic Code Redemption & Rate Limiting Migration (`20261010020000_atomic_code_redeem.sql`):**
+  - Built persistent rate-limiting table `code_redemption_attempts` with RLS and indexed lookup.
+  - Implemented atomic `redeem_student_code_claim(p_code_hash text, p_ip text)` checking 5 attempts/min rate limit per IP and transitioning codes from `pending` to `active` in one atomic operation.
+  - Implemented compensation `redeem_student_code_revert` and `redeem_student_code_finalize` RPCs.
+  - Updated `redeemStudentCode` in `apps/web/lib/auth/actions.ts` to execute atomic claims with rollback guarantees.
+  - Comprehensive PGlite unit test in `supabase/tests/redeem-atomic.test.ts` verifying concurrent protection and rate limiting.
+- **Personal Learner Username Login Fix:**
+  - Resolved login failure for personal learners registering with real emails by adding server-side username → email resolution via `profiles` and Supabase Admin auth client.
+- **Dynamic First-Time Student Login Redirection:**
+  - `loginUser` now dynamically routes new students without a completed Money Mindset Check or active playthrough to `/mindset`, while returning students go directly to `/play`.
+- **Database Types Synchronization (`@toss/db-types`):**
+  - Updated `packages/db-types/src/database.ts` with all room tables (`rooms`, `room_members`, `room_views`, `loans`, `auctions`, `bids`, `bid_pools`, `bid_pool_members`), missing views (`org_seats_v`, `org_student_detail_v`), and new RPCs.
 
 ## In progress
 
-- (All priority tasks completed and verified with passing tests and builds)
+- Batch 3: Join requests server actions/UI, Admin group management, and printable code handouts.
 
 ## Verification Status
 
 - `pnpm content:validate`: PASS
-- `pnpm lint`: PASS (0 errors, 0 warnings across all packages and web app)
-- `pnpm typecheck`: PASS (0 errors across monorepo and scripts)
-- `pnpm test`: PASS (7/7 test files, 40/40 unit tests passing)
-- `pnpm build`: PASS (Turbopack production build compiled with all static and partial prerender routes)
+- `pnpm lint`: PASS (0 errors, 0 warnings across monorepo)
+- `pnpm typecheck`: PASS (0 errors across monorepo, web, scripts, and supabase tests)
+- `pnpm test`: PASS (24/24 test files, 155/155 unit & integration tests passing)
+- `pnpm build`: PASS (Turbopack production build compiled with all 107 static and partial prerender routes)
