@@ -30,14 +30,14 @@
       "invested": 5900000,
       "investedReal": 5622642,
       "value": 6674267,
-      "units": 5757281.553398054
+      "units": 5757.281553398054
     },
     {
       "optionId": "equity-fund",
       "invested": 12000000,
       "investedReal": 10384766,
       "value": 12107359,
-      "units": 9383470.121959545
+      "units": 9383.470121959539
     }
   ],
   "sips": [

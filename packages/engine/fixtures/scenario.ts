@@ -8,6 +8,16 @@ import {
   endChapter,
   getAvailableActions,
 } from "../src/api";
+import {
+  acceptLoan,
+  createRoomState,
+  joinRoomPool,
+  memberAction,
+  react,
+  requestLoan,
+  startRoom,
+  submitTurn,
+} from "../src/room";
 import type { ChapterResult, GameState, RoomState } from "../src/types";
 
 export const FIXTURE_SEED = "fixture-seed-ch2";
@@ -57,61 +67,50 @@ export function scriptedCh2Game(
   return { states, result: endChapter(s, content) };
 }
 
-export function sampleRoom(content: ContentBundle, me: GameState): RoomState {
-  const bot = (
-    id: string,
-    seat: number,
-    nickname: string,
-    strategy: "cautious" | "balanced" | "impulsive",
-  ) => ({
-    id,
-    userId: null,
-    nickname,
-    avatarId: `avatar-${seat}`,
-    isBot: true,
-    botStrategy: strategy,
-    seat,
-    trustScore: content.multiplayer.loans.trust.start,
-    ready: true,
-    state: me,
-  });
-  return {
-    code: "TOSS42",
-    hostMemberId: "m-human",
-    chapterId: "ch2-first-job",
-    status: "playing",
-    turn: me.turn,
-    seed: me.seed,
-    members: [
-      {
-        id: "m-human",
-        userId: "00000000-0000-0000-0000-000000000001",
-        nickname: "coinflip_kid",
-        avatarId: "avatar-1",
-        isBot: false,
-        seat: 1,
-        trustScore: 55,
-        ready: false,
-        state: me,
-      },
-      bot("m-bot-1", 2, "Careful Kavya", "cautious"),
-      bot("m-bot-2", 3, "Spendy Sunny", "impulsive"),
-    ],
-    loans: [
-      {
-        id: "loan-1",
-        lenderMemberId: "m-bot-1",
-        borrowerMemberId: "m-human",
-        principal: 1_000_000,
-        ratePerTurn: 0.03,
-        interestType: "simple",
-        startTurn: me.turn,
-        dueTurn: me.turn + 2,
-        status: "active",
-        repaidAmount: 0,
-      },
-    ],
-    auction: null,
-    tosses: me.tosses,
+/**
+ * A Friends' Room built with the real room rules: one human + bots, played to the
+ * decide phase of turn 4 (the used-bike auction is open), with one active loan from a
+ * friend and one open loan request showing all its offers.
+ */
+export function sampleRoom(content: ContentBundle): RoomState {
+  const answerScams = (room: RoomState) => {
+    const me = room.members.find((m) => m.id === "m1")!;
+    for (const p of me.state.pendingScams) {
+      room = memberAction(
+        room,
+        "m1",
+        { type: "scam_response", instanceId: p.instanceId, response: "ignore" },
+        content,
+      );
+    }
+    return room;
   };
+  let room = createRoomState({
+    code: "TOSS42",
+    seed: "room-fixture",
+    chapterId: "ch2-first-job",
+    host: {
+      userId: "mock-user",
+      nickname: "coinflip_kid",
+      avatarId: "avatar-1",
+      personaId: "safe-keeper",
+    },
+    content,
+  });
+  room = startRoom(room, content);
+  room = submitTurn(room, "m1", content);
+  room = answerScams(room);
+  room = requestLoan(room, "m1", { amount: 20000_00, dueTurn: 3 }, content);
+  const offer =
+    room.loans.find((l) => l.status === "offered" && l.lenderMemberId.startsWith("m")) ??
+    room.loans.find((l) => l.status === "offered" && l.lenderMemberId === "bank")!;
+  room = acceptLoan(room, "m1", offer.id);
+  room = submitTurn(room, "m1", content);
+  room = answerScams(room);
+  room = submitTurn(room, "m1", content);
+  room = answerScams(room);
+  room = requestLoan(room, "m1", { amount: 10000_00, dueTurn: 5 }, content);
+  room = joinRoomPool(room, "m1", { poolId: "pool-1", contribution: 25000_00 }, content);
+  room = react(room, "m1", content.multiplayer.emotes[0]!.id, content);
+  return room;
 }

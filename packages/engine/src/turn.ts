@@ -46,7 +46,7 @@ export function advanceTurn(
   next.turn += 1;
 
   // ── Toss ──────────────────────────────────────────────────────────────────
-  const toss = tossFor(state.seed, next.turn, content, state.turnUnit);
+  const toss = tossFor(state.marketSeed ?? state.seed, next.turn, content, state.turnUnit);
   events.push({
     type: "market_toss",
     marketState: toss.marketState,

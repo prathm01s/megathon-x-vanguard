@@ -47,3 +47,23 @@ export {
   SIM_STRATEGIES,
   type StrategyId,
 } from "./bots";
+export {
+  createRoomState,
+  joinRoom,
+  leaveRoom,
+  fillWithBots,
+  startRoom,
+  react,
+  memberAction,
+  requestLoan,
+  offerLoan,
+  acceptLoan,
+  repayRoomLoan,
+  placeRoomBid,
+  joinRoomPool,
+  submitTurn,
+  resolveTurn,
+  endRoomChapter,
+  loansOwedBy,
+  type PlayerInfo,
+} from "./room";

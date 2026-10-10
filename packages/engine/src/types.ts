@@ -124,7 +124,11 @@ export interface GameState {
   /** Engine state schema version. Older saves are upgraded by `migrateState`. */
   schemaVersion: typeof STATE_SCHEMA_VERSION;
   contentVersion: string;
+  /** Seeds this player's life events, scams and cash luck. */
   seed: string;
+  /** Seeds the market tosses. Defaults to `seed`; in a Friends' Room every member shares
+   *  the room's market seed, so the market is the same for all (§7.6). */
+  marketSeed?: string;
   personaId: PersonaId;
   chapterId: ChapterId;
   /** 0 before the first toss; increments on each `advanceTurn`. */
@@ -348,6 +352,8 @@ export type LoanStatus =
 
 export interface Loan {
   id: string;
+  /** For offers: the request they answer. Requests and offers are both `Loan` rows. */
+  requestId?: string;
   lenderMemberId: string | "bank" | "loan-app";
   borrowerMemberId: string;
   principal: Paise;
@@ -395,6 +401,15 @@ export interface AuctionState {
   winner?: { memberId?: string; poolId?: string; amount: Paise };
   /** Revealed after close. */
   trueValue?: Paise;
+  /** Turns of `returnStream` income still to be paid to the winner(s). */
+  payoutTurnsLeft?: number;
+}
+
+/** Preset emote — no free-text chat between students (§6). */
+export interface RoomReaction {
+  memberId: string;
+  emoteId: string;
+  turn: number;
 }
 
 export interface RoomState {
@@ -409,4 +424,5 @@ export interface RoomState {
   auction: AuctionState | null;
   /** Shared market toss per turn. */
   tosses: TossResult[];
+  reactions: RoomReaction[];
 }

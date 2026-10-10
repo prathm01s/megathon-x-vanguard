@@ -11,4 +11,6 @@ export const ch2Turn0 = turn0 as GameState;
 export const ch2Turn2 = turn2 as GameState;
 export const ch2Turn5 = turn5 as GameState;
 export const ch2ChapterResult = chapterResult as ChapterResult;
-export const sampleRoomState = room as RoomState;
+// JSON imports widen string unions to `string`; the generator builds this with the real
+// room rules, so the shape is guaranteed.
+export const sampleRoomState = room as unknown as RoomState;
