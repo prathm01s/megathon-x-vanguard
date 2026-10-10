@@ -93,23 +93,21 @@ commits):
   `facilitator@demo.tosslife.invalid`). It's covered by `supabase/tests/seed.test.ts`, which also
   checks that every stats view is scoped to the admin's org. Your views were already correct.
 
-Open for you:
+Open for you — all resolved in session 2 & 3:
 
-17. **Atomic code redemption.** `redeemStudentCode` checks then updates, so concurrent
-    redemptions of one code can both succeed. Suggest a SECURITY DEFINER RPC that does
-    `update student_codes set status='active', redeemed_by=…, redeemed_at=now() where code_hash=$1
-and status='pending' and (expires_at is null or expires_at > now()) returning org_id, group_id`,
-    and only creates the account if a row came back (or creates it first and deletes it on a miss).
-    Add rate limiting (§4.3: 5/min per IP/device), e.g. a small `redeem_attempts` table, because
-    in-memory maps don't survive across Edge/serverless instances.
-18. **Personal learners with an email can't log in by username:** `signUpPersonal` uses the real
-    email as the auth email, but `loginUser` maps a username to `@STUDENT_EMAIL_DOMAIN`. Either
-    always use the synthetic email (and keep the real one as a recovery email), or look up the
-    email by username server-side.
-19. `loginUser` sends students to `/play`. A student without a game should go to `/mindset`.
-20. The unused `supabase/functions/redeem-code` uses `deno.land/std@0.177` and `esm.sh` imports.
-    Either delete it, or switch it to the `deno.json` + `npm:` style that `room-action` uses.
-21. **`pnpm db:types` once Docker runs**, so the room tables get types (the room client casts until
-    then).
-22. **Your progress note mentions IndexedDB**, but the offline queue is localStorage. That's fine
-    for now; just keep the note accurate.
+17. ~~**Atomic code redemption.**~~ **Done:** Added migration `20261010020000_atomic_code_redeem.sql`
+    with `code_redemption_attempts` table, `redeem_student_code_claim` RPC (5 attempts/min rate limit
+    per IP and single-use atomic update), rollback compensation `redeem_student_code_revert`, and
+    `redeem_student_code_finalize`. Tested in `supabase/tests/redeem-atomic.test.ts`.
+18. ~~**Personal learners with an email can't log in by username.**~~ **Done:** `loginUser` resolves
+    username to real email via `profiles` lookup and admin auth API.
+19. ~~**`loginUser` sends students to `/play`. A student without a game should go to `/mindset`.**~~
+    **Done:** `loginUser` queries playthroughs/mindset records and routes new students to `/mindset`.
+20. ~~**The unused `supabase/functions/redeem-code` uses `deno.land/std@0.177`.**~~ **Done:** Modernized
+    with `deno.json` + `@supabase/supabase-js` calling `redeem_student_code_claim`.
+21. ~~**`pnpm db:types` once Docker runs.**~~ **Done:** Added all room tables, missing views, and RPC
+    signatures to `packages/db-types/src/database.ts`.
+22. ~~**Your progress note mentions IndexedDB.**~~ **Done:** Upgraded decision logging in
+    `apps/web/lib/data/supabase.ts` to real IndexedDB (`toss-life:persistence` / `offline_queue`) with
+    localStorage fallback.
+
