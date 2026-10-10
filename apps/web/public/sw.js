@@ -1,15 +1,11 @@
 const CACHE_NAME = "toss-life-v1";
-const STATIC_ASSETS = [
-  "/",
-  "/manifest.json",
-  "/icon.svg",
-];
+const STATIC_ASSETS = ["/", "/manifest.json", "/icon.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(STATIC_ASSETS);
-    })
+    }),
   );
   self.skipWaiting();
 });
@@ -17,10 +13,8 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
-      return Promise.all(
-        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
-      );
-    })
+      return Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)));
+    }),
   );
   self.clients.claim();
 });
@@ -55,6 +49,6 @@ self.addEventListener("fetch", (event) => {
             return caches.match("/");
           }
         });
-    })
+    }),
   );
 });

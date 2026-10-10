@@ -34,12 +34,8 @@ export default function RoomJoinPage() {
             <Users className="size-3.5" />
             <span>Multiplayer Classroom</span>
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-foreground">
-            {t("title")}
-          </h1>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            {t("subtitle")}
-          </p>
+          <h1 className="text-2xl font-black tracking-tight text-foreground">{t("title")}</h1>
+          <p className="text-xs text-muted-foreground leading-relaxed">{t("subtitle")}</p>
         </div>
 
         {/* Join form card */}
@@ -97,7 +93,8 @@ export default function RoomJoinPage() {
               <div className="text-xs space-y-0.5">
                 <h3 className="font-extrabold text-foreground">Peer Lending & Trust Score</h3>
                 <p className="text-[11px] text-muted-foreground leading-snug">
-                  Borrow from friends or institutional banks. Repaying on time builds your Trust Score; predatory loan apps charge toxic 15% interest.
+                  Borrow from friends or institutional banks. Repaying on time builds your Trust
+                  Score; predatory loan apps charge toxic 15% interest.
                 </p>
               </div>
             </Card>
@@ -109,7 +106,8 @@ export default function RoomJoinPage() {
               <div className="text-xs space-y-0.5">
                 <h3 className="font-extrabold text-foreground">Opportunity Auctions</h3>
                 <p className="text-[11px] text-muted-foreground leading-snug">
-                  Place sealed bids on delivery bikes, commercial shops, and rental flats to earn passive cash flow each turn.
+                  Place sealed bids on delivery bikes, commercial shops, and rental flats to earn
+                  passive cash flow each turn.
                 </p>
               </div>
             </Card>
@@ -121,7 +119,8 @@ export default function RoomJoinPage() {
               <div className="text-xs space-y-0.5">
                 <h3 className="font-extrabold text-foreground">Mutual Fund Pooling</h3>
                 <p className="text-[11px] text-muted-foreground leading-snug">
-                  Can&apos;t afford a big asset alone? Pool money with friends to co-own assets and split recurring profits proportionally.
+                  Can&apos;t afford a big asset alone? Pool money with friends to co-own assets and
+                  split recurring profits proportionally.
                 </p>
               </div>
             </Card>

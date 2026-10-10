@@ -12,11 +12,7 @@ export interface EmoteMessage {
   label: string;
 }
 
-export function RoomEmotesBar({
-  onSendEmote,
-}: {
-  onSendEmote: (emoteId: string) => void;
-}) {
+export function RoomEmotesBar({ onSendEmote }: { onSendEmote: (emoteId: string) => void }) {
   const emotes = content.multiplayer.emotes;
 
   return (

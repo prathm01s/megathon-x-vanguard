@@ -77,7 +77,10 @@ function Ladder() {
             <p className="text-xs text-muted-foreground">Play with classmates in lockstep turns</p>
           </div>
         </div>
-        <Link href="/room" className={cn(buttonVariants({ size: "default" }), "font-extrabold text-xs")}>
+        <Link
+          href="/room"
+          className={cn(buttonVariants({ size: "default" }), "font-extrabold text-xs")}
+        >
           Join Room
         </Link>
       </Card>
@@ -184,7 +187,10 @@ function ChapterRung({
             ) : (
               <Link
                 href={`/chapter/${chapter.id}`}
-                className={cn(buttonVariants({ variant: result ? "outline" : "default" }), "w-full")}
+                className={cn(
+                  buttonVariants({ variant: result ? "outline" : "default" }),
+                  "w-full",
+                )}
               >
                 {result ? <RotateCcw aria-hidden /> : <Play aria-hidden />}
                 {result ? t("replay") : t("play")}
