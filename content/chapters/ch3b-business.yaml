@@ -38,6 +38,7 @@ fixedExpenses:
 tasks:
   - id: ch3b-restock
     title: { en: "Restock the shop for the festival season" }
+    shortTitle: { en: "Restock shop" }
     kind: need
     amount: 60000
     dueTurn: 1
@@ -48,6 +49,7 @@ tasks:
     icon: package
   - id: ch3b-health-insurance
     title: { en: "Buy family health insurance" }
+    shortTitle: { en: "Health cover" }
     description: { en: "No employer covers you when you run your own shop." }
     kind: safety
     amount: 15000
@@ -59,6 +61,7 @@ tasks:
     icon: shield
   - id: ch3b-business-buffer
     title: { en: "Keep a buffer of 6 months' costs" }
+    shortTitle: { en: "Shop buffer" }
     description: { en: "Slow seasons come. Keep this in savings, apart from the money you invest." }
     kind: safety
     amount: 204000               # 6 × (10,000 + 18,000 + 6,000); recomputed from expenses
@@ -69,6 +72,7 @@ tasks:
     icon: piggy-bank
   - id: ch3b-shop-upgrade
     title: { en: "Upgrade the shop: shelves, lights and a card machine" }
+    shortTitle: { en: "Shop upgrade" }
     description: { en: "Reinvesting in the business: earnings go up by 10%." }
     kind: goal
     amount: 150000
@@ -80,6 +84,7 @@ tasks:
     icon: store
   - id: ch3b-child-school
     title: { en: "Your child's school admission and fees" }
+    shortTitle: { en: "School fees" }
     kind: need
     amount: 100000
     dueTurn: 7
@@ -90,6 +95,7 @@ tasks:
     icon: graduation-cap
   - id: ch3b-delivery-van
     title: { en: "A delivery van to reach more customers" }
+    shortTitle: { en: "Delivery van" }
     kind: goal
     amount: 350000
     dueTurn: 10

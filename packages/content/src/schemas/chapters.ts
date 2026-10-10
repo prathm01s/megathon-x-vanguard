@@ -25,6 +25,8 @@ export const consequenceSchema = z
 export const taskSchema = z.strictObject({
   id: idSchema,
   title: localizedStringSchema,
+  /** 1–3 words shown under the task's building in the village. Falls back to `title`. */
+  shortTitle: localizedStringSchema.optional(),
   description: localizedStringSchema.optional(),
   kind: z.enum(TASK_KINDS),
   /**

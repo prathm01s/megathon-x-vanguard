@@ -36,6 +36,7 @@ fixedExpenses:
 tasks:
   - id: ch4-health-cover
     title: { en: "Upgrade health insurance for the whole family" }
+    shortTitle: { en: "Health cover" }
     kind: safety
     amount: 30000
     dueTurn: 1
@@ -46,6 +47,7 @@ tasks:
     icon: shield
   - id: ch4-emergency-fund
     title: { en: "Keep an emergency fund of 6 months' expenses" }
+    shortTitle: { en: "Emergency fund" }
     kind: safety
     amount: 288000               # 6 × (32,000 + 8,000 + 8,000); recomputed from expenses
     targetMonthsOfExpenses: 6
@@ -55,6 +57,7 @@ tasks:
     icon: piggy-bank
   - id: ch4-child-college
     title: { en: "Your child's college fees" }
+    shortTitle: { en: "College fees" }
     description: { en: "Six years away. As the date gets close, move this money somewhere safe." }
     kind: need
     amount: 800000
@@ -66,6 +69,7 @@ tasks:
     icon: graduation-cap
   - id: ch4-home-repair
     title: { en: "Repair and repaint the family home" }
+    shortTitle: { en: "Home repair" }
     kind: want
     amount: 150000
     dueTurn: 10
@@ -75,6 +79,7 @@ tasks:
     icon: home
   - id: ch4-pilgrimage-trip
     title: { en: "A long-promised trip with your parents" }
+    shortTitle: { en: "Trip with parents" }
     kind: want
     amount: 100000
     dueTurn: 12
@@ -84,6 +89,7 @@ tasks:
     icon: plane
   - id: ch4-retirement
     title: { en: "Build a retirement fund" }
+    shortTitle: { en: "Retirement fund" }
     description: { en: "Twenty years away. Money you won't touch for this long can grow through many storms." }
     kind: goal
     amount: 4000000

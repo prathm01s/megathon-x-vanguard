@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import {
+  Lilita_One,
   Noto_Naskh_Arabic,
   Noto_Sans_Devanagari,
   Noto_Sans_Telugu,
@@ -14,6 +15,9 @@ import "../globals.css";
 // Latin UI font plus script fonts for Telugu, Hindi and Urdu. Non-Latin fonts aren't preloaded
 // so English users don't download them.
 const nunito = Nunito({ subsets: ["latin"], variable: "--font-nunito" });
+// Chunky display font for game headings and numbers (SIL OFL). Latin only: other scripts fall
+// back to their Noto font through --font-game.
+const lilita = Lilita_One({ subsets: ["latin"], weight: "400", variable: "--font-lilita" });
 const notoTelugu = Noto_Sans_Telugu({
   subsets: ["telugu"],
   variable: "--font-noto-telugu",
@@ -63,7 +67,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
     <html
       lang={locale}
       dir={dirFor(locale)}
-      className={`${nunito.variable} ${notoTelugu.variable} ${notoDevanagari.variable} ${notoArabic.variable}`}
+      className={`${nunito.variable} ${lilita.variable} ${notoTelugu.variable} ${notoDevanagari.variable} ${notoArabic.variable}`}
     >
       <head>
         <link rel="manifest" href="/manifest.json" />

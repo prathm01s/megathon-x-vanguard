@@ -110,7 +110,13 @@
     "unlocks": "పొదుపు & పెట్టుబడి కొత్త మార్గాలు",
     "startingBalance": "ప్రారంభ నగదు {amount}",
     "starting": "ప్రారంభమవుతోంది…",
-    "notAvailable": "ఈ అధ్యాయం ఇంకా సిద్ధంగా లేదు."
+    "notAvailable": "ఈ అధ్యాయం ఇంకా సిద్ధంగా లేదు.",
+    "tileStart": "ప్రారంభ నగదు",
+    "tileIncome": "ఆదాయం / నెల",
+    "tileCosts": "ఖర్చు / నెల",
+    "yourLevel": "మీ స్థాయి: {level}",
+    "toBuild": "కట్టాల్సిన భవనాలు: {count}",
+    "startVillage": "మీ గ్రామం కట్టండి"
   },
   "play": {
     "turnOf": "{unit, select, month {నెల} other {సంవత్సరం}} {turn} / {total}",
@@ -348,5 +354,37 @@
     "dashboard": "డాష్‌బోర్డ్",
     "friendsRoom": "స్నేహితుల గది",
     "profile": "ప్రొఫైల్"
+  },
+  "village": {
+    "statsLabel": "మీ డబ్బు మరియు సమయం",
+    "cash": "నగదు",
+    "cashHelp": "మీ వాలెట్‌లో నగదు: {amount}. ధరలు పెరిగాక, ఇది మొదట్లో {real} కొనేంత కొనగలదు.",
+    "turnShort": "{unit, select, month {నెల} other {సంవత్సరం}}",
+    "yearHelp": "{unit, select, month {నెల} other {సంవత్సరం}} {turn} / {total} · వయసు {age}. ప్రతి నాణెం విసురు సమయాన్ని ముందుకు తీసుకెళ్తుంది.",
+    "built": "కట్టినవి",
+    "builtHelp": "పూర్తయిన భవనాలు. కట్టడానికి నేలపై ఉన్న జెండాను నొక్కండి.",
+    "debt": "అప్పు",
+    "debtHelp": "మీరు అప్పుగా తీసుకోవాల్సిన డబ్బు. వడ్డీ దాన్ని ప్రతి నెలా పెంచుతుంది.",
+    "investLabel": "మీ పెట్టుబడులు",
+    "invest": "పెట్టుబడి",
+    "noInvestments": "ఇంకా ఏదీ పెరగడం లేదు",
+    "holdingLabel": "{name}: {value}, మీరు డబ్బు పెట్టినప్పటి నుండి {change}",
+    "sipTag": "SIP {amount}",
+    "groundLabel": "మీ గ్రామం: ప్రతి పనికి ఒక స్థలం",
+    "townHall": "టౌన్ హాల్ {level}",
+    "stage": {
+      "flag": "కట్టాలి",
+      "scaffold": "కడుతున్నారు…",
+      "building": "కట్టారు!",
+      "ruins": "తప్పిపోయింది"
+    },
+    "late": "ఆలస్యం!",
+    "dueShort": "{unit, select, month {నె} other {సం}}{turn}",
+    "close": "మూసివేయండి",
+    "builtDone": "కట్టారు! బాగా చేశారు.",
+    "ruinsHelp": "ఇది తప్పిపోయింది. తదుపరిసారి ముందుగా ప్లాన్ చేయండి.",
+    "buildFor": "కట్టండి · {amount}",
+    "tip": "కట్టడానికి జెండాను నొక్కండి. తర్వాత నాణెం విసరండి!",
+    "next": "విసరండి · తదుపరి {unit, select, month {నెల} other {సంవత్సరం}}"
   }
 }

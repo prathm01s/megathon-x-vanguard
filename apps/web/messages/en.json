@@ -110,7 +110,13 @@
     "unlocks": "New ways to save and invest",
     "startingBalance": "You start with {amount}",
     "starting": "Starting…",
-    "notAvailable": "This chapter isn't ready yet."
+    "notAvailable": "This chapter isn't ready yet.",
+    "tileStart": "Start cash",
+    "tileIncome": "In / month",
+    "tileCosts": "Out / month",
+    "yourLevel": "Your level: {level}",
+    "toBuild": "{count} buildings to build",
+    "startVillage": "Build your village"
   },
   "play": {
     "turnOf": "{unit, select, month {Month} other {Year}} {turn} of {total}",
@@ -348,5 +354,37 @@
     "dashboard": "Dashboard",
     "friendsRoom": "Friends’ Room",
     "profile": "Profile"
+  },
+  "village": {
+    "statsLabel": "Your money and time",
+    "cash": "Cash",
+    "cashHelp": "Cash in your wallet: {amount}. After rising prices it buys what {real} bought at the start.",
+    "turnShort": "{unit, select, month {Month} other {Year}}",
+    "yearHelp": "{unit, select, month {Month} other {Year}} {turn} of {total} · age {age}. Each coin toss moves time forward.",
+    "built": "Built",
+    "builtHelp": "Buildings finished. Tap a flag on the ground to build it.",
+    "debt": "Debt",
+    "debtHelp": "Money you had to borrow. Interest grows it every month.",
+    "investLabel": "Your investments",
+    "invest": "Invest",
+    "noInvestments": "Nothing growing yet",
+    "holdingLabel": "{name}: {value}, {change} since you put money in",
+    "sipTag": "SIP {amount}",
+    "groundLabel": "Your village: one plot per task",
+    "townHall": "Town Hall {level}",
+    "stage": {
+      "flag": "To build",
+      "scaffold": "Building…",
+      "building": "Built!",
+      "ruins": "Missed"
+    },
+    "late": "Late!",
+    "dueShort": "{unit, select, month {M} other {Y}}{turn}",
+    "close": "Close",
+    "builtDone": "Built! Nice work.",
+    "ruinsHelp": "This one was missed. Plan ahead next time.",
+    "buildFor": "Build · {amount}",
+    "tip": "Tap a flag to build it. Then toss the coin!",
+    "next": "Toss · next {unit, select, month {month} other {year}}"
   }
 }

@@ -27,3 +27,19 @@ export function formatRate(rate: number, locale = "en"): string {
     maximumFractionDigits: 2,
   }).format(rate);
 }
+
+/**
+ * Short money for game HUDs: ₹950, ₹18K, ₹1.2L, ₹2.4Cr (Indian lakh/crore). Negative amounts keep
+ * their sign.
+ */
+export function formatShort(paise: number): string {
+  const rupees = Math.round(paise / 100);
+  const sign = rupees < 0 ? "−" : "";
+  const n = Math.abs(rupees);
+  const trim = (x: number) =>
+    x >= 10 ? Math.round(x).toString() : x.toFixed(1).replace(/\.0$/, "");
+  if (n >= 1_00_00_000) return `${sign}₹${trim(n / 1_00_00_000)}Cr`;
+  if (n >= 1_00_000) return `${sign}₹${trim(n / 1_00_000)}L`;
+  if (n >= 1_000) return `${sign}₹${trim(n / 1_000)}K`;
+  return `${sign}₹${n}`;
+}

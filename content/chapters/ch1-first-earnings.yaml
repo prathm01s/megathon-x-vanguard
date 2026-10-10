@@ -25,6 +25,7 @@ fixedExpenses:
 tasks:
   - id: ch1-phone-bill
     title: { en: "Phone bill" }
+    shortTitle: { en: "Phone bill" }
     kind: need
     amount: 300
     dueTurn: 1
@@ -34,6 +35,7 @@ tasks:
     icon: smartphone
   - id: ch1-college-fee-share
     title: { en: "Your share of college fees" }
+    shortTitle: { en: "College fees" }
     kind: need
     amount: 8000
     dueTurn: 6
@@ -43,6 +45,7 @@ tasks:
     icon: graduation-cap
   - id: ch1-friend-birthday
     title: { en: "Friend's birthday gift" }
+    shortTitle: { en: "Birthday gift" }
     kind: want
     amount: 500
     dueTurn: 3
@@ -51,6 +54,7 @@ tasks:
     icon: gift
   - id: ch1-save-phone
     title: { en: "Save for a new phone" }
+    shortTitle: { en: "New phone" }
     kind: goal
     amount: 12000
     dueTurn: 12
@@ -59,6 +63,7 @@ tasks:
     icon: smartphone
   - id: ch1-safety-jar
     title: { en: "Start a safety jar" }
+    shortTitle: { en: "Safety jar" }
     kind: safety
     amount: 3000
     dueTurn: 6

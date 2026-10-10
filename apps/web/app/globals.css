@@ -58,6 +58,9 @@
   --font-sans:
     var(--font-nunito), var(--font-noto-telugu), var(--font-noto-devanagari),
     var(--font-noto-arabic), ui-sans-serif, system-ui, sans-serif;
+  --font-game:
+    var(--font-lilita), var(--font-noto-telugu), var(--font-noto-devanagari),
+    var(--font-noto-arabic), var(--font-nunito), ui-sans-serif, system-ui, sans-serif;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);

@@ -1,18 +1,24 @@
 "use client";
 
-import { rupeesToPaise } from "@toss/engine";
+import { allowedOptions, rupeesToPaise } from "@toss/engine";
+import { ArrowDownCircle, ArrowUpCircle, Coins } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { GameButton } from "@/components/ui/game-button";
 import { useRouter } from "@/i18n/navigation";
 import { content } from "@/lib/content";
+import { formatShort } from "@/lib/format";
+import { GAME_TEXT } from "@/lib/game-style";
+import { cn } from "@/lib/utils";
 import { GameGate } from "./game-gate";
 import { ContentIcon } from "./icon";
 import { useGameStore } from "./store";
-import { useLocalize, useMoney } from "./use-localize";
+import { useLocalize } from "./use-localize";
+import { PlotArt, TownHallArt } from "./village/art";
 
-/** Chapter intro (§9.2 #9): the life stage, money in and out, to-dos and new options. */
+/** Chapter intro (§9.2 #9), village style: numbers as tiles, tasks as flags, little text. */
 export function ChapterIntro({ chapterId }: { chapterId: string }) {
   return (
     <GameGate>
@@ -21,22 +27,31 @@ export function ChapterIntro({ chapterId }: { chapterId: string }) {
   );
 }
 
+function StatTile({ icon, value, label }: { icon: ReactNode; value: string; label: string }) {
+  return (
+    <div className="flex flex-col items-center gap-0.5 rounded-2xl border-2 border-b-4 border-[#2b1d12]/60 bg-[#fff8e7] px-1 py-2 text-center">
+      {icon}
+      <span className={cn(GAME_TEXT, "text-lg leading-none")}>{value}</span>
+      <span className="text-[11px] font-bold leading-tight text-muted-foreground">{label}</span>
+    </div>
+  );
+}
+
 function Intro({ chapterId }: { chapterId: string }) {
   const t = useTranslations("chapter");
-  const tp = useTranslations("play");
+  const tv = useTranslations("village");
   const tm = useTranslations("mindset");
   const l = useLocalize();
-  const money = useMoney();
   const router = useRouter();
   const startChapter = useGameStore((s) => s.startChapter);
-  const hasPersona = useGameStore((s) => s.personaId !== null);
+  const personaId = useGameStore((s) => s.personaId);
   const [starting, setStarting] = useState(false);
   const chapter = content.chapters.find((c) => c.id === chapterId);
 
   if (!chapter?.enabled) {
     return <Card className="mt-6 text-center">{t("notAvailable")}</Card>;
   }
-  if (!hasPersona) {
+  if (!personaId) {
     return (
       <Card className="mt-6 space-y-4 text-center">
         <p>{tm("needPre")}</p>
@@ -45,9 +60,13 @@ function Intro({ chapterId }: { chapterId: string }) {
     );
   }
 
-  const options = chapter.unlockOptions
-    .map((id) => content.options.options.find((o) => o.id === id))
-    .filter((o) => o !== undefined);
+  const persona = content.personas.personas.find((p) => p.id === personaId);
+  const level = persona?.difficulty;
+  const startCash = rupeesToPaise(chapter.startingBalance) * (1 + (level?.startingBonus ?? 0));
+  const costs = chapter.fixedExpenses.reduce((sum, e) => sum + e.amountPerMonth, 0);
+  const options = allowedOptions(content, chapterId, personaId).filter(
+    (o) => o.category !== "cash",
+  );
 
   async function start() {
     setStarting(true);
@@ -56,78 +75,89 @@ function Intro({ chapterId }: { chapterId: string }) {
   }
 
   return (
-    <section className="flex flex-col gap-4 py-4">
-      <header className="space-y-1">
-        <p className="text-sm font-bold uppercase tracking-wide text-secondary">
-          {l(chapter.stage)} · {chapter.ageRange[0]}–{chapter.ageRange[1]}
-        </p>
-        <h1 className="text-3xl font-extrabold">{l(chapter.title)}</h1>
+    <section className="flex flex-col gap-4 py-3">
+      <header className="flex items-center gap-3">
+        <TownHallArt className="h-20 w-24 shrink-0" />
+        <div className="min-w-0">
+          <p className="text-xs font-extrabold uppercase tracking-wide text-secondary">
+            {tv("townHall", { level: chapter.order })} · {chapter.ageRange[0]}–{chapter.ageRange[1]}
+          </p>
+          <h1 className={cn(GAME_TEXT, "text-3xl leading-tight")}>{l(chapter.title)}</h1>
+        </div>
       </header>
-      <p className="text-lg">{l(chapter.intro)}</p>
 
-      <Card className="space-y-2">
-        <p className="font-bold">
-          {t("startingBalance", { amount: money(rupeesToPaise(chapter.startingBalance)) })}
-        </p>
-        <p className="text-gain font-semibold">
-          {t("income", {
-            label: l(chapter.income.label),
-            amount: money(rupeesToPaise(chapter.income.amountPerMonth)),
-          })}
-        </p>
-        <h2 className="pt-1 text-sm font-bold text-muted-foreground">{t("expenses")}</h2>
-        <ul className="space-y-1">
-          {chapter.fixedExpenses.map((e) => (
-            <li key={e.id} className="flex items-center justify-between gap-2">
-              <span className="flex items-center gap-2">
-                <ContentIcon name={e.icon} className="size-4 text-muted-foreground" />
-                {l(e.label)}
-              </span>
-              <span className="font-semibold tabular-nums text-loss">
-                {money(rupeesToPaise(e.amountPerMonth))}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </Card>
+      <p className="rounded-2xl border-2 border-[#2b1d12]/30 bg-white px-3 py-2 text-sm">
+        {l(chapter.intro)}
+      </p>
 
-      <Card className="space-y-2">
-        <h2 className="font-bold">{t("tasks")}</h2>
-        <ul className="space-y-2">
-          {chapter.tasks.map((task) => (
-            <li key={task.id} className="flex items-center gap-3">
-              <span className="grid size-9 shrink-0 place-items-center rounded-full bg-accent">
-                <ContentIcon name={task.icon} className="size-4" />
-              </span>
-              <span className="flex-1 text-sm font-semibold">{l(task.title)}</span>
-              <span className="text-xs text-muted-foreground">
-                {tp("due", { unit: chapter.turnUnit, turn: task.dueTurn })}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </Card>
+      <div className="grid grid-cols-3 gap-2">
+        <StatTile
+          icon={<Coins className="size-6 text-[#d4a017]" aria-hidden />}
+          value={formatShort(startCash)}
+          label={t("tileStart")}
+        />
+        <StatTile
+          icon={<ArrowUpCircle className="size-6 text-gain" aria-hidden />}
+          value={formatShort(rupeesToPaise(chapter.income.amountPerMonth))}
+          label={t("tileIncome")}
+        />
+        <StatTile
+          icon={<ArrowDownCircle className="size-6 text-loss" aria-hidden />}
+          value={formatShort(rupeesToPaise(costs))}
+          label={t("tileCosts")}
+        />
+      </div>
 
-      {options.length > 0 && (
-        <Card className="space-y-2">
-          <h2 className="font-bold">{t("unlocks")}</h2>
-          <ul className="flex flex-wrap gap-2">
-            {options.map((o) => (
-              <li
-                key={o.id}
-                className="flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-sm font-semibold"
-              >
-                <ContentIcon name={o.icon} className="size-4" />
-                {l(o.name)}
-              </li>
-            ))}
-          </ul>
-        </Card>
+      {level && (
+        <div className="rounded-2xl border-2 border-[#2b1d12]/60 bg-[#efe6ff] p-3">
+          <p className={cn(GAME_TEXT, "text-lg leading-tight")}>
+            <span className="text-[#d4a017]" aria-hidden>
+              {"★".repeat(level.stars)}
+              {"☆".repeat(4 - level.stars)}
+            </span>{" "}
+            {t("yourLevel", { level: l(level.label) })}
+          </p>
+          <p className="text-sm">{l(level.summary)}</p>
+          {options.length > 0 && (
+            <ul className="mt-2 flex flex-wrap gap-1.5" aria-label={t("unlocks")}>
+              {options.map((o) => (
+                <li
+                  key={o.id}
+                  className="flex items-center gap-1 rounded-full border border-[#2b1d12]/30 bg-white px-2 py-0.5 text-xs font-bold"
+                >
+                  <ContentIcon name={o.icon} className="size-3.5" />
+                  {l(o.name)}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       )}
 
-      <Button size="lg" onClick={start} disabled={starting} className="sticky bottom-4 shadow-lg">
-        {starting ? t("starting") : t("start")}
-      </Button>
+      <div className="rounded-3xl border-[3px] border-[#2b1d12]/70 bg-[#6cbf4a] p-3">
+        <p className={cn(GAME_TEXT, "mb-1 text-white drop-shadow-[0_1px_0_rgb(43_29_18)]")}>
+          {t("toBuild", { count: chapter.tasks.length })}
+        </p>
+        <ul className="grid grid-cols-3 gap-1">
+          {chapter.tasks.map((task) => (
+            <li key={task.id} className="flex flex-col items-center">
+              <PlotArt stage="flag" kind={task.kind} className="h-12 w-full" />
+              <span className="w-full truncate text-center text-[11px] font-extrabold text-white drop-shadow-[0_1px_0_rgb(43_29_18)]">
+                {l(task.shortTitle ?? task.title)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <GameButton
+        tone="gold"
+        className="sticky bottom-4 w-full"
+        onClick={start}
+        disabled={starting}
+      >
+        {starting ? t("starting") : t("startVillage")}
+      </GameButton>
     </section>
   );
 }
