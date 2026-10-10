@@ -47,6 +47,15 @@ function queueDecision(id: PlaythroughId, records: DecisionRecord[]) {
 }
 
 async function flushDecisionQueue(id: PlaythroughId) {
+  try {
+    await flushDecisionQueueUnsafe(id);
+  } catch (e) {
+    // Offline or Supabase not configured: records stay queued in localStorage.
+    console.warn("Decisions queued locally, remote sync postponed:", e);
+  }
+}
+
+async function flushDecisionQueueUnsafe(id: PlaythroughId) {
   const queue = getLocal<DecisionRecord[]>(`queue:decisions:${id}`);
   if (!queue || queue.length === 0) return;
 
