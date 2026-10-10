@@ -214,10 +214,73 @@ export function TossModal({ outcome, state, onContinue }: TossModalProps) {
                           <span className="font-semibold">
                             {t("taskMissed", { name: tDef ? l(tDef.title) : ev.taskId })}
                           </span>
-                          <span className="font-bold">Fine: {formatPaise(ev.fine)}</span>
+                          {ev.fine > 0 && (
+                            <span className="font-bold">
+                              {t("fine", { amount: formatPaise(ev.fine) })}
+                            </span>
+                          )}
                         </li>
                       );
                     }
+                    case "forced_borrowing":
+                      return (
+                        <li
+                          key={i}
+                          className="rounded-lg border border-loss/40 bg-loss/10 p-2 text-xs space-y-0.5 text-loss"
+                        >
+                          <div className="flex justify-between items-center font-bold">
+                            <span>{t("forcedBorrowingTitle")}</span>
+                            <span>+{formatPaise(ev.amount)}</span>
+                          </div>
+                          <p className="text-[11px] text-muted-foreground">
+                            {t("forcedBorrowingBody", { rate: formatRate(ev.ratePerYear) })}
+                          </p>
+                        </li>
+                      );
+                    case "cash_lost":
+                      return (
+                        <li
+                          key={i}
+                          className="flex justify-between items-center bg-loss/10 rounded-lg p-2 text-xs text-loss"
+                        >
+                          <span className="font-semibold">{t("cashLost")}</span>
+                          <span className="font-bold">−{formatPaise(ev.amount)}</span>
+                        </li>
+                      );
+                    case "sip_missed": {
+                      const opt = content.options.options.find((o) => o.id === ev.optionId);
+                      return (
+                        <li
+                          key={i}
+                          className="flex justify-between items-center bg-secondary/10 rounded-lg p-2 text-xs text-secondary"
+                        >
+                          <span className="font-semibold">
+                            {t("sipMissed", { name: opt ? l(opt.name) : ev.optionId })}
+                          </span>
+                          <span className="font-bold">{formatPaise(ev.amount)}</span>
+                        </li>
+                      );
+                    }
+                    case "debt_interest":
+                      return (
+                        <li
+                          key={i}
+                          className="flex justify-between items-center bg-loss/10 rounded-lg p-2 text-xs text-loss"
+                        >
+                          <span className="font-semibold">{t("debtInterest")}</span>
+                          <span className="font-bold">−{formatPaise(ev.amount)}</span>
+                        </li>
+                      );
+                    case "debt_repaid":
+                      return (
+                        <li
+                          key={i}
+                          className="flex justify-between items-center bg-gain/10 rounded-lg p-2 text-xs text-gain"
+                        >
+                          <span className="font-semibold">{t("debtRepaid")}</span>
+                          <span className="font-bold">−{formatPaise(ev.amount)}</span>
+                        </li>
+                      );
                     default:
                       return null;
                   }

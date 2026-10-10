@@ -10,10 +10,11 @@ import type { RoomMember, RoomView } from "@toss/engine";
 export interface RoomLobbyProps {
   room: RoomView;
   me: RoomMember | null;
+  isHost?: boolean;
   onToggleReady: () => void;
 }
 
-export function RoomLobby({ room, me, onToggleReady }: RoomLobbyProps) {
+export function RoomLobby({ room, me, isHost, onToggleReady }: RoomLobbyProps) {
   const t = useTranslations("room");
   const [copied, setCopied] = useState(false);
 
@@ -124,11 +125,11 @@ export function RoomLobby({ room, me, onToggleReady }: RoomLobbyProps) {
       <div className="pt-2">
         <Button
           size="lg"
-          variant={me?.ready ? "outline" : "default"}
+          variant="default"
           className="w-full text-base font-extrabold shadow-lg"
           onClick={onToggleReady}
         >
-          {me?.ready ? "Cancel Ready" : "I&apos;m Ready to Play!"}
+          {isHost ? "Start Chapter (Play with Room)" : "Ready! Waiting for host…"}
         </Button>
       </div>
     </div>

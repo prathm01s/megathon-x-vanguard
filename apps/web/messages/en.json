@@ -203,6 +203,11 @@
     "taskMissed": "Missed: {name}",
     "fine": "Fine {amount}",
     "cashLost": "Cash at home got lost",
+    "forcedBorrowingTitle": "Emergency borrowing",
+    "forcedBorrowingBody": "No safety net: you had to borrow at {rate} a year.",
+    "sipMissed": "Missed deposit into {name}",
+    "debtInterest": "Debt interest accrued",
+    "debtRepaid": "Debt repaid",
     "inflation": "Prices rose {pct}",
     "continue": "Continue",
     "coveredByWallet": "Paid from your wallet."
@@ -221,6 +226,7 @@
   "result": {
     "title": "Chapter complete",
     "healthScore": "Financial Health Score",
+    "scoreBreakdown": "Score Breakdown",
     "passed": "You passed! The next chapter is unlocked.",
     "notPassed": "Not quite. Replay to raise your score.",
     "didWell": "What you did well",

@@ -9,15 +9,17 @@ import { ContentIcon } from "@/components/game/icon";
 import { useLocalize } from "@/components/game/use-localize";
 import { content } from "@/lib/content";
 import { formatPaise } from "@/lib/format";
-import type { PublicMember, RoomMember } from "@toss/engine";
+import type { AuctionState, PublicMember, RoomMember } from "@toss/engine";
 
 export interface AuctionModalProps {
   currentTurn: number;
   chapterId: string;
   me: RoomMember | null;
   members: PublicMember[];
+  auction?: AuctionState | null;
   onClose: () => void;
-  onBidSubmitted?: (amountPaise: number, isPool: boolean) => void;
+  onPlaceBid?: (amountPaise: number) => Promise<void> | void;
+  onJoinPool?: (contributionPaise: number) => Promise<void> | void;
 }
 
 export function AuctionModal({
@@ -25,8 +27,10 @@ export function AuctionModal({
   chapterId,
   me,
   members,
+  auction,
   onClose,
-  onBidSubmitted,
+  onPlaceBid,
+  onJoinPool,
 }: AuctionModalProps) {
   const t = useTranslations("room");
   const tc = useTranslations("common");
@@ -35,6 +39,7 @@ export function AuctionModal({
   // Find auction matching chapter or turn, fallback to first auction
   const allAuctions = content.auctions.auctions;
   const currentAuction =
+    allAuctions.find((a) => a.id === auction?.auctionDefId) ??
     allAuctions.find((a) => a.chapter === chapterId && a.turn === currentTurn) ??
     allAuctions.find((a) => a.chapter === chapterId) ??
     allAuctions[0];
@@ -46,32 +51,40 @@ export function AuctionModal({
   const [tab, setTab] = useState<"solo" | "pool">("pool");
   const [soloBidPaise, setSoloBidPaise] = useState(minBidPaise);
   const [poolContributionPaise, setPoolContributionPaise] = useState(minBidPaise / 2);
-  const [resolved, setResolved] = useState(false);
-  const [wonByPool, setWonByPool] = useState(false);
-  const [winningBidPaise, setWinningBidPaise] = useState(0);
+  const [resolved, setResolved] = useState(auction?.status === "closed");
+  const [wonByPool, setWonByPool] = useState(!!auction?.winner?.poolId);
+  const [winningBidPaise, setWinningBidPaise] = useState(auction?.winner?.amount ?? 0);
 
-  // Simulated peer pool members
-  const peerContributors = [
-    { name: members[1]?.nickname ?? "Careful Kavya", amountPaise: minBidPaise * 0.4 },
-    { name: members[2]?.nickname ?? "Spendy Sunny", amountPaise: minBidPaise * 0.2 },
-  ];
+  // Live pool or simulated peer contributors
+  const livePool = auction?.pools?.[0];
+  const peerContributors = livePool
+    ? livePool.members.map((pm) => ({
+        name:
+          members.find((m) => m.id === pm.memberId)?.nickname ??
+          (pm.memberId === me?.id ? "You" : "Friend"),
+        amountPaise: pm.contribution,
+      }))
+    : [
+        { name: members[1]?.nickname ?? "Careful Kavya", amountPaise: minBidPaise * 0.4 },
+        { name: members[2]?.nickname ?? "Spendy Sunny", amountPaise: minBidPaise * 0.2 },
+      ];
   const totalPoolPaise =
     poolContributionPaise + peerContributors.reduce((acc, c) => acc + c.amountPaise, 0);
   const myPoolSharePct =
     totalPoolPaise > 0 ? Math.round((poolContributionPaise / totalPoolPaise) * 100) : 0;
 
-  function handlePlaceSoloBid() {
+  async function handlePlaceSoloBid() {
     setWinningBidPaise(soloBidPaise);
     setWonByPool(false);
     setResolved(true);
-    onBidSubmitted?.(soloBidPaise, false);
+    await onPlaceBid?.(soloBidPaise);
   }
 
-  function handlePlacePoolBid() {
+  async function handlePlacePoolBid() {
     setWinningBidPaise(totalPoolPaise);
     setWonByPool(true);
     setResolved(true);
-    onBidSubmitted?.(poolContributionPaise, true);
+    await onJoinPool?.(poolContributionPaise);
   }
 
   return (

@@ -6,7 +6,7 @@
 version: 1
 options:
   - id: cash
-    name: { en: "Cash at home" }
+    name: { en: "Cash at home", te: "ఇంట్లో ఉన్న నగదు" }
     category: cash
     unlockChapter: ch1-first-earnings
     assumedAverageReturn: 0
@@ -16,13 +16,13 @@ options:
     sipAllowed: false
     riskLevel: 1
     canBeLost: true
-    lesson: { en: "Inflation quietly eats idle money." }
-    description: { en: "Money kept at home. Easy to use, but it never grows and can get lost." }
+    lesson: { en: "Inflation quietly eats idle money.", te: "ద్రవ్యోల్బణం ఖాళీగా ఉన్న డబ్బు విలువను నెమ్మదిగా తగ్గిస్తుంది." }
+    description: { en: "Money kept at home. Easy to use, but it never grows and can get lost.", te: "ఇంట్లో ఉంచిన నగదు. వాడటం సులభం, కానీ ఇది ఎప్పటికీ పెరగదు మరియు పోయే ప్రమాదం ఉంది." }
     techniqueIds: [real-value]
     icon: wallet
 
   - id: savings
-    name: { en: "Big Bank Savings Account" }
+    name: { en: "Big Bank Savings Account", te: "బిగ్ బ్యాంక్ సేవింగ్స్ ఖాతా" }
     category: bank
     unlockChapter: ch1-first-earnings
     assumedAverageReturn: 0.03
@@ -31,13 +31,13 @@ options:
     minAmount: 0
     sipAllowed: false
     riskLevel: 1
-    lesson: { en: "Good for emergencies, not for growth." }
-    description: { en: "Safe and easy to withdraw any time. Grows a little, slower than prices rise." }
+    lesson: { en: "Good for emergencies, not for growth.", te: "అత్యవసర పరిస్థితులకు మంచిది, సంపద పెరగడానికి కాదు." }
+    description: { en: "Safe and easy to withdraw any time. Grows a little, slower than prices rise.", te: "సురక్షితమైనది మరియు ఎప్పుడైనా తీసుకోవచ్చు. కొద్దిగా పెరుగుతుంది, కానీ ధరల పెరుగుదల కంటే నెమ్మదిగా." }
     techniqueIds: [goal-based-investing]
     icon: landmark
 
   - id: rd
-    name: { en: "Big Bank Recurring Deposit" }
+    name: { en: "Big Bank Recurring Deposit", te: "బిగ్ బ్యాంక్ రికరింగ్ డిపాజిట్" }
     category: deposit
     unlockChapter: ch1-first-earnings
     assumedAverageReturn: 0.065
@@ -49,13 +49,13 @@ options:
     minAmount: 100
     sipAllowed: false
     riskLevel: 1
-    lesson: { en: "Saving as a monthly habit." }
-    description: { en: "Put in the same small amount every month. Fixed growth; 1% penalty if you stop early." }
+    lesson: { en: "Saving as a monthly habit.", te: "ప్రతి నెలా పొదుపు చేసే అలవాటు." }
+    description: { en: "Put in the same small amount every month. Fixed growth; 1% penalty if you stop early.", te: "ప్రతి నెలా స్థిరమైన మొత్తం జమ చేయండి. స్థిరమైన పెరుగుదల; ముందుగా ఆపేస్తే 1% జరిమానా." }
     techniqueIds: [goal-based-investing]
     icon: calendar-check
 
   - id: fd
-    name: { en: "Big Bank Fixed Deposit" }
+    name: { en: "Big Bank Fixed Deposit", te: "బిగ్ బ్యాంక్ ఫిక్స్‌డ్ డిపాజిట్" }
     category: deposit
     unlockChapter: ch2-first-job
     assumedAverageReturn: 0.0675
@@ -66,13 +66,13 @@ options:
     minAmount: 1000
     sipAllowed: false
     riskLevel: 1
-    lesson: { en: "Safe and fixed, but slow after inflation." }
-    description: { en: "Lock money for a fixed time at a fixed rate. 1% penalty if you break it early." }
+    lesson: { en: "Safe and fixed, but slow after inflation.", te: "సురక్షితమైనది మరియు స్థిరమైనది, కానీ ద్రవ్యోల్బణం తర్వాత రాబడి తక్కువ." }
+    description: { en: "Lock money for a fixed time at a fixed rate. 1% penalty if you break it early.", te: "స్థిరమైన వడ్డీ రేటుతో నిర్ణీత కాలానికి డబ్బును దాచుకోండి. ముందుగా రద్దు చేస్తే 1% జరిమానా." }
     techniqueIds: [real-value, risk-vs-time]
     icon: lock
 
   - id: gold
-    name: { en: "Golden Coin Savings" }
+    name: { en: "Golden Coin Savings", te: "బంగారు నాణేల పొదుపు" }
     category: commodity
     unlockChapter: ch2-first-job
     assumedAverageReturn: 0.08
@@ -84,13 +84,13 @@ options:
     minAmount: 500
     sipAllowed: false
     riskLevel: 3
-    lesson: { en: "Not as safe as people assume." }
-    description: { en: "Moves with gold prices, which swing up and down on their own." }
+    lesson: { en: "Not as safe as people assume.", te: "ప్రజలు అనుకునేంత సురక్షితమైనది కాదు." }
+    description: { en: "Moves with gold prices, which swing up and down on their own.", te: "బంగారం ధరలతో పాటు మారుతుంది, ఇవి హెచ్చుతగ్గులకు లోనవుతాయి." }
     techniqueIds: [diversification]
     icon: coins
 
   - id: equity-fund
-    name: { en: "Sunrise Equity Fund" }
+    name: { en: "Sunrise Equity Fund", te: "సన్‌రైజ్ ఈక్విటీ ఫండ్" }
     category: market
     unlockChapter: ch2-first-job
     assumedAverageReturn: 0.11
@@ -101,13 +101,13 @@ options:
     minAmount: 500
     sipAllowed: true
     riskLevel: 4
-    lesson: { en: "Time and regular investing beat timing." }
-    description: { en: "Owns a slice of many companies. Big ups and downs; usually grows over many years." }
+    lesson: { en: "Time and regular investing beat timing.", te: "సమయం మరియు క్రమబద్ధమైన పెట్టుబడి మార్కెట్ అంచనాలను అధిగమిస్తాయి." }
+    description: { en: "Owns a slice of many companies. Big ups and downs; usually grows over many years.", te: "అనేక కంపెనీలలో వాటా కలిగి ఉంటుంది. పెద్ద ఎత్తుపల్లాలు ఉంటాయి; దీర్ఘకాలంలో సంపద పెరుగుతుంది." }
     techniqueIds: [compounding, sip-rupee-cost-averaging, stay-invested, risk-vs-time]
     icon: sunrise
 
   - id: debt-fund
-    name: { en: "Steady Debt Fund" }
+    name: { en: "Steady Debt Fund", te: "స్టెడీ డెట్ ఫండ్" }
     category: market
     unlockChapter: ch3a-salaried
     assumedAverageReturn: 0.07
@@ -121,13 +121,13 @@ options:
     minAmount: 500
     sipAllowed: true
     riskLevel: 2
-    lesson: { en: "Middle ground between FD and equity." }
-    description: { en: "Lends money to governments and companies. Small swings, steadier growth." }
+    lesson: { en: "Middle ground between FD and equity.", te: "FD మరియు ఈక్విటీ మధ్య మధ్యేమార్గం." }
+    description: { en: "Lends money to governments and companies. Small swings, steadier growth.", te: "ప్రభుత్వాలు మరియు కంపెనీలకు రుణాలు ఇస్తుంది. చిన్న మార్పులు, స్థిరమైన పెరుగుదల." }
     techniqueIds: [goal-based-investing, diversification]
     icon: scale
 
   - id: index-fund
-    name: { en: "Whole Market Index Fund" }
+    name: { en: "Whole Market Index Fund", te: "హోల్ మార్కెట్ ఇండెక్స్ ఫండ్" }
     category: market
     unlockChapter: ch3a-salaried
     assumedAverageReturn: 0.109
@@ -138,13 +138,13 @@ options:
     minAmount: 500
     sipAllowed: true
     riskLevel: 4
-    lesson: { en: "Low cost, broad diversification." }
-    description: { en: "Simply follows the whole market at a very low cost." }
+    lesson: { en: "Low cost, broad diversification.", te: "తక్కువ ఖర్చు, విస్తృత వైవిధ్యం." }
+    description: { en: "Simply follows the whole market at a very low cost.", te: "చాలా తక్కువ ఖర్చుతో మొత్తం మార్కెట్‌ను అనుసరిస్తుంది." }
     techniqueIds: [diversification, compounding, sip-rupee-cost-averaging]
     icon: globe
 
   - id: asset-mix
-    name: { en: "Balanced Mix Plan" }
+    name: { en: "Balanced Mix Plan", te: "బ్యాలెన్స్‌డ్ మిక్స్ ప్లాన్" }
     category: mix
     unlockChapter: ch3a-salaried
     assumedAverageReturn: 0.092
@@ -158,7 +158,7 @@ options:
     minAmount: 1000
     sipAllowed: true
     riskLevel: 3
-    lesson: { en: "Diversification protects against bad tosses." }
-    description: { en: "A ready-made blend: half index fund, some debt fund, a little gold." }
+    lesson: { en: "Diversification protects against bad tosses.", te: "వైవిధ్యీకరణ ప్రతికూల ఫలితాల నుండి రక్షణ కల్పిస్తుంది." }
+    description: { en: "A ready-made blend: half index fund, some debt fund, a little gold.", te: "సిద్ధంగా ఉన్న మిశ్రమం: సగం ఇండెక్స్ ఫండ్, కొంత డెట్ ఫండ్, కొద్దిగా బంగారం." }
     techniqueIds: [diversification, goal-based-investing]
     icon: pie-chart

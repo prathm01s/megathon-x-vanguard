@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { content } from "@/lib/content";
 import { formatPaise, formatRate } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import type { Loan, PublicMember, RoomMember } from "@toss/engine";
 
 export interface LoanModalProps {
@@ -15,6 +16,7 @@ export interface LoanModalProps {
   members: PublicMember[];
   currentTurn: number;
   onRequestLoan: (amountRupees: number, dueTurn: number) => void;
+  onOfferLoan?: (loanId: string, ratePerTurn: number) => void;
   onAcceptLoan: (loanId: string) => void;
   onRepayLoan: (loanId: string, amountPaise: number) => void;
   onClose: () => void;
@@ -26,6 +28,7 @@ export function LoanModal({
   members,
   currentTurn,
   onRequestLoan,
+  onOfferLoan,
   onAcceptLoan,
   onRepayLoan,
   onClose,
@@ -33,7 +36,7 @@ export function LoanModal({
   const t = useTranslations("room");
   const tc = useTranslations("common");
 
-  const [tab, setTab] = useState<"active" | "request">("active");
+  const [tab, setTab] = useState<"active" | "request" | "lend">("active");
   const [requestRupees, setRequestRupees] = useState(10000);
   const [dueTurn, setDueTurn] = useState(currentTurn + 2);
 
@@ -45,6 +48,9 @@ export function LoanModal({
   const myActiveLoans = loans.filter((l) => l.borrowerMemberId === me?.id && l.status === "active");
   const myPendingRequests = loans.filter(
     (l) => l.borrowerMemberId === me?.id && (l.status === "requested" || l.status === "offered"),
+  );
+  const peerRequests = loans.filter(
+    (l) => l.borrowerMemberId !== me?.id && l.status === "requested",
   );
 
   return (
@@ -93,6 +99,15 @@ export function LoanModal({
             }`}
           >
             {t("requestLoan")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab("lend")}
+            className={`flex-1 rounded-lg py-1.5 text-xs font-bold transition-colors ${
+              tab === "lend" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+            }`}
+          >
+            Lend ({peerRequests.length})
           </button>
         </div>
 
@@ -173,78 +188,80 @@ export function LoanModal({
                           {t("offers")}:
                         </p>
 
-                        {/* Friend Offer */}
-                        <div className="flex items-center justify-between rounded-lg border border-border bg-card p-2 text-xs">
-                          <div className="flex items-center gap-2">
-                            <Users className="size-4 text-gain" />
-                            <div>
-                              <p className="font-bold">Friend Balanced Bala</p>
-                              <p className="text-[10px] text-muted-foreground">3% fair interest</p>
-                            </div>
-                          </div>
-                          <Button
-                            size="default"
-                            className="h-7 text-xs font-bold"
-                            onClick={() => onAcceptLoan(req.id)}
-                          >
-                            {t("accept")}
-                          </Button>
-                        </div>
-
-                        {/* Bank Offer */}
-                        {bankRate ? (
-                          <div className="flex items-center justify-between rounded-lg border border-border bg-card p-2 text-xs">
-                            <div className="flex items-center gap-2">
-                              <Building className="size-4 text-primary" />
-                              <div>
-                                <p className="font-bold">Big Bank</p>
-                                <p className="text-[10px] text-muted-foreground">
-                                  {formatRate(bankRate)} a year · institutional rate
-                                </p>
-                              </div>
-                            </div>
-                            <Button
-                              size="default"
-                              variant="outline"
-                              className="h-7 text-xs font-bold"
-                              onClick={() => onAcceptLoan(req.id)}
-                            >
-                              {t("accept")}
-                            </Button>
-                          </div>
-                        ) : (
-                          <div className="rounded-lg bg-muted p-2 text-[11px] text-muted-foreground">
-                            Bank refused loan: Trust score is too low (&lt;20).
-                          </div>
-                        )}
-
-                        {/* Loan App Offer (Dangerous) */}
-                        <div className="flex items-center justify-between rounded-lg border border-loss/40 bg-loss/5 p-2 text-xs">
-                          <div className="flex items-center gap-2">
-                            <Smartphone className="size-4 text-loss" />
-                            <div>
-                              <p className="font-bold text-loss">Instant Loan App</p>
-                              <p className="text-[10px] text-loss font-semibold">
-                                15% predatory rate! (Hidden fees)
+                        {(() => {
+                          const reqOffers = loans.filter(
+                            (l) => l.requestId === req.id && l.status === "offered",
+                          );
+                          if (reqOffers.length === 0) {
+                            return (
+                              <p className="text-[11px] text-muted-foreground py-1">
+                                Waiting for offers from friends or bank…
                               </p>
-                            </div>
-                          </div>
-                          <Button
-                            size="default"
-                            variant="destructive"
-                            className="h-7 text-xs font-bold"
-                            onClick={() => onAcceptLoan(req.id)}
-                          >
-                            {t("accept")}
-                          </Button>
-                        </div>
+                            );
+                          }
+                          return reqOffers.map((offer) => {
+                            const isBank = offer.lenderMemberId === "bank";
+                            const isLoanApp = offer.lenderMemberId === "loan-app";
+                            const lenderMember = members.find((m) => m.id === offer.lenderMemberId);
+                            const lenderName = isBank
+                              ? "Big Bank"
+                              : isLoanApp
+                                ? "Instant Loan App"
+                                : (lenderMember?.nickname ?? "Friend");
+
+                            return (
+                              <div
+                                key={offer.id}
+                                className={cn(
+                                  "flex items-center justify-between rounded-lg border p-2 text-xs",
+                                  isLoanApp ? "border-loss/40 bg-loss/5" : "border-border bg-card",
+                                )}
+                              >
+                                <div className="flex items-center gap-2">
+                                  {isBank ? (
+                                    <Building className="size-4 text-primary" />
+                                  ) : isLoanApp ? (
+                                    <Smartphone className="size-4 text-loss" />
+                                  ) : (
+                                    <Users className="size-4 text-gain" />
+                                  )}
+                                  <div>
+                                    <p className={cn("font-bold", isLoanApp && "text-loss")}>
+                                      {lenderName}
+                                    </p>
+                                    <p
+                                      className={cn(
+                                        "text-[10px]",
+                                        isLoanApp
+                                          ? "text-loss font-semibold"
+                                          : "text-muted-foreground",
+                                      )}
+                                    >
+                                      {formatRate(offer.ratePerTurn)} / turn{" "}
+                                      {isLoanApp && "· Predatory 15% rate!"}
+                                    </p>
+                                  </div>
+                                </div>
+                                <Button
+                                  variant={
+                                    isLoanApp ? "destructive" : isBank ? "outline" : "default"
+                                  }
+                                  className="h-7 text-xs font-bold"
+                                  onClick={() => onAcceptLoan(offer.id)}
+                                >
+                                  {t("accept")}
+                                </Button>
+                              </div>
+                            );
+                          });
+                        })()}
                       </div>
                     </Card>
                   ))}
                 </>
               )}
             </div>
-          ) : (
+          ) : tab === "request" ? (
             /* Loan Request Form */
             <div className="space-y-4">
               <div className="space-y-1.5">
@@ -288,8 +305,9 @@ export function LoanModal({
                   <span>Borrowing Rules</span>
                 </div>
                 <p className="text-[11px] text-muted-foreground">
-                  On-time repayment raises Trust Score by +5. Late repayment incurs a ₹500 fine and
-                  drops Trust by -15.
+                  Your Trust Score is {trust}. Bank rate:{" "}
+                  {bankRate ? `${Math.round(bankRate * 100)}%/yr` : "12%/yr"}. On-time repayment
+                  raises Trust by +5. Late repayment incurs a ₹500 fine and drops Trust by -15.
                 </p>
               </div>
 
@@ -303,6 +321,49 @@ export function LoanModal({
               >
                 Send Loan Request
               </Button>
+            </div>
+          ) : (
+            /* Lend to Friends */
+            <div className="space-y-3">
+              {peerRequests.length === 0 ? (
+                <div className="py-8 text-center text-xs text-muted-foreground">
+                  <p>No friends are currently requesting loans.</p>
+                </div>
+              ) : (
+                peerRequests.map((req) => {
+                  const borrower = members.find((m) => m.id === req.borrowerMemberId);
+                  const borrowerName = borrower?.nickname ?? "Friend";
+                  const maxRate = content.multiplayer.loans.maxRatePerTurn ?? 0.05;
+
+                  return (
+                    <Card key={req.id} className="p-3.5 space-y-2 border border-border">
+                      <div className="flex items-center justify-between text-xs font-bold">
+                        <span className="flex items-center gap-1.5">
+                          <Users className="size-4 text-primary" />
+                          {borrowerName}
+                        </span>
+                        <span className="text-sm font-extrabold tabular-nums">
+                          {formatPaise(req.principal)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-[11px] text-muted-foreground">
+                        <span>Due Turn: {req.dueTurn}</span>
+                        <span>Trust: {borrower?.trustScore ?? 50}/100</span>
+                      </div>
+                      <Button
+                        variant="default"
+                        className="h-8 w-full text-xs font-bold"
+                        onClick={() => {
+                          onOfferLoan?.(req.id, maxRate);
+                          setTab("active");
+                        }}
+                      >
+                        Lend {formatPaise(req.principal)} ({formatRate(maxRate)} / turn)
+                      </Button>
+                    </Card>
+                  );
+                })
+              )}
             </div>
           )}
         </div>

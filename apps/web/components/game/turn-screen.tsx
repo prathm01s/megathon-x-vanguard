@@ -141,7 +141,7 @@ function Screen() {
               {t("age", { age: currentAge })} ·{" "}
               {t("turnOf", {
                 unit: state.turnUnit,
-                turn: state.turn + 1,
+                turn: Math.min(state.turn + 1, state.totalTurns),
                 total: state.totalTurns,
               })}
             </p>

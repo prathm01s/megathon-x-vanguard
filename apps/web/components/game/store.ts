@@ -12,6 +12,7 @@ import {
   endChapter,
   migrateState,
   newSeed,
+  startChapterFor as engineStartChapterFor,
   toDecisionLog,
   type Action,
   type ChapterResult,
@@ -229,8 +230,6 @@ export function useGameHydrated(): boolean {
  * first enabled chapter at or after the persona's `startChapter`.
  */
 export function startChapterFor(personaId: string | null): string | undefined {
-  const persona = content.personas.personas.find((p) => p.id === personaId);
-  const chapters = [...content.chapters].sort((a, b) => a.order - b.order);
-  const startOrder = chapters.find((c) => c.id === persona?.startChapter)?.order ?? 0;
-  return chapters.find((c) => c.enabled && c.order >= startOrder)?.id;
+  if (!personaId) return undefined;
+  return engineStartChapterFor(personaId, content);
 }
