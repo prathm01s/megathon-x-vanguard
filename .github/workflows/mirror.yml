@@ -1,0 +1,21 @@
+name: Mirror to Vercel Repo
+
+on:
+  push:
+    branches: [ "main" ] # Change to "master" if your default branch is called master
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false # This is the critical new line
+
+      - name: Mirror to personal repo
+        env:
+          DESTINATION_REPO: https://prathm01s:${{ secrets.MIRROR_TOKEN }}@github.com/prathm01s/megathon-x-vanguard.git
+        run: |
+          git push --force $DESTINATION_REPO main:main
