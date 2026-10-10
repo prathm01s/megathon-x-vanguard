@@ -1,9 +1,10 @@
 # yaml-language-server: $schema=../../packages/content/dist/schemas/chapter.schema.json
-# Chapter 1 — First Earnings. OUTLINE ONLY (enabled: false). Shown as locked on the Life Ladder.
-# TODO(content): confirm amounts and due turns, write intro/outro, then set enabled: true.
+# Chapter 1 — First Earnings. Turns are months (12 turns = one year, ages 18–21).
+# Small amounts, big habits: budgeting, a first safety jar and spotting "pay to win" scams.
+# Amounts are illustrative; balance checked with `pnpm sim -- --chapter ch1-first-earnings`.
 version: 1
 id: ch1-first-earnings
-enabled: false
+enabled: true
 order: 1
 title: { en: "First Earnings" }
 ageRange: [18, 21]
@@ -66,12 +67,16 @@ tasks:
     icon: piggy-bank
 unlockOptions: [cash, savings, rd]
 lifeEventPool:
+  # Probabilities are per MONTH here, so the yearly-tuned events are scaled down.
   - { eventId: scholarship }
-  - { eventId: phone-broken }
+  - { eventId: festival-gift }
+  - { eventId: phone-broken, weight: 0.25 }
+  - { eventId: bike-repair }
 scamPool: [prize-fee-message, job-fee-offer]
 auctionIds: []
 next: ch2-first-job
-intro: { en: "Your first money of your own. Small amounts, big habits." }
-outro: { en: "A year of first earnings is done." }
-discussionPromptIds: []
-outline: "Multiplayer: first small loans between friends."
+intro:
+  en: "Your first money of your own! A stipend and part-time work bring in ₹6,000 a month. Small amounts — but the habits you build now last a lifetime."
+outro:
+  en: "A year of first earnings is done. Let's see what habits you built."
+discussionPromptIds: [ch1-prompt-needs-wants, ch1-prompt-safety-jar, ch1-prompt-prize-scam]

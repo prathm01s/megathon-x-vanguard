@@ -98,3 +98,88 @@ events:
     cooldownTurns: 2
     teaches: [save-manage]
     icon: cloud-rain
+
+  # ── Added with chapters 1, 3A, 3B and 4 ───────────────────────────────────
+  - id: festival-gift
+    title: { en: "Festival money" }
+    description: { en: "Relatives gave you {amount} for the festival." }
+    type: good
+    baseProbabilityPerTurn: 0.08
+    effect: { type: fixed, amount: 2000 }
+    tags: [family]
+    chapters: [ch1-first-earnings]
+    cooldownTurns: 6
+    teaches: [save-manage]
+    icon: gift
+
+  - id: bike-repair
+    title: { en: "Cycle repair" }
+    description: { en: "Your cycle broke down on the way to college. The repair costs {amount}." }
+    type: bad
+    baseProbabilityPerTurn: 0.06
+    effect: { type: fixed, amount: 1500 }
+    tags: [gadgets]
+    chapters: [ch1-first-earnings]
+    cooldownTurns: 4
+    teaches: [save-manage]
+    icon: wrench
+
+  - id: hospital-stay
+    title: { en: "Hospital stay" }
+    description: { en: "A family member needs a hospital stay. After insurance, you pay {amount}." }
+    type: bad
+    baseProbabilityPerTurn: 0.1
+    effect: { type: monthsOfIncome, months: 1.5 }
+    tags: [health]
+    chapters: [ch3a-salaried, ch3b-business, ch4-legacy]
+    cooldownTurns: 3
+    teaches: [save-manage, goal-based-investing]
+    icon: stethoscope
+
+  - id: home-repair
+    title: { en: "Home repair" }
+    description: { en: "The roof leaked in the monsoon. Repairs cost {amount}." }
+    type: bad
+    baseProbabilityPerTurn: 0.1
+    effect: { type: monthsOfIncome, months: 1 }
+    tags: [home]
+    chapters: [ch3a-salaried, ch4-legacy]
+    cooldownTurns: 3
+    teaches: [save-manage]
+    icon: hammer
+
+  - id: stock-damaged
+    title: { en: "Stock damaged" }
+    description: { en: "Water got into the storeroom and spoiled stock worth {amount}." }
+    type: bad
+    baseProbabilityPerTurn: 0.1
+    effect: { type: monthsOfIncome, months: 1 }
+    tags: [business]
+    chapters: [ch3b-business]
+    cooldownTurns: 3
+    teaches: [save-manage]
+    icon: package
+
+  - id: festival-rush
+    title: { en: "Festival rush" }
+    description: { en: "Customers queued up all festival season. Extra earnings: {amount}." }
+    type: good
+    baseProbabilityPerTurn: 0.2
+    effect: { type: monthsOfIncome, months: 1 }
+    tags: [business]
+    chapters: [ch3b-business]
+    cooldownTurns: 1
+    teaches: [save-manage]
+    icon: party-popper
+
+  - id: parent-care
+    title: { en: "Parent's surgery" }
+    description: { en: "Your father needs a knee surgery. Your share of the cost is {amount}." }
+    type: bad
+    baseProbabilityPerTurn: 0.1
+    effect: { type: monthsOfIncome, months: 2 }
+    tags: [health, family]
+    chapters: [ch4-legacy]
+    cooldownTurns: 4
+    teaches: [save-manage, goal-based-investing]
+    icon: heart-handshake

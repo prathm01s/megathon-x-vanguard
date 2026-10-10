@@ -1,31 +1,124 @@
 # yaml-language-server: $schema=../../packages/content/dist/schemas/chapter.schema.json
-# Chapter 3A — Path: Salaried. OUTLINE ONLY (enabled: false). Shown as locked on the Life Ladder.
-# TODO(content): promotions, home loan EMI (introduce EMIs), health insurance task, child-planning goal.
+# Chapter 3A — Path: Salaried. Turns are years (12 turns = ages 28–40).
+# Teaches EMIs (the home loan is a fixed monthly cost), insurance before investing, a bigger
+# emergency fund, and goal-based investing for a child's education 12 years away.
+# Amounts are illustrative; balance checked with `pnpm sim -- --chapter ch3a-salaried`.
 version: 1
 id: ch3a-salaried
-enabled: false
+enabled: true
 order: 3
 title: { en: "Path: Salaried" }
 ageRange: [28, 40]
 stage: { en: "Building a life" }
 turnUnit: year
 turns: 12
-startingBalance: 0
+startingBalance: 60000
 income:
   label: { en: "Salary" }
-  amountPerMonth: 50000
+  amountPerMonth: 50000          # ₹6,00,000 a year
   growthPerYear: economy
-fixedExpenses: []
-tasks: []
+fixedExpenses:
+  - id: home-food
+    label: { en: "Household and food" }
+    amountPerMonth: 20000
+    inflationAdjusted: true
+    icon: home
+  - id: home-loan-emi
+    label: { en: "Home loan EMI" }
+    # An EMI stays the same every month for the whole loan, so it is NOT inflation-adjusted:
+    # as your salary grows, the EMI takes a smaller share of it.
+    amountPerMonth: 12000
+    inflationAdjusted: false
+    icon: building
+  - id: parents-support
+    label: { en: "Support for parents" }
+    amountPerMonth: 4000
+    inflationAdjusted: true
+    icon: heart-handshake
+tasks:
+  - id: ch3a-health-insurance
+    title: { en: "Buy family health insurance" }
+    description: { en: "A yearly premium so a hospital stay doesn't wipe out your savings." }
+    kind: safety
+    amount: 15000
+    dueTurn: 1
+    required: true
+    lateFine: 3000
+    inflationAdjusted: true
+    pillar: save-manage
+    icon: shield
+  - id: ch3a-upskill
+    title: { en: "Certification course for a better role" }
+    description: { en: "Finish it and your salary goes up by 5%." }
+    kind: goal
+    amount: 60000
+    dueTurn: 2
+    required: false
+    onCompleteConsequence: "salaryBonus:0.05"
+    pillar: plan-budget
+    icon: graduation-cap
+  - id: ch3a-baby-arrival
+    title: { en: "A baby on the way: hospital and first needs" }
+    kind: need
+    amount: 80000
+    dueTurn: 3
+    required: true
+    lateFine: 5000
+    inflationAdjusted: true
+    pillar: plan-budget
+    icon: baby
+  - id: ch3a-emergency-fund
+    title: { en: "Grow your emergency fund to 6 months' expenses" }
+    description: { en: "With a family and an EMI, keep more aside in cash or savings." }
+    kind: safety
+    amount: 216000               # 6 × (20,000 + 12,000 + 4,000); recomputed from expenses
+    targetMonthsOfExpenses: 6
+    dueTurn: 4
+    required: true
+    pillar: save-manage
+    icon: piggy-bank
+  - id: ch3a-family-trip
+    title: { en: "Family holiday" }
+    kind: want
+    amount: 40000
+    dueTurn: 5
+    required: false
+    inflationAdjusted: true
+    pillar: plan-budget
+    icon: plane
+  - id: ch3a-car
+    title: { en: "A family car" }
+    kind: goal
+    amount: 400000
+    dueTurn: 8
+    required: false
+    inflationAdjusted: true
+    pillar: plan-budget
+    icon: car
+  - id: ch3a-child-education
+    title: { en: "Your child's school-to-college fund" }
+    description: { en: "Twelve years away: a long goal that can ride out a few market storms." }
+    kind: goal
+    amount: 600000
+    dueTurn: 12
+    required: false
+    inflationAdjusted: true
+    pillar: understand-investing
+    icon: graduation-cap
 unlockOptions: [debt-fund, index-fund, asset-mix]
 lifeEventPool:
   - { eventId: medical-emergency }
-  - { eventId: promotion }
+  - { eventId: hospital-stay }
+  - { eventId: home-repair }
+  - { eventId: job-break, weight: 0.6 }
+  - { eventId: family-wedding }
   - { eventId: bonus }
-scamPool: [guaranteed-weekly-returns-group, fake-trading-app]
+  - { eventId: promotion }
+scamPool: [guaranteed-weekly-returns-group, fake-trading-app, otp-unblock-call]
 auctionIds: [property-pool-auction]
 next: ch4-legacy
-intro: { en: "A steady job and a growing family. Bigger goals, bigger choices." }
-outro: { en: "Twelve years of salaried life are done." }
-discussionPromptIds: []
-outline: "Home loan EMI, health insurance task, child-planning goal. Auction: pooled bid on a property."
+intro:
+  en: "A steady job, a home loan and a growing family. Your salary is ₹50,000 a month — but so are your responsibilities. Protect first, then plan for goals far away."
+outro:
+  en: "Twelve years of salaried life are done. Did your money work as hard as you did?"
+discussionPromptIds: [ch3a-prompt-emi, ch3a-prompt-insurance, ch3a-prompt-child-goal]

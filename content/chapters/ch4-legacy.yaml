@@ -1,30 +1,109 @@
 # yaml-language-server: $schema=../../packages/content/dist/schemas/chapter.schema.json
-# Chapter 4 — Legacy. OUTLINE ONLY (enabled: false). Shown as locked on the Life Ladder.
-# TODO(content): children's education goal, retirement goal, shift toward safer options as goals near, lending.
+# Chapter 4 — Legacy. Turns are years (20 turns = ages 41–60).
+# Two big goals at different distances: a child's college (6 years away) and retirement
+# (20 years away). Teaches risk vs. time: move money towards safer options as a goal gets close.
+# Amounts are illustrative; balance checked with `pnpm sim -- --chapter ch4-legacy`.
 version: 1
 id: ch4-legacy
-enabled: false
+enabled: true
 order: 5
 title: { en: "Legacy" }
 ageRange: [41, 60]
 stage: { en: "Looking ahead" }
 turnUnit: year
 turns: 20
-startingBalance: 0
+startingBalance: 300000
 income:
   label: { en: "Income" }
-  amountPerMonth: 80000
+  amountPerMonth: 80000          # ₹9,60,000 a year
   growthPerYear: 0.05
-fixedExpenses: []
-tasks: []
+fixedExpenses:
+  - id: home-food
+    label: { en: "Household and food" }
+    amountPerMonth: 32000
+    inflationAdjusted: true
+    icon: home
+  - id: parents-care
+    label: { en: "Parents' medicines and care" }
+    amountPerMonth: 8000
+    inflationAdjusted: true
+    icon: heart-handshake
+  - id: children-school
+    label: { en: "Children's school costs" }
+    amountPerMonth: 8000
+    inflationAdjusted: true
+    icon: graduation-cap
+tasks:
+  - id: ch4-health-cover
+    title: { en: "Upgrade health insurance for the whole family" }
+    kind: safety
+    amount: 30000
+    dueTurn: 1
+    required: true
+    lateFine: 5000
+    inflationAdjusted: true
+    pillar: save-manage
+    icon: shield
+  - id: ch4-emergency-fund
+    title: { en: "Keep an emergency fund of 6 months' expenses" }
+    kind: safety
+    amount: 288000               # 6 × (32,000 + 8,000 + 8,000); recomputed from expenses
+    targetMonthsOfExpenses: 6
+    dueTurn: 2
+    required: true
+    pillar: save-manage
+    icon: piggy-bank
+  - id: ch4-child-college
+    title: { en: "Your child's college fees" }
+    description: { en: "Six years away. As the date gets close, move this money somewhere safe." }
+    kind: need
+    amount: 800000
+    dueTurn: 6
+    required: true
+    lateFine: 20000
+    inflationAdjusted: true
+    pillar: understand-investing
+    icon: graduation-cap
+  - id: ch4-home-repair
+    title: { en: "Repair and repaint the family home" }
+    kind: want
+    amount: 150000
+    dueTurn: 10
+    required: false
+    inflationAdjusted: true
+    pillar: plan-budget
+    icon: home
+  - id: ch4-pilgrimage-trip
+    title: { en: "A long-promised trip with your parents" }
+    kind: want
+    amount: 100000
+    dueTurn: 12
+    required: false
+    inflationAdjusted: true
+    pillar: plan-budget
+    icon: plane
+  - id: ch4-retirement
+    title: { en: "Build a retirement fund" }
+    description: { en: "Twenty years away. Money you won't touch for this long can grow through many storms." }
+    kind: goal
+    amount: 4000000
+    dueTurn: 20
+    required: true
+    inflationAdjusted: true
+    pillar: understand-investing
+    icon: sunset
 unlockOptions: [cash, savings, rd, fd, gold, equity-fund, debt-fund, index-fund, asset-mix]
 lifeEventPool:
   - { eventId: medical-emergency }
+  - { eventId: hospital-stay }
+  - { eventId: parent-care }
+  - { eventId: home-repair }
   - { eventId: family-wedding }
-scamPool: []
+scamPool: [otp-unblock-call, fake-trading-app, guaranteed-weekly-returns-group]
 auctionIds: []
 next: end
-intro: { en: "Your children are growing and retirement is on the horizon." }
-outro: { en: "A whole financial life, lived. Look how far your choices carried you." }
-discussionPromptIds: []
-outline: "Children's education goal, retirement goal, gradually shifting toward safer options, helping others via lending. All options unlocked."
+intro:
+  en: "Your children are growing and retirement is on the horizon. Two big goals, one close and one far away — each needs a different plan."
+outro:
+  en: "A whole financial life, lived. Look how far your choices carried you."
+discussionPromptIds: [ch4-prompt-risk-time, ch4-prompt-retirement, ch4-prompt-helping]

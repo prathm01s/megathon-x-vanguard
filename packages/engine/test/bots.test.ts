@@ -65,9 +65,18 @@ describe("bots", () => {
 });
 
 describe("progression", () => {
-  it("starts personas in the first ENABLED chapter when theirs is still an outline", () => {
-    expect(startChapterFor("moment-maker", content())).toBe("ch2-first-job"); // ch1 disabled
+  it("starts each persona in its own start chapter", () => {
+    expect(startChapterFor("moment-maker", content())).toBe("ch1-first-earnings");
     expect(startChapterFor("smart-planner", content())).toBe("ch2-first-job");
+  });
+
+  it("falls back to the first ENABLED chapter when a persona's chapter is switched off", () => {
+    const c = content();
+    const off = {
+      ...c,
+      chapters: c.chapters.map((ch) => (ch.order === 1 ? { ...ch, enabled: false } : ch)),
+    };
+    expect(startChapterFor("moment-maker", off)).toBe("ch2-first-job");
   });
 
   it("persona shift needs the rule to hold for consecutive chapters (carried over)", () => {

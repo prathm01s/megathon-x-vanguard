@@ -11,3 +11,39 @@ prompts:
   - id: ch2-prompt-scam
     chapterId: ch2-first-job
     text: { en: "Which scam almost fooled you, and what gave it away?" }
+  - id: ch1-prompt-needs-wants
+    chapterId: ch1-first-earnings
+    text: { en: "What did you pay first each month, and what did you skip? Was anything a want pretending to be a need?" }
+  - id: ch1-prompt-safety-jar
+    chapterId: ch1-first-earnings
+    text: { en: "Did your safety jar get used? What would have happened without it?" }
+  - id: ch1-prompt-prize-scam
+    chapterId: ch1-first-earnings
+    text: { en: "Has anyone you know received a 'you won a prize, pay a fee' message? How can you tell it is fake?" }
+  - id: ch3a-prompt-emi
+    chapterId: ch3a-salaried
+    text: { en: "How did the home loan EMI feel in year 1 compared with year 12? Why did it get easier?" }
+  - id: ch3a-prompt-insurance
+    chapterId: ch3a-salaried
+    text: { en: "Who bought health insurance first? Did a hospital stay hit anyone who skipped it?" }
+  - id: ch3a-prompt-child-goal
+    chapterId: ch3a-salaried
+    text: { en: "Where did you keep the child's college fund, and why? Would you choose differently now?" }
+  - id: ch3b-prompt-reinvest
+    chapterId: ch3b-business
+    text: { en: "Did you upgrade the shop or invest the money elsewhere? Which worked out better, and why?" }
+  - id: ch3b-prompt-buffer
+    chapterId: ch3b-business
+    text: { en: "How did a slow season feel with and without a business buffer?" }
+  - id: ch3b-prompt-ponzi
+    chapterId: ch3b-business
+    text: { en: "What did the friend's 'join and recruit' scheme promise? What gave it away?" }
+  - id: ch4-prompt-risk-time
+    chapterId: ch4-legacy
+    text: { en: "When the college fees got close, did you move that money somewhere safer? What happened to those who didn't?" }
+  - id: ch4-prompt-retirement
+    chapterId: ch4-legacy
+    text: { en: "How much did starting retirement savings early change the final amount?" }
+  - id: ch4-prompt-helping
+    chapterId: ch4-legacy
+    text: { en: "If a younger relative asked you for money advice, what is the one thing you would tell them?" }

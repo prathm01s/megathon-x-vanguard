@@ -38,3 +38,145 @@ questions:
     explanation: { en: "Asha's money has 10 more years to compound — returns earning returns." }
     pillar: understand-investing
     techniqueId: compounding
+
+  # ── Chapter 1: First Earnings ─────────────────────────────────────────────
+  - id: ch1-gyaan-needs-wants
+    chapterId: ch1-first-earnings
+    prompt: { en: "You get ₹6,000 this month. Your phone bill is due and a friend's birthday party is coming. What do you pay first?" }
+    options:
+      - { id: party, label: { en: "The party — friends matter most" } }
+      - { id: bill, label: { en: "The phone bill, then see what's left" } }
+      - { id: neither, label: { en: "Neither, keep it all as cash" } }
+    correctOptionId: bill
+    explanation: { en: "Needs come before wants. Pay what's due, then plan the fun with what's left." }
+    pillar: plan-budget
+
+  - id: ch1-gyaan-safety-jar
+    chapterId: ch1-first-earnings
+    prompt: { en: "Why keep a small safety jar even when you earn only a little?" }
+    options:
+      - { id: surprise, label: { en: "So a surprise cost doesn't force you to borrow" } }
+      - { id: rich, label: { en: "It makes you rich quickly" } }
+      - { id: rule, label: { en: "Banks require it" } }
+    correctOptionId: surprise
+    explanation: { en: "A small buffer handles a broken cycle or phone without a loan. The habit matters more than the amount." }
+    pillar: save-manage
+    techniqueId: goal-based-investing
+
+  - id: ch1-gyaan-prize-fee
+    chapterId: ch1-first-earnings
+    prompt: { en: "A message says you won ₹25,000 in a lucky draw you never entered. Pay ₹199 to claim it. What is the biggest red flag?" }
+    options:
+      - { id: amount, label: { en: "₹199 is too much" } }
+      - { id: pay-to-receive, label: { en: "You have to pay to receive money" } }
+      - { id: none, label: { en: "No red flag — prizes are real" } }
+    correctOptionId: pay-to-receive
+    explanation: { en: "Real prizes never ask you to pay first — and you can't win a draw you never entered." }
+    pillar: stay-safe
+
+  # ── Chapter 3A: Path: Salaried ────────────────────────────────────────────
+  - id: ch3a-gyaan-emi
+    chapterId: ch3a-salaried
+    prompt: { en: "Your home loan EMI is ₹12,000 a month for years. What happens to it as your salary grows?" }
+    options:
+      - { id: grows, label: { en: "The EMI grows with my salary" } }
+      - { id: smaller-share, label: { en: "It stays the same, so it takes a smaller share of my salary" } }
+      - { id: disappears, label: { en: "It disappears after a promotion" } }
+    correctOptionId: smaller-share
+    explanation: { en: "An EMI is a fixed monthly payment. Rising income makes it easier to carry over time." }
+    pillar: plan-budget
+
+  - id: ch3a-gyaan-insurance-first
+    chapterId: ch3a-salaried
+    prompt: { en: "You have ₹15,000 to spare and no health insurance yet. What is the smarter first step?" }
+    options:
+      - { id: invest, label: { en: "Invest it all in an equity fund" } }
+      - { id: insure, label: { en: "Buy health insurance, then invest" } }
+      - { id: spend, label: { en: "Spend it — nothing will happen" } }
+    correctOptionId: insure
+    explanation: { en: "Protect first. One hospital bill without insurance can wipe out years of investing." }
+    pillar: save-manage
+    techniqueId: goal-based-investing
+
+  - id: ch3a-gyaan-long-goal
+    chapterId: ch3a-salaried
+    prompt: { en: "Your child's college is 12 years away. Where does a long goal like this usually grow most?" }
+    options:
+      - { id: cash, label: { en: "Cash at home" } }
+      - { id: savings, label: { en: "A savings account" } }
+      - { id: diversified, label: { en: "A diversified fund through a SIP" } }
+    correctOptionId: diversified
+    explanation: { en: "With 12 years to wait there is time to recover from storms, and diversified investing usually beats cash after inflation." }
+    pillar: understand-investing
+    techniqueId: risk-vs-time
+
+  # ── Chapter 3B: Path: Business ────────────────────────────────────────────
+  - id: ch3b-gyaan-buffer
+    chapterId: ch3b-business
+    prompt: { en: "Why does a shop owner need a bigger emergency buffer than a salaried worker?" }
+    options:
+      - { id: variable, label: { en: "Income goes up and down, and slow seasons come" } }
+      - { id: taxes, label: { en: "Shops pay no taxes" } }
+      - { id: no-need, label: { en: "They don't — shops always earn" } }
+    correctOptionId: variable
+    explanation: { en: "When income swings, a buffer keeps rent and wages paid through a slow season without borrowing." }
+    pillar: save-manage
+
+  - id: ch3b-gyaan-reinvest
+    chapterId: ch3b-business
+    prompt: { en: "A ₹1,50,000 shop upgrade will raise your earnings by 10% a year. When does it make sense?" }
+    options:
+      - { id: always, label: { en: "Always, even using the emergency buffer" } }
+      - { id: after-buffer, label: { en: "After the buffer is in place, if the extra earnings pay it back" } }
+      - { id: never, label: { en: "Never — only funds grow money" } }
+    correctOptionId: after-buffer
+    explanation: { en: "Reinvesting can beat investing elsewhere — but not at the cost of your safety net." }
+    pillar: understand-investing
+
+  - id: ch3b-gyaan-ponzi
+    chapterId: ch3b-business
+    prompt: { en: "A friend's scheme pays 10% a month, but only if you bring in new members. What is it most likely?" }
+    options:
+      - { id: ponzi, label: { en: "A scheme paying old members with new members' money" } }
+      - { id: fund, label: { en: "A mutual fund" } }
+      - { id: business, label: { en: "A normal business" } }
+    correctOptionId: ponzi
+    explanation: { en: "Recruit-to-earn and very high guaranteed returns are classic signs. It collapses when new members stop joining." }
+    pillar: stay-safe
+
+  # ── Chapter 4: Legacy ─────────────────────────────────────────────────────
+  - id: ch4-gyaan-goal-near
+    chapterId: ch4-legacy
+    prompt: { en: "Your child's college fees are due next year and the money is in an equity fund. What is safest?" }
+    options:
+      - { id: stay, label: { en: "Keep it all in equity for higher returns" } }
+      - { id: move-safe, label: { en: "Move it to a safer option before the fees are due" } }
+      - { id: gold, label: { en: "Move it all to gold" } }
+    correctOptionId: move-safe
+    explanation: { en: "A storm in the last year could cut the fund just when you need it. Short-term money belongs somewhere safe." }
+    pillar: understand-investing
+    techniqueId: risk-vs-time
+
+  - id: ch4-gyaan-retirement-early
+    chapterId: ch4-legacy
+    prompt: { en: "You are 41 and retirement is 20 years away. When should you start saving for it?" }
+    options:
+      - { id: now, label: { en: "Now — the earlier, the more time to compound" } }
+      - { id: fifty, label: { en: "At 50, after the children's costs" } }
+      - { id: fifty-eight, label: { en: "Just before retiring" } }
+    correctOptionId: now
+    explanation: { en: "Each year of waiting means you need to put in much more later to reach the same goal." }
+    pillar: understand-investing
+    techniqueId: compounding
+
+  - id: ch4-gyaan-diversify
+    chapterId: ch4-legacy
+    prompt: { en: "Why spread retirement money across a few options instead of one?" }
+    options:
+      - { id: one-bad, label: { en: "One bad toss then hurts only part of it" } }
+      - { id: more-fees, label: { en: "To pay more fees" } }
+      - { id: no-reason, label: { en: "There's no reason" } }
+    correctOptionId: one-bad
+    explanation: { en: "Diversification means a bad year for one option doesn't sink the whole plan." }
+    pillar: understand-investing
+    techniqueId: diversification

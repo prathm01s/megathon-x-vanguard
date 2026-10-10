@@ -76,7 +76,7 @@ describe("room-action: lobby", () => {
     expect((await call(u, { code, op: "teleport" })).status).toBe(400);
     expect((await call(u, { code: "bad", op: "join" })).status).toBe(400);
     expect((await call(u, { code: "ZZZZZZ", op: "join" })).status).toBe(404);
-    expect((await call(u, { op: "create", chapterId: "ch1-first-earnings" })).body).toMatchObject({ code: "unknown_chapter" }); // disabled
+    expect((await call(u, { op: "create", chapterId: "ch9-not-a-chapter" })).body).toMatchObject({ code: "unknown_chapter" });
   });
 
   it("creates, joins and starts a room; only the host can start", async () => {

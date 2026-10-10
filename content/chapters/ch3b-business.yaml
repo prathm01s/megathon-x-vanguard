@@ -1,31 +1,115 @@
 # yaml-language-server: $schema=../../packages/content/dist/schemas/chapter.schema.json
-# Chapter 3B — Path: Business. OUTLINE ONLY (enabled: false). Shown as locked on the Life Ladder.
-# TODO(content): good/bad months, inventory, business loan, reinvest-vs-invest, separate shop and personal money.
+# Chapter 3B — Path: Business. Turns are years (12 turns = ages 28–40).
+# Income swings ±30% a year and slow seasons hit hard, so a business buffer matters more than
+# for a salaried worker. Teaches reinvest-vs-invest (the shop upgrade raises earnings) and
+# keeping shop money separate from personal savings.
+# Amounts are illustrative; balance checked with `pnpm sim -- --chapter ch3b-business`.
 version: 1
 id: ch3b-business
-enabled: false
+enabled: true
 order: 4
 title: { en: "Path: Business" }
 ageRange: [28, 40]
 stage: { en: "Building a life" }
 turnUnit: year
 turns: 12
-startingBalance: 0
+startingBalance: 100000
 income:
   label: { en: "Shop earnings" }
-  amountPerMonth: 45000
+  amountPerMonth: 48000          # ₹5,76,000 in an average year
   growthPerYear: 0.06
-  variability: 0.3
-fixedExpenses: []
-tasks: []
+  variability: 0.3               # a year can be 30% better or worse
+fixedExpenses:
+  - id: shop-rent
+    label: { en: "Shop rent and electricity" }
+    amountPerMonth: 10000
+    inflationAdjusted: true
+    icon: store
+  - id: home-food
+    label: { en: "Household and food" }
+    amountPerMonth: 18000
+    inflationAdjusted: true
+    icon: home
+  - id: helper-wages
+    label: { en: "Shop helper's wages" }
+    amountPerMonth: 6000
+    inflationAdjusted: true
+    icon: users
+tasks:
+  - id: ch3b-restock
+    title: { en: "Restock the shop for the festival season" }
+    kind: need
+    amount: 60000
+    dueTurn: 1
+    required: true
+    lateFine: 5000
+    inflationAdjusted: true
+    pillar: plan-budget
+    icon: package
+  - id: ch3b-health-insurance
+    title: { en: "Buy family health insurance" }
+    description: { en: "No employer covers you when you run your own shop." }
+    kind: safety
+    amount: 15000
+    dueTurn: 2
+    required: true
+    lateFine: 3000
+    inflationAdjusted: true
+    pillar: save-manage
+    icon: shield
+  - id: ch3b-business-buffer
+    title: { en: "Keep a buffer of 6 months' costs" }
+    description: { en: "Slow seasons come. Keep this in savings, apart from the money you invest." }
+    kind: safety
+    amount: 204000               # 6 × (10,000 + 18,000 + 6,000); recomputed from expenses
+    targetMonthsOfExpenses: 6
+    dueTurn: 4
+    required: true
+    pillar: save-manage
+    icon: piggy-bank
+  - id: ch3b-shop-upgrade
+    title: { en: "Upgrade the shop: shelves, lights and a card machine" }
+    description: { en: "Reinvesting in the business: earnings go up by 10%." }
+    kind: goal
+    amount: 150000
+    dueTurn: 5
+    required: false
+    onCompleteConsequence: "salaryBonus:0.1"
+    inflationAdjusted: true
+    pillar: understand-investing
+    icon: store
+  - id: ch3b-child-school
+    title: { en: "Your child's school admission and fees" }
+    kind: need
+    amount: 100000
+    dueTurn: 7
+    required: true
+    lateFine: 5000
+    inflationAdjusted: true
+    pillar: plan-budget
+    icon: graduation-cap
+  - id: ch3b-delivery-van
+    title: { en: "A delivery van to reach more customers" }
+    kind: goal
+    amount: 350000
+    dueTurn: 10
+    required: false
+    onCompleteConsequence: "salaryBonus:0.08"
+    inflationAdjusted: true
+    pillar: understand-investing
+    icon: truck
 unlockOptions: [debt-fund, index-fund, asset-mix]
 lifeEventPool:
   - { eventId: slow-season }
+  - { eventId: stock-damaged }
   - { eventId: medical-emergency }
-scamPool: [friend-ponzi-scheme, guaranteed-weekly-returns-group]
+  - { eventId: hospital-stay }
+  - { eventId: festival-rush }
+scamPool: [friend-ponzi-scheme, guaranteed-weekly-returns-group, instant-loan-app]
 auctionIds: [shop-space-auction]
 next: ch4-legacy
-intro: { en: "You run your own shop. Some months are great, some are slow." }
-outro: { en: "Twelve years of business life are done." }
-discussionPromptIds: []
-outline: "Variable income, inventory, business loan, reinvest vs. invest. Auction: shop space with partners (pool bid)."
+intro:
+  en: "You run your own shop! A good year brings in more than a salary, a slow one much less. Keep shop money and home money apart, and decide when to grow the business and when to invest."
+outro:
+  en: "Twelve years of business life are done. How did your shop — and your savings — weather the ups and downs?"
+discussionPromptIds: [ch3b-prompt-reinvest, ch3b-prompt-buffer, ch3b-prompt-ponzi]

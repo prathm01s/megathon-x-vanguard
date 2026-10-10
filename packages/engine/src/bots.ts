@@ -130,10 +130,15 @@ export function botTurn(strategy: StrategyId, state: GameState, content: Content
   if (state.status !== "playing") return state;
   const rng = botRng(state, strategy);
   const firstTurn = state.turn === 0;
-  const sip = (kind: OptionKind, rupees: number): Action[] => {
+  // Monthly SIP/RD amounts are a share of income (rounded to ₹100) so bots behave sensibly in
+  // every chapter, from a ₹6,000 stipend to an ₹80,000 salary.
+  const sip = (kind: OptionKind, shareOfIncome: number): Action[] => {
     const optionId = optionOfKind(state, content, kind);
-    return firstTurn && optionId
-      ? [{ type: "sip_start", optionId, amountPerMonth: rupeesToPaise(rupees) }]
+    const amountPerMonth = rupeesToPaise(
+      Math.round((state.incomePerMonth * shareOfIncome) / rupeesToPaise(100)) * 100,
+    );
+    return firstTurn && optionId && amountPerMonth > 0
+      ? [{ type: "sip_start", optionId, amountPerMonth }]
       : [];
   };
   const growth = optionOfKind(state, content, "growth");
@@ -156,7 +161,7 @@ export function botTurn(strategy: StrategyId, state: GameState, content: Content
     case "cautious": {
       s = payTasks(s, content, (kind) => kind === "safety", 5); // build the fund first
       s = payTasks(s, content, (kind) => kind !== "want");
-      s = applyAll(s, sip("recurring", 2000), content);
+      s = applyAll(s, sip("recurring", 1 / 15) /* ₹2,000 of a ₹30,000 salary */, content);
       const spare = s.cash - buffer(s, content);
       return applyAll(
         s,
@@ -173,7 +178,7 @@ export function botTurn(strategy: StrategyId, state: GameState, content: Content
     case "balanced": {
       s = payTasks(s, content, (kind) => kind === "safety", 5);
       s = payTasks(s, content, () => true);
-      s = applyAll(s, sip("growth", 3000), content);
+      s = applyAll(s, sip("growth", 0.1), content);
       const spare = s.cash - buffer(s, content);
       return applyAll(
         s,

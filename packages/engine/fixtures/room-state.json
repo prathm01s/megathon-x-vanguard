@@ -17,7 +17,7 @@
       "ready": false,
       "state": {
         "schemaVersion": 2,
-        "contentVersion": "31e7fcfa9aac",
+        "contentVersion": "e3ef7d69dec5",
         "seed": "room-fixture:m1",
         "personaId": "safe-keeper",
         "chapterId": "ch2-first-job",
@@ -200,7 +200,7 @@
       "ready": true,
       "state": {
         "schemaVersion": 2,
-        "contentVersion": "31e7fcfa9aac",
+        "contentVersion": "e3ef7d69dec5",
         "seed": "room-fixture:m2",
         "personaId": "safe-keeper",
         "chapterId": "ch2-first-job",
@@ -489,7 +489,7 @@
       "ready": true,
       "state": {
         "schemaVersion": 2,
-        "contentVersion": "31e7fcfa9aac",
+        "contentVersion": "e3ef7d69dec5",
         "seed": "room-fixture:m3",
         "personaId": "thrill-seeker",
         "chapterId": "ch2-first-job",

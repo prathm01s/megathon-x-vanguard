@@ -66,7 +66,7 @@ scams:
   - id: otp-unblock-call
     title: { en: "Bank account blocked call" }
     channel: call
-    chapters: [ch2-first-job]
+    chapters: [ch2-first-job, ch3a-salaried, ch4-legacy]
     trigger: random
     probability: 0.2
     sender: { en: "Caller saying 'Big Bank Head Office'" }
@@ -85,7 +85,7 @@ scams:
   - id: instant-loan-app
     title: { en: "Instant loan app" }
     channel: app
-    chapters: [ch2-first-job]
+    chapters: [ch2-first-job, ch3b-business]
     trigger: after_bad_toss
     probability: 0.25
     sender: { en: "RupeeRocket Instant Loans" }
@@ -105,7 +105,7 @@ scams:
   - id: guaranteed-weekly-returns-group
     title: { en: "'Guaranteed 5% a week' tips group" }
     channel: investment_listing
-    chapters: [ch3a-salaried, ch3b-business]
+    chapters: [ch3a-salaried, ch3b-business, ch4-legacy]
     trigger: random
     probability: 0.15
     sender: { en: "ProfitKings VIP Group" }
@@ -125,7 +125,7 @@ scams:
   - id: fake-trading-app
     title: { en: "Trading app with amazing profits" }
     channel: app
-    chapters: [ch3a-salaried]
+    chapters: [ch3a-salaried, ch4-legacy]
     trigger: random
     probability: 0.1
     sender: { en: "TradeMax Pro" }
