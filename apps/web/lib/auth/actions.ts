@@ -288,6 +288,193 @@ export async function signUpPersonal(formData: {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Email + password accounts (2026-10-11 simplification, requested by the team):
+//   1. signUpWithEmail: email + password + account type → signed in, no profile yet
+//   2. /setup → completeStudentProfile (nickname, avatar, optional NGO code)
+//            or completeNgoProfile (NGO name + your name)
+// Older flows above (code-first redemption, username sign-up) stay for existing links and tests.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+async function clientIpAddress(): Promise<string> {
+  try {
+    const headerList = await headers();
+    const forwarded = headerList.get("x-forwarded-for");
+    if (forwarded) return forwarded.split(",")[0]?.trim() || "127.0.0.1";
+    return headerList.get("x-real-ip") || "127.0.0.1";
+  } catch {
+    return "127.0.0.1";
+  }
+}
+
+/** Internal username (profiles.username is required and unique); never shown to the player. */
+function usernameFromEmail(email: string): string {
+  const base =
+    email
+      .split("@")[0]!
+      .toLowerCase()
+      .replace(/[^a-z0-9_]/g, "")
+      .slice(0, 14) || "player";
+  return `${base.padEnd(3, "0")}_${generateCode(4).toLowerCase()}`;
+}
+
+function codeErrorMessage(message: string): string {
+  if (message.includes("rate_limit_exceeded")) {
+    return "Too many attempts. Please wait 60 seconds and try again.";
+  }
+  if (message.includes("code_expired")) return "This student code has expired.";
+  if (message.includes("code_already_used")) return "This student code has already been used.";
+  if (message.includes("code_revoked")) return "This student code has been revoked.";
+  return "Student code not found. Check it with your NGO.";
+}
+
+export async function signUpWithEmail(formData: {
+  email: string;
+  password: string;
+  accountType: "student" | "ngo_admin";
+}): Promise<ActionResult<{ redirect: string }>> {
+  try {
+    const email = formData.email.trim().toLowerCase();
+    if (!EMAIL_RE.test(email)) return { success: false, error: "Enter a valid email address." };
+    if (formData.password.length < 6) {
+      return { success: false, error: "Password must be at least 6 characters." };
+    }
+
+    const admin = createAdminClient();
+    const { error: createErr } = await admin.auth.admin.createUser({
+      email,
+      password: formData.password,
+      email_confirm: true,
+      user_metadata: { account_type: formData.accountType },
+    });
+    if (createErr) {
+      const taken = /already|registered|exists/i.test(createErr.message);
+      return {
+        success: false,
+        error: taken
+          ? "An account with this email already exists. Log in instead."
+          : createErr.message,
+      };
+    }
+
+    const client = await createClient();
+    const { error: signInErr } = await client.auth.signInWithPassword({
+      email,
+      password: formData.password,
+    });
+    if (signInErr) return { success: false, error: signInErr.message };
+    return { success: true, data: { redirect: "/setup" } };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : "Sign-up failed." };
+  }
+}
+
+/** Student profile: nickname + avatar, and optionally an NGO Student Code to join that NGO. */
+export async function completeStudentProfile(formData: {
+  nickname: string;
+  avatarId: string;
+  code?: string;
+}): Promise<ActionResult<{ redirect: string }>> {
+  try {
+    const client = await createClient();
+    const {
+      data: { user },
+    } = await client.auth.getUser();
+    if (!user?.email) return { success: false, error: "Please log in again." };
+
+    const nickname = formData.nickname.trim().slice(0, 30);
+    if (!nickname) return { success: false, error: "Choose a nickname." };
+
+    const admin = createAdminClient();
+    const { data: existing } = await admin
+      .from("profiles")
+      .select("user_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (existing) return { success: true, data: { redirect: "/mindset" } };
+
+    // Optional NGO code: claim it atomically first, so a bad code doesn't leave a half profile.
+    let claimed: { code_id: string; org_id: string; group_id: string | null } | null = null;
+    const cleanCode = (formData.code ?? "").replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+    if (cleanCode) {
+      if (cleanCode.length !== 8) {
+        return { success: false, error: "A student code has 8 characters (e.g. ABCD-EFGH)." };
+      }
+      const { data, error } = await admin.rpc("redeem_student_code_claim", {
+        p_code_hash: await hashString(cleanCode),
+        p_ip: await clientIpAddress(),
+      });
+      if (error) return { success: false, error: codeErrorMessage(error.message || "") };
+      claimed =
+        (data as Array<{ code_id: string; org_id: string; group_id: string | null }>)?.[0] ??
+        null;
+      if (!claimed) return { success: false, error: codeErrorMessage("") };
+    }
+
+    const { error: profileErr } = await admin.from("profiles").insert({
+      user_id: user.id,
+      role: "student",
+      org_id: claimed?.org_id ?? null,
+      username: usernameFromEmail(user.email),
+      nickname,
+      avatar_id: formData.avatarId || "avatar-1",
+      locale: "en",
+      has_recovery_email: true,
+    });
+    if (profileErr) {
+      if (claimed) await admin.rpc("redeem_student_code_revert", { p_code_id: claimed.code_id });
+      return { success: false, error: `Could not save your profile: ${profileErr.message}` };
+    }
+
+    if (claimed) {
+      await admin.rpc("redeem_student_code_finalize", {
+        p_code_id: claimed.code_id,
+        p_user_id: user.id,
+      });
+      if (claimed.group_id) {
+        await admin
+          .from("group_members")
+          .insert({ group_id: claimed.group_id, student_user_id: user.id });
+      }
+    }
+    return { success: true, data: { redirect: "/mindset" } };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : "Profile setup failed." };
+  }
+}
+
+/** NGO profile: creates the organisation with the signed-in user as its single admin (§4.1). */
+export async function completeNgoProfile(formData: {
+  ngoName: string;
+  nickname: string;
+}): Promise<ActionResult<{ redirect: string }>> {
+  try {
+    const client = await createClient();
+    const {
+      data: { user },
+    } = await client.auth.getUser();
+    if (!user?.email) return { success: false, error: "Please log in again." };
+
+    const ngoName = formData.ngoName.trim();
+    const nickname = formData.nickname.trim().slice(0, 30);
+    if (!ngoName) return { success: false, error: "Enter your NGO's name." };
+    if (!nickname) return { success: false, error: "Enter your name." };
+
+    // Runs as the signed-in user: the RPC uses auth.uid() as the admin.
+    const { error } = await client.rpc("create_organization", {
+      p_name: ngoName,
+      p_username: usernameFromEmail(user.email),
+      p_nickname: nickname,
+    });
+    if (error) return { success: false, error: error.message };
+    return { success: true, data: { redirect: "/admin" } };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : "NGO setup failed." };
+  }
+}
+
 /**
  * Universal Login for students (by username or email) and NGO admins (§4.2, Requests 18 & 19)
  */
@@ -331,7 +518,7 @@ export async function loginUser(formData: {
     });
 
     if (error || !data.user) {
-      return { success: false, error: "Invalid username/email or password." };
+      return { success: false, error: "Wrong email or password." };
     }
 
     // Fetch profile role
@@ -341,7 +528,13 @@ export async function loginUser(formData: {
       .eq("user_id", data.user.id)
       .maybeSingle();
 
-    const role = profile?.role || "student";
+    // Signed up but never finished the profile: finish it first.
+    if (!profile) {
+      const accountType =
+        data.user.user_metadata?.account_type === "ngo_admin" ? "ngo_admin" : "student";
+      return { success: true, data: { role: accountType, redirect: "/setup" } };
+    }
+    const role = profile.role;
 
     // Dynamic routing (§4.2, Request 19):
     // NGO admins route to /admin
@@ -363,9 +556,9 @@ export async function loginUser(formData: {
           .limit(1)
           .maybeSingle();
 
-        redirect = !playthrough ? "/mindset" : "/play";
+        redirect = !playthrough ? "/mindset" : "/ladder";
       } else {
-        redirect = "/play";
+        redirect = "/ladder";
       }
     }
 

@@ -37,6 +37,7 @@ function empty(): MockDb {
 }
 
 export const mockSession: Session = {
+  status: "ready",
   user: { id: "mock-user" },
   profile: {
     userId: "mock-user",

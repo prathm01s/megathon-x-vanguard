@@ -28,7 +28,18 @@ export interface Org {
   name: string;
 }
 
+/**
+ * - `loading`: still asking Supabase (render nothing account-specific yet)
+ * - `signed-out`: no account on this device
+ * - `needs-setup`: signed in, but the profile (nickname / NGO name) isn't set up yet
+ * - `ready`: signed in with a profile
+ */
+export type SessionStatus = "loading" | "signed-out" | "needs-setup" | "ready";
+
 export interface Session {
+  status: SessionStatus;
+  /** Account type chosen at sign-up; tells /setup which form to show before a profile exists. */
+  accountType?: Role;
   user: { id: string } | null;
   profile: Profile | null;
   role: Role | null;
