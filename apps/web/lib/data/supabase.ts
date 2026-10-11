@@ -6,7 +6,7 @@
 import { createClient } from "@/lib/supabase/client";
 import { content } from "@/lib/content";
 import { createPlaythrough, startChapterFor } from "@toss/engine";
-import type { PersistenceApi, PlaythroughId, SavedProgress } from "./types";
+import type { PersistenceApi, PlaythroughId, SavedProgress, SessionRecord } from "./types";
 import type { Json } from "@toss/db-types";
 import type {
   ChapterResult,
@@ -178,6 +178,45 @@ export const supabasePersistence: PersistenceApi = {
       });
     } catch (e) {
       console.warn("Failed to save mindset to remote DB, stored locally:", e);
+    }
+  },
+
+  async saveSession(session: SessionRecord): Promise<void> {
+    try {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+      await supabase.from("game_sessions").upsert({
+        id: session.id,
+        user_id: user.id,
+        chapter_id: session.chapterId,
+        data: session as unknown as JsonValue,
+        started_at: session.startedAt,
+        updated_at: session.updatedAt,
+      });
+    } catch (e) {
+      console.warn("Could not save the session; it stays on this device:", e);
+    }
+  },
+
+  async loadSessions(): Promise<SessionRecord[]> {
+    try {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return [];
+      const { data } = await supabase
+        .from("game_sessions")
+        .select("data")
+        .eq("user_id", user.id)
+        .order("started_at", { ascending: false })
+        .limit(30);
+      return (data ?? []).map((r) => r.data as unknown as SessionRecord);
+    } catch {
+      return [];
     }
   },
 

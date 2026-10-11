@@ -116,6 +116,8 @@ const api: PersistenceApi = process.env.NEXT_PUBLIC_SUPABASE_URL
   : mockPersistence;
 
 export const loadProgress = api.loadProgress;
+export const saveSession = api.saveSession;
+export const loadSessions = api.loadSessions;
 export const saveMindset = api.saveMindset;
 export const startPlaythrough = api.startPlaythrough;
 export const loadPlaythrough = api.loadPlaythrough;

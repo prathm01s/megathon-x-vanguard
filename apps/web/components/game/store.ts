@@ -6,6 +6,8 @@
 import {
   advanceTurn,
   applyAction,
+  branchAt,
+  replaySession,
   chapterResultRecords,
   createPlaythrough,
   EngineError,
@@ -21,6 +23,9 @@ import {
   type GameState,
   type MindsetAnswers,
   type MindsetResult,
+  type SessionLog,
+  type SessionStart,
+  type SessionStep,
   type TossResult,
 } from "@toss/engine";
 import { useSyncExternalStore } from "react";
@@ -32,9 +37,11 @@ import {
   saveChapterResult,
   saveMindset,
   savePlaythroughState,
+  saveSession,
   startPlaythrough,
   type SavedProgress,
 } from "@/lib/data";
+import { uuid } from "@/lib/uuid";
 
 export interface MindsetRecord {
   answers: MindsetAnswers;
@@ -45,6 +52,24 @@ export interface TurnOutcome {
   toss: TossResult;
   events: GameEvent[];
 }
+
+/**
+ * One chapter attempt, step by step (the "time machine"): enough to rebuild the game at any
+ * point, ask "what if I hadn't?", or branch. Saved on the device and to the account.
+ */
+export interface SavedSession {
+  id: string;
+  chapterId: string;
+  personaId: string;
+  startedAt: string;
+  updatedAt: string;
+  log: SessionLog;
+  result?: { healthScore: number; passed: boolean };
+  /** Set when this session was started from a point in another one. */
+  branchOf?: { sessionId: string; stepIndex: number };
+}
+
+const MAX_SESSIONS = 30;
 
 /** What happened while fast-forwarding to the end of a chapter. */
 export interface FastForwardSummary {
@@ -78,6 +103,10 @@ interface GameStore {
   ownerId: string | null;
   /** Results restored from the server (games played on another device). */
   savedChapters: SavedProgress["chapters"];
+  /** Past and current chapter attempts, newest first. */
+  sessions: SavedSession[];
+  /** The session being played now. */
+  sessionId: string | null;
 
   completeMindset(phase: "pre" | "post", answers: MindsetAnswers, result: MindsetResult): void;
   startChapter(chapterId: string): Promise<void>;
@@ -91,6 +120,10 @@ interface GameStore {
   dismissGuide(): void;
   /** Adopts what the account did elsewhere; keeps anything newer on this device. */
   restoreProgress(ownerId: string, progress: SavedProgress): void;
+  /** Merges sessions saved on other devices (newest copy of each wins). */
+  mergeSessions(remote: SavedSession[]): void;
+  /** Starts a new game from a point in a saved session: the time machine's "replay from here". */
+  branchFrom(sessionId: string, stepIndex: number): Promise<boolean>;
   reset(): void;
 }
 
@@ -106,6 +139,8 @@ const initial = {
   dismissedGuide: false,
   ownerId: null,
   savedChapters: {},
+  sessions: [] as SavedSession[],
+  sessionId: null,
 } satisfies Partial<GameStore>;
 
 /** Fire-and-forget persistence: the real implementation queues offline (§9.4). */
@@ -113,6 +148,30 @@ function persistTurn(id: string | null, state: GameState, records: DecisionRecor
   if (!id) return;
   void savePlaythroughState(id, state);
   if (records.length) void appendDecisions(id, records);
+}
+
+/** Adds steps to the current session and saves it (sessions are small: a few hundred steps). */
+function withSteps(
+  sessions: SavedSession[],
+  sessionId: string | null,
+  steps: SessionStep[],
+): SavedSession[] {
+  if (!sessionId || steps.length === 0) return sessions;
+  return sessions.map((x) => {
+    if (x.id !== sessionId) return x;
+    const next = {
+      ...x,
+      updatedAt: new Date().toISOString(),
+      log: { ...x.log, steps: [...x.log.steps, ...steps] },
+    };
+    void saveSession(next);
+    return next;
+  });
+}
+
+function addSession(sessions: SavedSession[], session: SavedSession): SavedSession[] {
+  void saveSession(session);
+  return [session, ...sessions.filter((x) => x.id !== session.id)].slice(0, MAX_SESSIONS);
 }
 
 export const useGameStore = create<GameStore>()(
@@ -131,8 +190,7 @@ export const useGameStore = create<GameStore>()(
         if (!personaId) return;
         const prevResult = prev ? results[prev.chapterId] : undefined;
         const seed = newSeed();
-        const state = createPlaythrough({
-          content,
+        const start: SessionStart = {
           personaId,
           seed,
           chapterId,
@@ -141,9 +199,26 @@ export const useGameStore = create<GameStore>()(
           ...(prev && prevResult && prev.chapterId !== chapterId
             ? { carryOver: prevResult.carryOver, trustScore: prev.trustScore }
             : {}),
-        });
+        };
+        const state = createPlaythrough({ content, ...start });
         const attempts = { ...get().attempts, [chapterId]: (get().attempts[chapterId] ?? 0) + 1 };
-        set({ state, lastTurn: null, attempts, dismissedGuide: false });
+        const now = new Date().toISOString();
+        const session: SavedSession = {
+          id: uuid(),
+          chapterId,
+          personaId,
+          startedAt: now,
+          updatedAt: now,
+          log: { start, steps: [] },
+        };
+        set({
+          state,
+          lastTurn: null,
+          attempts,
+          dismissedGuide: false,
+          sessionId: session.id,
+          sessions: addSession(get().sessions, session),
+        });
         const id = await startPlaythrough(personaId, seed, state);
         set({ playthroughId: id });
         void appendDecisions(id, [
@@ -156,7 +231,11 @@ export const useGameStore = create<GameStore>()(
         if (!state) return "no_game";
         try {
           const next = applyAction(state, action, content);
-          set({ state: next });
+          const { sessions, sessionId } = get();
+          set({
+            state: next,
+            sessions: withSteps(sessions, sessionId, [{ kind: "act", action }]),
+          });
           const record = toDecisionLog(action, {
             chapterId: state.chapterId,
             turn: state.turn + 1,
@@ -174,7 +253,12 @@ export const useGameStore = create<GameStore>()(
         if (!state || state.status !== "playing") return null;
         const { state: next, tossResult, events } = advanceTurn(state, content);
         const outcome = { toss: tossResult, events };
-        set({ state: next, lastTurn: outcome });
+        const { sessions, sessionId } = get();
+        set({
+          state: next,
+          lastTurn: outcome,
+          sessions: withSteps(sessions, sessionId, [{ kind: "advance" }]),
+        });
         const records = events
           .map((e) => toDecisionLog(e, { chapterId: next.chapterId, turn: next.turn }))
           .filter((r): r is DecisionRecord => r !== null && r.type !== "chapter_end");
@@ -214,7 +298,11 @@ export const useGameStore = create<GameStore>()(
         }
         summary.stoppedForScam = s.status === "awaiting_scam_response";
         summary.completed = s.status === "chapter_complete";
-        set({ state: s, lastTurn: null });
+        const { sessions, sessionId } = get();
+        const advances: SessionStep[] = Array.from({ length: summary.turns }, () => ({
+          kind: "advance" as const,
+        }));
+        set({ state: s, lastTurn: null, sessions: withSteps(sessions, sessionId, advances) });
         persistTurn(playthroughId, s, records);
         return summary;
       },
@@ -227,9 +315,20 @@ export const useGameStore = create<GameStore>()(
         const { state, playthroughId, attempts, results, personaId } = get();
         if (!state || state.status !== "chapter_complete") return null;
         const result = endChapter(state, content, { attempt: attempts[state.chapterId] ?? 1 });
+        const { sessions, sessionId } = get();
         set({
           results: { ...results, [state.chapterId]: result },
           personaId: result.personaShift?.to ?? personaId,
+          sessions: sessions.map((x) => {
+            if (x.id !== sessionId) return x;
+            const done = {
+              ...x,
+              updatedAt: new Date().toISOString(),
+              result: { healthScore: result.healthScore, passed: result.passed },
+            };
+            void saveSession(done);
+            return done;
+          }),
         });
         if (playthroughId) {
           void saveChapterResult(playthroughId, result);
@@ -241,6 +340,51 @@ export const useGameStore = create<GameStore>()(
 
       dismissGuide() {
         set({ dismissedGuide: true });
+      },
+
+      mergeSessions(remote) {
+        const byId = new Map(get().sessions.map((x) => [x.id, x]));
+        for (const r of remote) {
+          const local = byId.get(r.id);
+          if (!local || r.updatedAt > local.updatedAt) byId.set(r.id, r);
+        }
+        set({
+          sessions: [...byId.values()]
+            .sort((a, b) => b.startedAt.localeCompare(a.startedAt))
+            .slice(0, MAX_SESSIONS),
+        });
+      },
+
+      async branchFrom(sessionId, stepIndex) {
+        const from = get().sessions.find((x) => x.id === sessionId);
+        if (!from) return false;
+        const log = branchAt(from.log, stepIndex);
+        let state: GameState;
+        try {
+          state = replaySession(log, content).state;
+        } catch {
+          return false;
+        }
+        const now = new Date().toISOString();
+        const session: SavedSession = {
+          id: uuid(),
+          chapterId: from.chapterId,
+          personaId: from.personaId,
+          startedAt: now,
+          updatedAt: now,
+          log,
+          branchOf: { sessionId, stepIndex },
+        };
+        set({
+          state,
+          lastTurn: null,
+          dismissedGuide: true,
+          sessionId: session.id,
+          sessions: addSession(get().sessions, session),
+        });
+        const id = await startPlaythrough(from.personaId, from.log.start.seed, state);
+        set({ playthroughId: id });
+        return true;
       },
 
       restoreProgress(ownerId, progress) {

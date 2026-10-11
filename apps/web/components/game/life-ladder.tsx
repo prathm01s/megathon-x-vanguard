@@ -1,7 +1,7 @@
 "use client";
 
 import type { Chapter } from "@toss/content";
-import { Lock, Play, RotateCcw } from "lucide-react";
+import { History, Lock, Play, RotateCcw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { GameButton } from "@/components/ui/game-button";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -45,6 +45,7 @@ export function LifeLadder() {
 
 function Ladder() {
   const t = useTranslations("ladder");
+  const tm = useTranslations("timeMachine");
   const l = useLocalize();
   const personaId = useGameStore((s) => s.personaId);
   const results = useGameStore((s) => s.results);
@@ -69,7 +70,7 @@ function Ladder() {
     <section className="flex flex-col gap-3 py-3 pb-28">
       <header className="flex items-center gap-3">
         {persona && <PersonaAvatar hint={persona.avatarHint} className="size-14 ring-4" />}
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h1 className={cn(GAME_TEXT, "text-2xl leading-tight")}>{t("title")}</h1>
           {persona && level && (
             <p className="text-sm font-bold text-muted-foreground">
@@ -81,6 +82,16 @@ function Ladder() {
             </p>
           )}
         </div>
+        <Link
+          href="/sessions"
+          aria-label={tm("title")}
+          title={tm("title")}
+          className="flex shrink-0 flex-col items-center rounded-2xl border-2 border-b-4 bg-[#ede9fe] px-2 py-1 text-[#6d28d9]"
+          style={{ borderColor: INK }}
+        >
+          <History className="size-6" aria-hidden />
+          <span className="text-[10px] font-extrabold leading-tight">{tm("short")}</span>
+        </Link>
       </header>
 
       <ol className="flex flex-col items-stretch">

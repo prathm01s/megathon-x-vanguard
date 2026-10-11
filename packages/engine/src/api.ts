@@ -20,6 +20,18 @@ export { toDecisionLog } from "./decisions";
 export { migrateState } from "./migrate";
 export { tossFor } from "./market";
 export { allowedOptions, unlockedOptions, startChapterFor } from "./helpers";
+export {
+  replaySession,
+  whatIfWithout,
+  branchAt,
+  finishWithoutDecisions,
+  type SessionLog,
+  type SessionStart,
+  type SessionStep,
+  type ReplayPoint,
+  type ReplayResult,
+  type AlternateOutcome,
+} from "./session";
 
 export function scoreMindset(answers: MindsetAnswers, content: ContentBundle): MindsetResult {
   return scoreMindsetImpl(answers, content);

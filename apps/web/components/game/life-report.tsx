@@ -6,6 +6,8 @@ import {
   CheckCircle2,
   ChevronRight,
   HelpCircle,
+  History,
+  MessageCircle,
   RotateCcw,
   Sparkles,
   TrendingUp,
@@ -20,6 +22,7 @@ import { content } from "@/lib/content";
 import { formatPaise } from "@/lib/format";
 import type { ChapterResult } from "@toss/engine";
 import { GameGate } from "./game-gate";
+import { MeeraChat } from "./guide/meera-chat";
 import { ContentIcon } from "./icon";
 import { useGameStore } from "./store";
 import { useLocalize } from "./use-localize";
@@ -46,6 +49,10 @@ function ReportContent() {
 
   // Gyaan Check answered states
   const [gyaanAnswers, setGyaanAnswers] = useState<Record<string, string>>({});
+  const [chatOpen, setChatOpen] = useState(false);
+  const tg = useTranslations("guide");
+  const tm = useTranslations("timeMachine");
+  const session = useGameStore((s) => s.sessions.find((x) => x.id === s.sessionId));
 
   if (!result) {
     return (
@@ -327,6 +334,23 @@ function ReportContent() {
           </div>
         </Card>
       )}
+
+      {/* Talk it through with Meera, or look back at every choice in the Time Machine */}
+      {session && (
+        <div className="grid grid-cols-2 gap-2">
+          <GameButton tone="blue" className="min-h-12 text-base" onClick={() => setChatOpen(true)}>
+            <MessageCircle aria-hidden /> {tg("askMeera")}
+          </GameButton>
+          <GameButton
+            tone="stone"
+            className="min-h-12 text-base"
+            onClick={() => router.push(`/sessions/${session.id}`)}
+          >
+            <History aria-hidden /> {tm("short")}
+          </GameButton>
+        </div>
+      )}
+      {chatOpen && session && <MeeraChat session={session} onClose={() => setChatOpen(false)} />}
 
       {/* What next: the next level when passed, otherwise try again */}
       <div className="flex flex-col gap-2 pt-2">

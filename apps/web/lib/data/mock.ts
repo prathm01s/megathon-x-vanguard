@@ -60,6 +60,11 @@ export const mockPersistence: PersistenceApi = {
     db.mindset.push({ phase, answers, result, at: new Date().toISOString() });
     write(db);
   },
+  // Sessions live in the game store on this device; the mock has no second device to sync.
+  async saveSession() {},
+  async loadSessions() {
+    return [];
+  },
   async loadProgress() {
     const db = read();
     const latest = (phase: string) => {

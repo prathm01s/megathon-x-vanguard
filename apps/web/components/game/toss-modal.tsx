@@ -1,20 +1,35 @@
 "use client";
 
-import { CloudRain, Coins, Sun, Volume2, VolumeX } from "lucide-react";
+// The coin toss and "what happened" this year/month, village style: a big gold coin flips, the
+// market shows as weather, money in / out / investments as three tiles, then only the events
+// that matter as icon rows.
+import {
+  ArrowDownCircle,
+  ArrowUpCircle,
+  CloudRain,
+  Cloud,
+  Sun,
+  TrendingDown,
+  TrendingUp,
+  Volume2,
+  VolumeX,
+  type LucideIcon,
+} from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { useEffect, useState, type ReactNode } from "react";
+import { GameButton } from "@/components/ui/game-button";
 import { content } from "@/lib/content";
-import { formatPaise, formatRate } from "@/lib/format";
+import { formatRate, formatShort } from "@/lib/format";
+import { GAME_TEXT, INK, MUTED, PANEL } from "@/lib/game-style";
 import {
   getMuted,
+  playAlertSound,
   playCoinTossSound,
   playSuccessChime,
-  playAlertSound,
   setMuted,
 } from "@/lib/sound";
+import { cn } from "@/lib/utils";
 import type { GameEvent, GameState, TossResult } from "@toss/engine";
 import { ContentIcon } from "./icon";
 import { useLocalize } from "./use-localize";
@@ -25,12 +40,91 @@ export interface TossModalProps {
   onContinue: () => void;
 }
 
+const WEATHER: Record<string, { Icon: LucideIcon; bg: string; ink: string }> = {
+  boom: { Icon: Sun, bg: "linear-gradient(180deg,#bff3c9,#e7fbe9)", ink: "#15803d" },
+  normal: { Icon: Cloud, bg: "linear-gradient(180deg,#bfe0ff,#eaf4ff)", ink: "#1d4ed8" },
+  crash: { Icon: CloudRain, bg: "linear-gradient(180deg,#fecaca,#fff1f1)", ink: "#b91c1c" },
+};
+
+function Tile({
+  icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+  tone: "gain" | "loss";
+}) {
+  return (
+    <div className="flex flex-col items-center gap-0.5 rounded-2xl border-2 border-b-4 border-[#1e2a4a]/50 bg-white px-1 py-2 text-center">
+      {icon}
+      <span
+        className={cn(
+          GAME_TEXT,
+          "text-lg leading-none",
+          tone === "gain" ? "text-[#15803d]" : "text-[#b91c1c]",
+        )}
+      >
+        {value}
+      </span>
+      <span className="text-[11px] font-bold leading-tight" style={{ color: MUTED }}>
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function Row({
+  icon,
+  title,
+  amount,
+  note,
+  tone,
+}: {
+  icon: ReactNode;
+  title: string;
+  amount?: string;
+  note?: string;
+  tone: "good" | "bad" | "info";
+}) {
+  return (
+    <li
+      className={cn(
+        "rounded-xl border-2 p-2",
+        tone === "good" && "border-[#16a34a]/30 bg-[#e3f8e8]",
+        tone === "bad" && "border-[#dc2626]/30 bg-[#fde8e8]",
+        tone === "info" && "border-[#1e2a4a]/20 bg-white",
+      )}
+    >
+      <div className="flex items-center justify-between gap-2 text-sm font-extrabold">
+        <span className="flex items-center gap-1.5">
+          {icon}
+          {title}
+        </span>
+        {amount && (
+          <span
+            className={tone === "good" ? "text-[#15803d]" : tone === "bad" ? "text-[#b91c1c]" : ""}
+          >
+            {amount}
+          </span>
+        )}
+      </div>
+      {note && (
+        <p className="mt-0.5 text-xs font-semibold" style={{ color: MUTED }}>
+          {note}
+        </p>
+      )}
+    </li>
+  );
+}
+
 export function TossModal({ outcome, state, onContinue }: TossModalProps) {
   const t = useTranslations("toss");
   const tc = useTranslations("common");
   const l = useLocalize();
   const reduceMotion = useReducedMotion();
-
   const [flipped, setFlipped] = useState(false);
   const [muted, setMutedState] = useState(getMuted());
 
@@ -40,260 +134,206 @@ export function TossModal({ outcome, state, onContinue }: TossModalProps) {
     setMuted(next);
   }
 
-  // Trigger toss sound and flip on mount
   useEffect(() => {
     playCoinTossSound();
     const timer = setTimeout(
       () => {
         setFlipped(true);
-        if (outcome.toss.marketState === "crash") {
-          playAlertSound();
-        } else {
-          playSuccessChime();
-        }
+        if (outcome.toss.marketState === "crash") playAlertSound();
+        else playSuccessChime();
       },
       reduceMotion ? 100 : 800,
     );
-
     return () => clearTimeout(timer);
   }, [outcome.toss.marketState, reduceMotion]);
 
-  const marketStateDef = content.market.states.find((s) => s.id === outcome.toss.marketState);
-  const isCrash = outcome.toss.marketState === "crash";
-  const isBoom = outcome.toss.marketState === "boom";
+  const market = outcome.toss.marketState;
+  const weather = WEATHER[market] ?? WEATHER.normal!;
+  const marketLabel = l(content.market.states.find((s) => s.id === market)?.label) || market;
+
+  const sum = (type: GameEvent["type"]) =>
+    outcome.events.reduce((s, e) => (e.type === type && "amount" in e ? s + e.amount : s), 0);
+  const income = sum("income");
+  const costs = sum("fixed_expenses");
+  const invested = outcome.events.reduce((s, e) => (e.type === "returns" ? s + e.change : s), 0);
+  const chapter = content.chapters.find((c) => c.id === state.chapterId);
+
+  const rows = outcome.events
+    .map((ev, i) => {
+      switch (ev.type) {
+        case "life_event": {
+          const def = content.lifeEvents.events.find((e) => e.id === ev.eventId);
+          const good = def?.type === "good";
+          return (
+            <Row
+              key={i}
+              tone={good ? "good" : "bad"}
+              icon={<ContentIcon name={def?.icon} className="size-5" />}
+              title={def ? l(def.title) : ev.eventId}
+              amount={ev.amount > 0 ? `${good ? "+" : "−"}${formatShort(ev.amount)}` : undefined}
+              note={
+                !good && ev.amount > 0
+                  ? ev.coveredBy === "cash"
+                    ? t("coveredByWallet")
+                    : ev.coveredBy === "savings"
+                      ? t("coveredByCash")
+                      : t("shortfall")
+                  : undefined
+              }
+            />
+          );
+        }
+        case "task_missed": {
+          const def = chapter?.tasks.find((task) => task.id === ev.taskId);
+          return (
+            <Row
+              key={i}
+              tone="bad"
+              icon={<ContentIcon name={def?.icon} className="size-5" />}
+              title={t("taskMissed", { name: def ? l(def.shortTitle ?? def.title) : ev.taskId })}
+              amount={ev.fine > 0 ? `−${formatShort(ev.fine)}` : undefined}
+            />
+          );
+        }
+        case "forced_borrowing":
+          return (
+            <Row
+              key={i}
+              tone="bad"
+              icon={<ArrowDownCircle className="size-5" />}
+              title={t("forcedBorrowingTitle")}
+              amount={`+${formatShort(ev.amount)}`}
+              note={t("forcedBorrowingBody", { rate: formatRate(ev.ratePerYear) })}
+            />
+          );
+        case "cash_lost":
+          return (
+            <Row
+              key={i}
+              tone="bad"
+              icon={<ArrowDownCircle className="size-5" />}
+              title={t("cashLost")}
+              amount={`−${formatShort(ev.amount)}`}
+            />
+          );
+        case "sip_missed": {
+          const opt = content.options.options.find((o) => o.id === ev.optionId);
+          return (
+            <Row
+              key={i}
+              tone="info"
+              icon={<ContentIcon name={opt?.icon} className="size-5" />}
+              title={t("sipMissed", { name: opt ? l(opt.name) : ev.optionId })}
+              amount={formatShort(ev.amount)}
+            />
+          );
+        }
+        case "debt_interest":
+          return (
+            <Row
+              key={i}
+              tone="bad"
+              icon={<TrendingDown className="size-5" />}
+              title={t("debtInterest")}
+              amount={`−${formatShort(ev.amount)}`}
+            />
+          );
+        case "debt_repaid":
+          return (
+            <Row
+              key={i}
+              tone="good"
+              icon={<TrendingUp className="size-5" />}
+              title={t("debtRepaid")}
+              amount={`−${formatShort(ev.amount)}`}
+            />
+          );
+        default:
+          return null;
+      }
+    })
+    .filter(Boolean);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
-      <Card className="w-full max-w-sm rounded-2xl bg-card p-5 shadow-2xl space-y-4 my-auto">
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            {t("title")}
-          </p>
-          <Button variant="ghost" size="icon" onClick={toggleMute} aria-label="Mute toggle">
-            {muted ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
-          </Button>
-        </div>
-
-        {/* 3D Coin animation */}
-        <div className="flex flex-col items-center justify-center py-2">
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/55 p-3"
+      role="dialog"
+      aria-modal="true"
+      aria-label={t("title")}
+    >
+      <div
+        className="max-h-[92dvh] w-full max-w-md overflow-y-auto rounded-3xl border-[3px] shadow-2xl"
+        style={{ borderColor: INK, background: PANEL, color: INK }}
+      >
+        <div className="relative px-4 pb-3 pt-4 text-center" style={{ background: weather.bg }}>
+          <button
+            type="button"
+            onClick={toggleMute}
+            aria-label={muted ? t("unmute") : t("mute")}
+            className="absolute end-3 top-3 grid size-10 place-items-center rounded-full border-2 border-[#1e2a4a]/30 bg-white/80"
+          >
+            {muted ? <VolumeX className="size-5" /> : <Volume2 className="size-5" />}
+          </button>
           <motion.div
             animate={
               reduceMotion
                 ? { scale: [1, 1.05, 1] }
-                : {
-                    rotateY: [0, 1800],
-                    scale: [1, 1.25, 1],
-                    y: [0, -35, 0],
-                  }
+                : { rotateY: [0, 1800], y: [0, -40, 0], scale: [1, 1.2, 1] }
             }
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className={`grid size-24 place-items-center rounded-full text-2xl font-black shadow-xl ring-8 ${
-              isCrash
-                ? "bg-loss/20 text-loss ring-loss/30"
-                : isBoom
-                  ? "bg-gain/20 text-gain ring-gain/30"
-                  : "bg-coin text-foreground ring-coin/30"
-            }`}
-          >
-            {isCrash ? (
-              <CloudRain className="size-10 text-loss" />
-            ) : isBoom ? (
-              <Sun className="size-10 text-gain" />
-            ) : (
-              <Coins className="size-10 text-coin-foreground" />
+            className={cn(
+              GAME_TEXT,
+              "mx-auto grid size-24 place-items-center rounded-full border-4 bg-gradient-to-b from-[#ffe066] to-[#f5a524] text-4xl text-[#7a4b05] shadow-xl",
             )}
+            style={{ borderColor: INK }}
+          >
+            {flipped ? <weather.Icon className="size-11" style={{ color: weather.ink }} /> : "₹"}
           </motion.div>
+          <p className={cn(GAME_TEXT, "mt-2 text-2xl")} style={{ color: weather.ink }}>
+            {flipped ? marketLabel : t("title")}
+          </p>
+          {flipped && (
+            <p className="text-xs font-bold" style={{ color: MUTED }}>
+              {t("market", { unit: state.turnUnit })}
+            </p>
+          )}
         </div>
 
-        {/* Toss outcome revealed after flip */}
         {flipped && (
-          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            {/* Market outcome badge */}
-            <div
-              className={`rounded-xl p-3 text-center border ${
-                isCrash
-                  ? "bg-loss/10 border-loss/30 text-loss"
-                  : isBoom
-                    ? "bg-gain/10 border-gain/30 text-gain"
-                    : "bg-secondary/10 border-secondary/30 text-secondary"
-              }`}
-            >
-              <p className="text-xs font-semibold">{t("market", { unit: state.turnUnit })}</p>
-              <h3 className="text-xl font-extrabold">
-                {marketStateDef ? l(marketStateDef.label) : outcome.toss.marketState}
-              </h3>
+          <div className="space-y-3 p-4">
+            <div className="grid grid-cols-3 gap-2">
+              <Tile
+                icon={<ArrowUpCircle className="size-6 text-[#15803d]" />}
+                label={t("income")}
+                value={`+${formatShort(income)}`}
+                tone="gain"
+              />
+              <Tile
+                icon={<ArrowDownCircle className="size-6 text-[#b91c1c]" />}
+                label={t("expenses")}
+                value={`−${formatShort(costs)}`}
+                tone="loss"
+              />
+              <Tile
+                icon={
+                  invested >= 0 ? (
+                    <TrendingUp className="size-6 text-[#15803d]" />
+                  ) : (
+                    <TrendingDown className="size-6 text-[#b91c1c]" />
+                  )
+                }
+                label={t("investments")}
+                value={`${invested >= 0 ? "+" : "−"}${formatShort(Math.abs(invested))}`}
+                tone={invested >= 0 ? "gain" : "loss"}
+              />
             </div>
-
-            {/* Event summaries */}
-            <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-              <h4 className="text-xs font-bold uppercase text-muted-foreground tracking-wider">
-                {t("whatHappened")}
-              </h4>
-              <ul className="space-y-1.5 text-xs">
-                {outcome.events.map((ev, i) => {
-                  switch (ev.type) {
-                    case "income":
-                      return (
-                        <li
-                          key={i}
-                          className="flex justify-between items-center bg-accent/20 rounded-lg p-2"
-                        >
-                          <span className="font-medium text-foreground">{t("income")}</span>
-                          <span className="font-bold text-gain">+{formatPaise(ev.amount)}</span>
-                        </li>
-                      );
-                    case "fixed_expenses":
-                      return (
-                        <li
-                          key={i}
-                          className="flex justify-between items-center bg-accent/20 rounded-lg p-2"
-                        >
-                          <span className="font-medium text-foreground">{t("expenses")}</span>
-                          <span className="font-bold text-loss">−{formatPaise(ev.amount)}</span>
-                        </li>
-                      );
-                    case "returns": {
-                      const opt = content.options.options.find((o) => o.id === ev.optionId);
-                      return (
-                        <li
-                          key={i}
-                          className="flex justify-between items-center bg-accent/20 rounded-lg p-2"
-                        >
-                          <span className="font-medium text-foreground">
-                            {t("returns", { name: opt ? l(opt.name) : ev.optionId })}
-                          </span>
-                          <span
-                            className={`font-bold tabular-nums ${ev.change >= 0 ? "text-gain" : "text-loss"}`}
-                          >
-                            {ev.change >= 0 ? "+" : ""}
-                            {formatPaise(ev.change)} ({formatRate(ev.rate)})
-                          </span>
-                        </li>
-                      );
-                    }
-                    case "life_event": {
-                      const lifeDef = content.lifeEvents.events.find((e) => e.id === ev.eventId);
-                      return (
-                        <li
-                          key={i}
-                          className="rounded-lg border border-primary/30 bg-primary/10 p-2 space-y-1"
-                        >
-                          <div className="flex justify-between items-center font-bold">
-                            <span className="flex items-center gap-1.5 text-primary">
-                              <ContentIcon name={lifeDef?.icon} className="size-4" />
-                              {lifeDef ? l(lifeDef.title) : ev.eventId}
-                            </span>
-                            {ev.amount > 0 &&
-                              (lifeDef?.type === "good" ? (
-                                <span className="text-gain">+{formatPaise(ev.amount)}</span>
-                              ) : (
-                                <span className="text-loss">−{formatPaise(ev.amount)}</span>
-                              ))}
-                          </div>
-                          {/* How a bad event was paid: wallet, emergency fund, or a forced loan. */}
-                          {lifeDef?.type === "bad" && ev.amount > 0 && (
-                            <p className="text-[11px] text-muted-foreground">
-                              {ev.coveredBy === "cash"
-                                ? t("coveredByWallet")
-                                : ev.coveredBy === "savings"
-                                  ? t("coveredByCash")
-                                  : t("shortfall")}
-                            </p>
-                          )}
-                        </li>
-                      );
-                    }
-                    case "task_missed": {
-                      const ch = content.chapters.find((c) => c.id === state.chapterId);
-                      const tDef = ch?.tasks.find((task) => task.id === ev.taskId);
-                      return (
-                        <li
-                          key={i}
-                          className="flex justify-between items-center bg-loss/10 rounded-lg p-2 text-loss"
-                        >
-                          <span className="font-semibold">
-                            {t("taskMissed", { name: tDef ? l(tDef.title) : ev.taskId })}
-                          </span>
-                          {ev.fine > 0 && (
-                            <span className="font-bold">
-                              {t("fine", { amount: formatPaise(ev.fine) })}
-                            </span>
-                          )}
-                        </li>
-                      );
-                    }
-                    case "forced_borrowing":
-                      return (
-                        <li
-                          key={i}
-                          className="rounded-lg border border-loss/40 bg-loss/10 p-2 text-xs space-y-0.5 text-loss"
-                        >
-                          <div className="flex justify-between items-center font-bold">
-                            <span>{t("forcedBorrowingTitle")}</span>
-                            <span>+{formatPaise(ev.amount)}</span>
-                          </div>
-                          <p className="text-[11px] text-muted-foreground">
-                            {t("forcedBorrowingBody", { rate: formatRate(ev.ratePerYear) })}
-                          </p>
-                        </li>
-                      );
-                    case "cash_lost":
-                      return (
-                        <li
-                          key={i}
-                          className="flex justify-between items-center bg-loss/10 rounded-lg p-2 text-xs text-loss"
-                        >
-                          <span className="font-semibold">{t("cashLost")}</span>
-                          <span className="font-bold">−{formatPaise(ev.amount)}</span>
-                        </li>
-                      );
-                    case "sip_missed": {
-                      const opt = content.options.options.find((o) => o.id === ev.optionId);
-                      return (
-                        <li
-                          key={i}
-                          className="flex justify-between items-center bg-secondary/10 rounded-lg p-2 text-xs text-secondary"
-                        >
-                          <span className="font-semibold">
-                            {t("sipMissed", { name: opt ? l(opt.name) : ev.optionId })}
-                          </span>
-                          <span className="font-bold">{formatPaise(ev.amount)}</span>
-                        </li>
-                      );
-                    }
-                    case "debt_interest":
-                      return (
-                        <li
-                          key={i}
-                          className="flex justify-between items-center bg-loss/10 rounded-lg p-2 text-xs text-loss"
-                        >
-                          <span className="font-semibold">{t("debtInterest")}</span>
-                          <span className="font-bold">−{formatPaise(ev.amount)}</span>
-                        </li>
-                      );
-                    case "debt_repaid":
-                      return (
-                        <li
-                          key={i}
-                          className="flex justify-between items-center bg-gain/10 rounded-lg p-2 text-xs text-gain"
-                        >
-                          <span className="font-semibold">{t("debtRepaid")}</span>
-                          <span className="font-bold">−{formatPaise(ev.amount)}</span>
-                        </li>
-                      );
-                    default:
-                      return null;
-                  }
-                })}
-              </ul>
-            </div>
-
-            <Button className="w-full font-bold shadow-md" size="lg" onClick={onContinue}>
+            {rows.length > 0 && <ul className="space-y-2">{rows}</ul>}
+            <GameButton tone="green" className="w-full" onClick={onContinue}>
               {tc("continue")}
-            </Button>
+            </GameButton>
           </div>
         )}
-      </Card>
+      </div>
     </div>
   );
 }

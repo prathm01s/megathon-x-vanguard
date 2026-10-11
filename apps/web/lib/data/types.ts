@@ -56,8 +56,20 @@ export interface SavedProgress {
   chapters: Record<string, { passed: boolean; healthScore: number }>;
 }
 
+/** A saved game session (the time machine). Stored whole; only these fields are indexed. */
+export interface SessionRecord {
+  id: string;
+  chapterId: string;
+  startedAt: string;
+  updatedAt: string;
+}
+
 export interface PersistenceApi {
   loadProgress(): Promise<SavedProgress>;
+  /** Saves (inserts or updates) one session. Never throws: offline it stays on the device. */
+  saveSession(session: SessionRecord): Promise<void>;
+  /** The account's sessions from every device, newest first. */
+  loadSessions(): Promise<SessionRecord[]>;
   saveMindset(phase: "pre" | "post", answers: MindsetAnswers, result: MindsetResult): Promise<void>;
   startPlaythrough(
     personaId: string,

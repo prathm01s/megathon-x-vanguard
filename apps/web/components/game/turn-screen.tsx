@@ -18,6 +18,7 @@ import { useGameStore, type FastForwardSummary } from "./store";
 import { TossModal } from "./toss-modal";
 import { useLocalize } from "./use-localize";
 import { GuideInsights } from "./guide/insights";
+import { MeeraChat } from "./guide/meera-chat";
 import { FastForwardModal } from "./village/fast-forward";
 import { InvestRail, isBuilt, SideStats, TaskSheet, VillageGround } from "./village/village";
 import { GAME_TEXT, INK } from "@/lib/game-style";
@@ -55,6 +56,8 @@ function Screen() {
   const [toast, setToast] = useState<string | null>(null);
   const [ffSummary, setFfSummary] = useState<FastForwardSummary | null>(null);
   const [insight, setInsight] = useState<ChapterResult | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
+  const currentSession = useGameStore((s) => s.sessions.find((x) => x.id === s.sessionId));
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   function showToast(text: string) {
     setToast(text);
@@ -295,7 +298,16 @@ function Screen() {
         <ScamModal pendingScam={pendingScam} state={state} onRespond={handleScamResponse} />
       )}
 
-      {insight && <GuideInsights result={insight} onDone={() => router.push("/report")} />}
+      {insight && !chatOpen && (
+        <GuideInsights
+          result={insight}
+          onDone={() => router.push("/report")}
+          onAsk={currentSession ? () => setChatOpen(true) : undefined}
+        />
+      )}
+      {chatOpen && currentSession && (
+        <MeeraChat session={currentSession} onClose={() => setChatOpen(false)} />
+      )}
 
       {ffSummary && (
         <FastForwardModal

@@ -190,7 +190,7 @@
     "confirmAmount": "Confirm · {amount}"
   },
   "shop": {
-    "title": "Save and invest",
+    "title": "Money Market",
     "subtitle": "Every option is fictional. Returns are guesses from past patterns, not promises.",
     "risk": "Risk",
     "riskLevel": "{level} of 5",
@@ -201,10 +201,18 @@
     },
     "penalty": "{pct} penalty if broken early",
     "minAmount": "Minimum {amount}",
-    "putIn": "Put in money",
-    "startSip": "Start SIP",
+    "putIn": "Put in",
+    "startSip": "Monthly",
     "sipRunning": "SIP running",
-    "lesson": "Lesson"
+    "lesson": "Lesson",
+    "cashToSpend": "You have {amount} to use",
+    "about": "About {name}",
+    "lockedMonths": "Locked {months} mo",
+    "monthlyRunning": "{amount} a month",
+    "stop": "Stop",
+    "learn": "Learn: {name}",
+    "lockedLevel": "Unlocks at a higher level",
+    "takeOut": "Take out"
   },
   "toss": {
     "title": "The coin is in the air…",
@@ -227,7 +235,10 @@
     "debtRepaid": "Debt repaid",
     "inflation": "Prices rose {pct}",
     "continue": "Continue",
-    "coveredByWallet": "Paid from your wallet."
+    "coveredByWallet": "Paid from your wallet.",
+    "investments": "Investments",
+    "mute": "Sound off",
+    "unmute": "Sound on"
   },
   "scam": {
     "incoming": "Incoming {channel, select, message {message} call {call} app {app notification} investment_listing {investment offer} friend_offer {offer from a friend} other {message}}",
@@ -432,6 +443,43 @@
     "insightsNotPassed": "You scored {score}/100. So close! Here's what to try next time.",
     "didWell": "What you did well",
     "couldBeBetter": "Next time",
-    "seeReport": "See my full report"
+    "seeReport": "See my full report",
+    "askMeera": "Ask Meera about this level"
+  },
+  "timeMachine": {
+    "title": "Time Machine",
+    "short": "Time Machine",
+    "subtitle": "Every game you play is saved. Open one to see each choice, ask what would have happened, or replay from any point.",
+    "empty": "Play a level and it will appear here.",
+    "score": "Score {score}/100",
+    "inProgress": "In progress",
+    "branch": "Replay branch",
+    "notFound": "This game isn't saved on this device yet.",
+    "finalWealth": "Wealth {amount}",
+    "askMeera": "Ask Meera about this game",
+    "howTo": "Tap \"What if I hadn't?\" on any choice, or replay from that moment on a new branch.",
+    "period": "{unit, select, month {Month} other {Year}} {n}",
+    "noDecisions": "No choices this time.",
+    "whatIfNot": "What if I hadn't?",
+    "replayFromHere": "Replay from here",
+    "replayBeforeToss": "Replay before this toss",
+    "whatIfResult": "Without it: score {score}/100 (was {actualScore}), Real Value {diff}.",
+    "whatIfError": "Couldn't work that one out.",
+    "afterToss": "After the toss: {amount}"
+  },
+  "meeraChat": {
+    "title": "Ask Meera",
+    "subtitle": "Your money guide. Ask about your game or any money word.",
+    "hello": "Hi! I looked at your game. Ask me anything: why something happened, what a word means, or what you could try next time.",
+    "suggest1": "Why did I get this score?",
+    "suggest2": "What could I have done better?",
+    "suggest3": "What is an SIP?",
+    "suggest4": "Was investing in the market a good idea for me?",
+    "placeholder": "Type your question…",
+    "send": "Send",
+    "close": "Close",
+    "notConfigured": "I'm not connected yet. Ask your facilitator to set up the AI key, and then ask me again!",
+    "tooMany": "You've asked a lot of questions! Take a short break and try again in a few minutes.",
+    "error": "Sorry, I couldn't answer just now. Please try again."
   }
 }

@@ -3,8 +3,8 @@
 import { useTranslations } from "next-intl";
 import { useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "@/i18n/navigation";
-import { loadProgress, useSession } from "@/lib/data";
-import { useGameHydrated, useGameStore } from "./store";
+import { loadProgress, loadSessions, useSession } from "@/lib/data";
+import { useGameHydrated, useGameStore, type SavedSession } from "./store";
 
 /**
  * The saved game lives on the device. When a student opens the game: a save that belongs to
@@ -29,6 +29,10 @@ export function ProgressSync({ children }: { children: ReactNode }) {
       const progress = await loadProgress();
       if (cancelled) return;
       useGameStore.getState().restoreProgress(userId, progress);
+      // Time-machine sessions from other devices.
+      void loadSessions().then((remote) =>
+        useGameStore.getState().mergeSessions(remote as unknown as SavedSession[]),
+      );
       if (!useGameStore.getState().personaId && !pathname.startsWith("/mindset")) {
         router.replace("/mindset");
         return;

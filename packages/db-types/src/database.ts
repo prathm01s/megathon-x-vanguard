@@ -207,6 +207,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"game_sessions": {
+                  Row: {
+                    "chapter_id": string,"data": NonNullable<Json>,"id": string,"started_at": string,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "chapter_id": string,"data": NonNullable<Json>,"id": string,"started_at"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Update: {
+                    "chapter_id"?: string,"data"?: NonNullable<Json>,"id"?: string,"started_at"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"group_members": {
                   Row: {
                     "created_at": string,"group_id": string,"id": string,"student_user_id": string

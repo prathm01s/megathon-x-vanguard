@@ -1,6 +1,7 @@
 "use client";
 
 import type { ChapterResult } from "@toss/engine";
+import { MessageCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { GameButton } from "@/components/ui/game-button";
 import { GAME_TEXT } from "@/lib/game-style";
@@ -9,7 +10,16 @@ import { useLocalize } from "../use-localize";
 import { GuideLine, GuideScene } from "./guide";
 
 /** End of a level: Meera explains what went well and what to do better, then the full report. */
-export function GuideInsights({ result, onDone }: { result: ChapterResult; onDone: () => void }) {
+export function GuideInsights({
+  result,
+  onDone,
+  onAsk,
+}: {
+  result: ChapterResult;
+  onDone: () => void;
+  /** Opens the "Ask Meera" chat about this session. */
+  onAsk?: () => void;
+}) {
   const t = useTranslations("guide");
   const l = useLocalize();
   const good = result.report.didWell.slice(0, 2);
@@ -51,6 +61,11 @@ export function GuideInsights({ result, onDone }: { result: ChapterResult; onDon
               ))}
             </ul>
           </section>
+        )}
+        {onAsk && (
+          <GameButton tone="blue" className="w-full" onClick={onAsk}>
+            <MessageCircle aria-hidden /> {t("askMeera")}
+          </GameButton>
         )}
         <GameButton tone="green" className="w-full" onClick={onDone}>
           {t("seeReport")}
