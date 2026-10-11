@@ -1,0 +1,43 @@
+name: Pull Sync from College Repo
+
+on:
+  push:
+    branches: [ "main" ]
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Personal Repo
+        uses: actions/checkout@v4
+        with:
+          path: personal
+
+      - name: Checkout College Repo
+        uses: actions/checkout@v4
+        with:
+          repository: 'IIIT-ECell/megathon26-prajis'
+          token: ${{ secrets.COLLEGE_REPO_TOKEN }}
+          path: college
+          fetch-depth: 0
+
+      - name: Inject Workflow and Push
+        run: |
+          # Copy this automation file into the college code
+          mkdir -p college/.github/workflows
+          cp personal/.github/workflows/pull-sync.yml college/.github/workflows/
+          
+          # Commit the file and force push
+          cd college
+          git checkout -B main
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add .github/workflows/pull-sync.yml
+          git commit -m "chore: preserve pull-sync workflow" || true
+          git push --force https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git main:main
